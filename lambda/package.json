@@ -1,0 +1,21 @@
+{
+    "name": "lambda",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "rm dist/* && tsc && (cd dist; zip -r bundle.zip index.js)",
+        "deploy": "aws lambda update-function-code --function-name icfpc2022-runner --zip-file fileb://dist/bundle.zip",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.102",
+        "prettier": "^2.7.1",
+        "typescript": "^4.8.2"
+    },
+    "dependencies": {
+        "aws-sdk": "^2.1206.0"
+    }
+}
