@@ -1,4 +1,4 @@
-import { APIGatewayEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import {APIGatewayEvent, APIGatewayProxyResult, Context, SQSEvent} from 'aws-lambda';
 import { S3 } from 'aws-sdk';
 import * as fsPromises from 'fs/promises';
 import { GetObjectOutput } from 'aws-sdk/clients/s3';
@@ -33,11 +33,18 @@ function runProcess(path: string): Promise<string> {
     });
 }
 
-export async function handler(event: Args, context: Context): Promise<APIGatewayProxyResult> {
+export async function handler(event: SQSEvent, context: Context): Promise<APIGatewayProxyResult> {
     console.log(`Event: ${JSON.stringify(event, null, 2)}`);
+    if (event.Records.length != 1) {
+        return {
+            statusCode: 400,
+            body: 'This function cannot process more than 1 message at once'
+        };
+    }
+    const args: Args = JSON.parse(event.Records[0].body);
 
     const fileHandle = await fsPromises.open('/tmp/a.out', 'w', 0o755);
-    const obj = await getObject(event.executablePath);
+    const obj = await getObject(args.executablePath);
     if (obj.Body == null) {
         return {
             statusCode: 400,
