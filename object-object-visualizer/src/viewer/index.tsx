@@ -9,12 +9,12 @@ interface Props {
   height: number;
 }
 export const Canvas = ({ moves, height, width }: Props) => {
-  const [turn, setTurn] = useState(moves.length);
+  const [turn, setTurn] = useState(0);
   const result = useMemo(() => {
     return calculate(moves, width, height);
   }, [width, height, moves]);
   useEffect(() => {
-    setTurn(result.states.length);
+    setTurn(result.states.length - 1);
   }, [result]);
   const state = result.states[turn] as State | undefined;
 
@@ -53,14 +53,17 @@ export const Canvas = ({ moves, height, width }: Props) => {
           onChange={(e) => setTurn(Number.parseInt(e.target.value))}
         />
       </div>
-      <div>{turn > 0 ? JSON.stringify(moves[turn - 1]) : "initialized"}</div>
       <div>
-        {result.kind === "error"
-          ? `${result.errorMessage}: ${JSON.stringify(result.move)}`
-          : "no error"}
-      </div>
-      <div>
-        <InfoTable cost={state?.cost ?? 0} />
+        <InfoTable
+          cost={state?.cost ?? 0}
+          turn={turn}
+          move={turn > 0 ? moves[turn - 1] : undefined}
+          errorMessage={
+            result.kind === "error"
+              ? `${result.errorMessage}: ${JSON.stringify(result.move)}`
+              : undefined
+          }
+        />
       </div>
     </div>
   );
