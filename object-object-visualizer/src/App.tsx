@@ -1,7 +1,14 @@
 import React from "react";
 
 function App() {
-  return <div>a</div>;
+  return (
+    <div>
+      <div>
+        <textarea />
+      </div>
+      <div></div>
+    </div>
+  );
 }
 
 export default App;
