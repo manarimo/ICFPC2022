@@ -125,8 +125,8 @@ string paint_column(int left, int right, int top, int bottom, int height, int wi
     return paint_column(left, right, top + height, bottom, height, width, node, id);
 }
 
-string paint(int left, int right, int height, int width, string node, int& id) {
-    if (left + width >= right) return node;
+void paint(int left, int right, int height, int width, string node, int& id) {
+    if (left + width >= right) return;
 
     string painted = "";
     // cut target area
@@ -150,15 +150,13 @@ string paint(int left, int right, int height, int width, string node, int& id) {
     merge_block(left_node, node + ".1");
     node = to_string(++id);
 
-    node = paint(left + width, right, height, width, node, id);
-
     // merge whole
     if (!painted.empty()) {
         merge_block(painted, node);
         node = to_string(++id);
     }
 
-    return node;
+    paint(left + width, right, height, width, node, id);
 }
 
 int main() {
