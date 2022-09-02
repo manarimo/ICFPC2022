@@ -108,55 +108,49 @@ void paint_block(const string &node, color c) {
     printf("color [%s] [%d, %d, %d, %d]\n", node.c_str(), c.r, c.g, c.b, c.a);
 }
 
-string paint_column(int left, int right, int top, int bottom, int height, int width, string node, int& id) {
-    if (top + height >= bottom) return node;
+string paint_column(int left, int right, int bottom, int top, int height, int width, string prev_node, string node, int& id) {
+    if (bottom >= top) return node;
 
-    // cut top row
-    ycut_block(node, top + height);
-
-    // paint cell    
-    auto c = get_color(left, top, left + width, top + height);
-    paint_block(node + ".1", c);
-    
-    // merge top row
-    merge_block(node + ".0", node + ".1");
-    node = to_string(++id);
-
-    return paint_column(left, right, top + height, bottom, height, width, node, id);
-}
-
-void paint(int left, int right, int height, int width, string node, int& id) {
-    if (left + width >= right) return;
-
-    string painted = "";
-    // cut target area
-    if (left > 0) {
-        xcut_block(node, left);
-        painted = node + ".0";
-        node += ".1";
-    }
-
-    // paint with upper-left
-    auto c = get_color(left, 0, left + width, height);
+    // paint cell
+    auto c = get_color(left, bottom, left + width, bottom + height);
     paint_block(node, c);
     
-    // cut left column
-    xcut_block(node, left + width);
-
-    // paint_column
-    string left_node = paint_column(left, right, 0, MAX_H, height, width, node + ".0", id);
-
-    // merge left column
-    merge_block(left_node, node + ".1");
-    node = to_string(++id);
-
-    // merge whole
-    if (!painted.empty()) {
-        merge_block(painted, node);
+    // merge bottom row
+    if (!prev_node.empty()) {
+        merge_block(prev_node, node);
         node = to_string(++id);
     }
 
-    paint(left + width, right, height, width, node, id);
+    // cut bottom row
+    string next_node = node;
+    if (bottom + height < top) {
+        ycut_block(node, bottom + height);
+        next_node += ".1";
+    }
+
+    return paint_column(left, right, bottom + height, top, height, width, node + ".0", next_node, id);
+}
+
+void paint(int left, int right, int height, int width, string painted_node, string node, int& id) {
+    if (left >= right) return;
+    
+    // paint_column
+    node = paint_column(left, right, 0, MAX_H, height, width, "", node, id);
+
+    // merge painted row
+    if (!painted_node.empty()) {
+        merge_block(painted_node, node);
+        node = to_string(++id);
+    }
+
+    // cut target area
+    string next_node = node;
+    if (left + width < right) {
+        xcut_block(node, left + width);
+        next_node += ".1";
+    }
+
+    paint(left + width, right, height, width, node + ".0", next_node, id);
 }
 
 int main() {
@@ -175,7 +169,7 @@ int main() {
     int id = 0;
     const int size = 20;
     string node = "0";
-    paint(0, MAX_W, size, size, node, id);
+    paint(0, MAX_W, size, size, "", node, id);
     
     return 0;
 }
