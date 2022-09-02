@@ -241,20 +241,12 @@ const applyMergeMove = (move: MergeMove, state: State) => {
   const y1 = Math.min(block1.y1, block2.y1);
   const y2 = Math.max(block1.y2, block2.y2);
 
-  const majorSet = new Set<string>();
-  Array.from(state.blocks.keys()).forEach((key) => {
-    majorSet.add(key.split(".")[0]);
-  });
-
-  let index = 0;
-  while (majorSet.has(index.toString())) {
-    index += 1;
-  }
-
   const nextState = copyBlocks(state);
+  nextState.globalCounter += 1;
   nextState.blocks.delete(move.blockId1);
   nextState.blocks.delete(move.blockId2);
-  nextState.blocks.set(index.toString(), { x1, y1, x2, y2 });
+  nextState.blocks.set(nextState.globalCounter.toString(), { x1, y1, x2, y2 });
+
   return { kind: "state" as const, state: nextState };
 };
 
@@ -262,6 +254,7 @@ type State = {
   blocks: Map<string, Block>;
   width: number;
   height: number;
+  globalCounter: number;
 
   r: Uint8Array;
   g: Uint8Array;
@@ -288,6 +281,7 @@ export const createNewState = (width: number, height: number): State => {
     g: new Uint8Array(width * height).fill(0),
     b: new Uint8Array(width * height).fill(0),
     a: new Uint8Array(width * height).fill(0),
+    globalCounter: 0,
   };
   return state;
 };
