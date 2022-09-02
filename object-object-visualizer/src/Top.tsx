@@ -1,6 +1,5 @@
 import * as React from "react";
 import useSWR from "swr";
-import { Link } from "react-router-dom";
 
 async function fetcher<T>(path: string): Promise<T> {
   const response = await fetch(
