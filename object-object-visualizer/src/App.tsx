@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Viewer } from "./viewer";
 import { parseProgram } from "./parser";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function App() {
-  const [program, setProgram] = useState("");
+  const [program, setProgram] = useLocalStorage("ProgramEditor", "");
   const moves = parseProgram(program);
   return (
     <div style={{ display: "flex" }}>
