@@ -1,22 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { InfoTable } from "../info-table";
 import { Move } from "../parser";
-import { applySingleMove, createNewState, getColor } from "./simulate";
+import { applySingleMove, createNewState, getColor, State } from "../simulate";
 
-// https://codesandbox.io/s/react-typescript-zoom-pan-html-canvas-p3itj?from-embed=&file=/src/Canvas.tsx
 interface Props {
   moves: Move[];
   width: number;
   height: number;
 }
 export const Canvas = ({ moves, height, width }: Props) => {
-  const [turn, setTurn] = useState(moves.length);
-  const states = useMemo(() => {
+  const [turn, setTurn] = useState(0);
+  const result = useMemo(() => {
     return calculate(moves, width, height);
   }, [width, height, moves]);
   useEffect(() => {
-    setTurn(states.states.length);
-  }, [states]);
-  const state = states.states[turn];
+    setTurn(result.states.length - 1);
+  }, [result]);
+  const state = result.states[turn] as State | undefined;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -37,9 +37,15 @@ export const Canvas = ({ moves, height, width }: Props) => {
 
   return (
     <div>
-      <canvas width={width} height={height} ref={canvasRef}></canvas>
+      <canvas
+        style={{ margin: "10px" }}
+        width={width}
+        height={height}
+        ref={canvasRef}
+      ></canvas>
       <div>
         <input
+          style={{ width: `${width}px` }}
           type="range"
           min="0"
           max={moves.length}
@@ -47,11 +53,17 @@ export const Canvas = ({ moves, height, width }: Props) => {
           onChange={(e) => setTurn(Number.parseInt(e.target.value))}
         />
       </div>
-      <div>{turn > 0 ? JSON.stringify(moves[turn - 1]) : "initialized"}</div>
       <div>
-        {states.kind === "error"
-          ? `${states.errorMessage}: ${JSON.stringify(states.move)}`
-          : "no error"}
+        <InfoTable
+          cost={state?.cost ?? 0}
+          turn={turn}
+          move={turn > 0 ? moves[turn - 1] : undefined}
+          errorMessage={
+            result.kind === "error"
+              ? `${result.errorMessage}: ${JSON.stringify(result.move)}`
+              : undefined
+          }
+        />
       </div>
     </div>
   );
