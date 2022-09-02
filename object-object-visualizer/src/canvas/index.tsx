@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Move } from "../parser";
 import { applySingleMove, createNewState, getColor } from "./simulate";
 
+// https://codesandbox.io/s/react-typescript-zoom-pan-html-canvas-p3itj?from-embed=&file=/src/Canvas.tsx
 interface Props {
   moves: Move[];
   width: number;
@@ -16,37 +17,25 @@ export const Canvas = ({ moves, height, width }: Props) => {
     setTurn(states.states.length);
   }, [states]);
   const state = states.states[turn];
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx && state) {
+      for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+          const { r, g, b, a } = getColor(state, x, y);
+          ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+          ctx.fillRect(x, height - y - 1, 1, 1);
+        }
+      }
+    }
+  }, [canvasRef, width, height, state]);
+
   return (
     <div>
-      <svg width={height} height={width}>
-        {Array.from(Array(width), (v, x) => {
-          return Array.from(Array(height), (w, y) => {
-            if (!state) {
-              return (
-                <rect
-                  key={`${x}-${y}`}
-                  x={x}
-                  y={height - y - 1}
-                  width={1}
-                  height={1}
-                  fill={`rgba(0,0,0,0)`}
-                />
-              );
-            }
-            const { r, g, b, a } = getColor(state, x, y);
-            return (
-              <rect
-                key={`${x}-${y}`}
-                x={x}
-                y={height - y - 1}
-                width={1}
-                height={1}
-                fill={`rgba(${r},${g},${b},${a})`}
-              />
-            );
-          });
-        })}
-      </svg>
+      <canvas width={width} height={height} ref={canvasRef}></canvas>
       <div>
         <input
           type="range"
