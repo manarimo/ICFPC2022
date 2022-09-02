@@ -1,24 +1,27 @@
-name: S3 Sync
-
 on:
   push:
     branches:
       - master
     paths:
-      - 'output/**'
-      - 'problem/**'
+      - 'object-object-visualizer/**'
   workflow_dispatch:
 
 jobs:
-  sync:
+  portal-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: jakejarvis/s3-sync-action@master
+      - uses: actions/setup-node@master
         with:
-          args: --exclude '*' --include 'output/*' --include 'problem/*'
+          node-version: 16
+      - run: |
+          npm i
+          npm run build
+        working-directory: object-object-visualizer
+      - uses: jakejarvis/s3-sync-action@master
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: '.'
+          SOURCE_DIR: 'object-object-visualizer/build'
+          DEST_DIR: 'portal'
