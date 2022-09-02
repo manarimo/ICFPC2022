@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 interface Props {
   width: number;
@@ -7,13 +7,33 @@ interface Props {
     x: number,
     y: number
   ) => { r: number; g: number; b: number; a: number };
+  onMouseMove?: (x: number, y: number) => void;
 }
-export const Canvas = ({ width, height, getColor }: Props) => {
+export const Canvas = ({ width, height, getColor, onMouseMove }: Props) => {
+  const handleMouseMove = useCallback(
+    (x: number, y: number) => {
+      if (onMouseMove) {
+        onMouseMove(x, height - y);
+      }
+    },
+    [onMouseMove, height]
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (ctx) {
+      canvas?.addEventListener(
+        "mousemove",
+        (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const { left, top } = rect;
+          const x = Math.floor(e.clientX - left);
+          const y = Math.floor(e.clientY - top);
+          handleMouseMove(x, y);
+        },
+        false
+      );
       ctx.clearRect(0, 0, width, height);
       for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
@@ -23,7 +43,7 @@ export const Canvas = ({ width, height, getColor }: Props) => {
         }
       }
     }
-  }, [canvasRef, width, height, getColor]);
+  }, [canvasRef, width, height, getColor, handleMouseMove]);
   return (
     <canvas
       style={{ margin: "10px" }}

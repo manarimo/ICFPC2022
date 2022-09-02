@@ -6,11 +6,18 @@ interface Props {
   errorMessage?: string;
   move?: Move;
   turn: number;
+  mousePos?: { x: number; y: number };
 }
 
-export const InfoTable = ({ cost, errorMessage, move, turn }: Props) => {
+export const InfoTable = ({
+  cost,
+  errorMessage,
+  move,
+  turn,
+  mousePos,
+}: Props) => {
   return (
-    <table>
+    <table style={{ width: "400px" }}>
       <tbody>
         <tr>
           <th>操作回数</th>
@@ -21,8 +28,14 @@ export const InfoTable = ({ cost, errorMessage, move, turn }: Props) => {
           <td>{cost}</td>
         </tr>
         <tr>
+          <th>座標</th>
+          <td>{mousePos ? `${mousePos.x}, ${mousePos.y}` : ""}</td>
+        </tr>
+        <tr>
           <th>Move</th>
-          <td>{move ? JSON.stringify(move) : ""}</td>
+          <td style={{ wordBreak: "break-all" }}>
+            {move ? JSON.stringify(move) : ""}
+          </td>
         </tr>
         <tr>
           <th>エラー</th>

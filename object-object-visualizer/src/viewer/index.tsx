@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Canvas } from "../canvas";
 import { InfoTable } from "../info-table";
 import { Move } from "../parser";
@@ -18,6 +18,9 @@ export const Viewer = ({ moves, height, width }: Props) => {
     setTurn(result.states.length - 1);
   }, [result]);
   const state = result.states[turn] as State | undefined;
+  const [mousePos, setMousePos] = useState<
+    { x: number; y: number } | undefined
+  >();
 
   return (
     <div>
@@ -27,6 +30,9 @@ export const Viewer = ({ moves, height, width }: Props) => {
         getColor={(x, y) =>
           state ? getColor(state, x, y) : { r: 255, g: 255, b: 255, a: 255 }
         }
+        onMouseMove={(x, y) => {
+          setMousePos({ x, y });
+        }}
       />
       <div>
         <input
@@ -48,6 +54,7 @@ export const Viewer = ({ moves, height, width }: Props) => {
               ? `${result.errorMessage}: ${JSON.stringify(result.move)}`
               : undefined
           }
+          mousePos={mousePos}
         />
       </div>
     </div>

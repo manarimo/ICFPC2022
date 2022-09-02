@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Viewer } from "./viewer";
 import { parseProgram } from "./parser";
 import { useLocalStorage } from "./hooks/useLocalStorage";
