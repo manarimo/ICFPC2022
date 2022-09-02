@@ -43,7 +43,7 @@ export const ProblemViewer = ({ width, height }: Props) => {
   );
 };
 
-const problemFetcher = async (url: string) => {
+const fetchProblem = async (url: string) => {
   const body = await fetch(url, { mode: "no-cors" }).then((response) =>
     response.text()
   );
@@ -72,6 +72,6 @@ const useProblemData = (problemId: number) => {
     problemId
       ? `http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/problem/plaintext/${problemId}.txt`
       : null,
-    (url) => problemFetcher(url)
+    (url) => fetchProblem(url)
   );
 };
