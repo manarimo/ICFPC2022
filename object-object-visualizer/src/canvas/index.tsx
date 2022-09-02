@@ -1,79 +1,36 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Move } from "../parser";
-import { applySingleMove } from "./simulate";
+import React, { useEffect, useRef } from "react";
 
 interface Props {
-  moves: Move[];
   width: number;
   height: number;
+  getColor: (
+    x: number,
+    y: number
+  ) => { r: number; g: number; b: number; a: number };
 }
-export const Canvas = ({ moves, height, width }: Props) => {
-  const [turn, setTurn] = useState(moves.length);
+export const Canvas = ({ width, height, getColor }: Props) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
-    setTurn(moves.length);
-  }, [moves]);
-  const state = useMemo(() => {
-    return calculate(moves.slice(0, turn), width, height);
-  }, [turn, width, height, moves]);
-  return (
-    <div>
-      <svg width={height} height={width}>
-        {state.kind === "error" ? (
-          <text>{state.errorMessage}</text>
-        ) : (
-          <>
-            {Array.from(state.state).map(([blockId, block]) => {
-              const dx = block.x2 - block.x1;
-              const dy = block.y2 - block.y1;
-              return (
-                <rect
-                  key={blockId}
-                  x={block.x1}
-                  width={dx}
-                  y={height - block.y1 - dy}
-                  height={dy}
-                  fill={`rgba(${block.color.r},${block.color.g},${block.color.b},${block.color.a})`}
-                />
-              );
-            })}
-          </>
-        )}
-      </svg>
-      <div>
-        <input
-          type="range"
-          min="0"
-          max={moves.length}
-          value={turn}
-          onChange={(e) => setTurn(Number.parseInt(e.target.value))}
-        />
-      </div>
-      <div>{turn > 0 ? JSON.stringify(moves[turn - 1]) : ""}</div>
-    </div>
-  );
-};
-
-const calculate = (moves: Move[], width: number, height: number) => {
-  let state = new Map([
-    [
-      "0",
-      {
-        x1: 0,
-        y1: 0,
-        x2: width,
-        y2: height,
-        color: { r: 0, g: 0, b: 0, a: 0 },
-      },
-    ],
-  ]);
-
-  for (const move of moves) {
-    const result = applySingleMove(move, state);
-    if (result.kind === "error") {
-      return result;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = "rgb(255,255,255)";
+      ctx.fillRect(0, 0, width, height);
+      for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+          const { r, g, b, a } = getColor(x, y);
+          ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+          ctx.fillRect(x, height - y - 1, 1, 1);
+        }
+      }
     }
-    state = result.state;
-  }
-
-  return { kind: "state" as const, state };
+  }, [canvasRef, width, height, getColor]);
+  return (
+    <canvas
+      style={{ margin: "10px" }}
+      width={width}
+      height={height}
+      ref={canvasRef}
+    ></canvas>
+  );
 };

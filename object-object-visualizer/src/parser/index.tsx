@@ -167,8 +167,8 @@ const parseMergeMove = (operation: string) => {
   suffix = block1.suffix;
   const block2 = parseBlock(suffix);
   return {
-    leftBlockId: block1.blockId,
-    rightBlockId: block2.blockId,
+    blockId1: block1.blockId,
+    blockId2: block2.blockId,
     kind: "merge-move" as const,
   };
 };

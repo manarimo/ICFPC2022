@@ -2,6 +2,7 @@
   "name": "object-object-visualizer",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
@@ -17,7 +18,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.1",
+    "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "swr": "^1.3.0",
     "typescript": "^4.8.2",
     "web-vitals": "^2.1.4"
   },

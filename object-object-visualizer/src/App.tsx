@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { Canvas } from "./canvas";
+import { Viewer } from "./viewer";
 import { parseProgram } from "./parser";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function App() {
-  const [program, setProgram] = useState("");
+  const [program, setProgram] = useLocalStorage("ProgramEditor", "");
   const moves = parseProgram(program);
   return (
     <div style={{ display: "flex" }}>
       <div>
         <textarea
+          style={{ width: "400px", height: "400px" }}
           value={program}
           onChange={(e) => {
             setProgram(e.target.value);
@@ -16,7 +18,7 @@ function App() {
         />
       </div>
       <div>
-        <Canvas moves={moves} width={400} height={400}></Canvas>
+        <Viewer moves={moves} width={400} height={400}></Viewer>
       </div>
     </div>
   );
