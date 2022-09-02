@@ -18,6 +18,8 @@ jobs:
           npm i
           npm run build
         working-directory: object-object-visualizer
+        env:
+          CI: false
       - uses: jakejarvis/s3-sync-action@master
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
