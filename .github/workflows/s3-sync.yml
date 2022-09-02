@@ -7,6 +7,7 @@ on:
     paths:
       - 'output/**'
       - 'problem/**'
+      - '.github/workflows/s3-sync.yml'
   workflow_dispatch:
 
 jobs:

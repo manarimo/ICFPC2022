@@ -1,9 +1,12 @@
+name: Build portal
+
 on:
   push:
     branches:
       - master
     paths:
       - 'object-object-visualizer/**'
+      - '.github/workflows/portal.yml'
   workflow_dispatch:
 
 jobs:
