@@ -8,14 +8,10 @@ problem_dir = root_dir / "problem" / "plaintext"
 
 reduced_colors = {
     "1.txt": 3,
-    "2.txt": 12,
-    "3.txt": 12,
+    "3.txt": 15,
     "4.txt": 2,
     "5.txt": 2,
-    "6.txt": 12,
-    "7.txt": 5,
-    "8.txt": 12,
-    "9.txt": 10,
+    "8.txt": 20,
     "10.txt": 10,
 }
 
@@ -45,9 +41,8 @@ for problem_path in problem_dir.iterdir():
         
         counts = list(color_count.values())
         counts.sort(reverse=True)
-        reduced_color = reduced_colors.get(problem_path.name, 20)
+        reduced_color = reduced_colors.get(problem_path.name, 100)
         threshold = counts[reduced_color] if len(counts) > reduced_color else 0
-        print(counts[:20])
 
         color_mapping = dict()
         use_colors = set()
@@ -61,7 +56,7 @@ for problem_path in problem_dir.iterdir():
                 for use_color in use_colors:
                     distance = color_distance(use_color, color)
                     if distance < best_distance:
-                        best_color, best_distance = color, distance
+                        best_color, best_distance = use_color, distance
                 color_mapping[color] = best_color
         image = Image.new('RGBA', (w, h))
         for x in range(w):
