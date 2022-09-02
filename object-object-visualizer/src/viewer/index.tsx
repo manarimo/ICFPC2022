@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { InfoTable } from "../info-table";
 import { Move } from "../parser";
-import { applySingleMove, createNewState, getColor } from "./simulate";
+import { applySingleMove, createNewState, getColor, State } from "../simulate";
 
-// https://codesandbox.io/s/react-typescript-zoom-pan-html-canvas-p3itj?from-embed=&file=/src/Canvas.tsx
 interface Props {
   moves: Move[];
   width: number;
@@ -10,13 +10,13 @@ interface Props {
 }
 export const Canvas = ({ moves, height, width }: Props) => {
   const [turn, setTurn] = useState(moves.length);
-  const states = useMemo(() => {
+  const result = useMemo(() => {
     return calculate(moves, width, height);
   }, [width, height, moves]);
   useEffect(() => {
-    setTurn(states.states.length);
-  }, [states]);
-  const state = states.states[turn];
+    setTurn(result.states.length);
+  }, [result]);
+  const state = result.states[turn] as State | undefined;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -37,9 +37,15 @@ export const Canvas = ({ moves, height, width }: Props) => {
 
   return (
     <div>
-      <canvas width={width} height={height} ref={canvasRef}></canvas>
+      <canvas
+        style={{ margin: "10px" }}
+        width={width}
+        height={height}
+        ref={canvasRef}
+      ></canvas>
       <div>
         <input
+          style={{ width: `${width}px` }}
           type="range"
           min="0"
           max={moves.length}
@@ -49,9 +55,12 @@ export const Canvas = ({ moves, height, width }: Props) => {
       </div>
       <div>{turn > 0 ? JSON.stringify(moves[turn - 1]) : "initialized"}</div>
       <div>
-        {states.kind === "error"
-          ? `${states.errorMessage}: ${JSON.stringify(states.move)}`
+        {result.kind === "error"
+          ? `${result.errorMessage}: ${JSON.stringify(result.move)}`
           : "no error"}
+      </div>
+      <div>
+        <InfoTable cost={state?.cost ?? 0} />
       </div>
     </div>
   );

@@ -62,6 +62,7 @@ const applyColorMove = (move: ColorMove, state: State) => {
     }
   }
 
+  nextState.cost += calculateCost(move, size(block), state);
   return {
     kind: "state" as const,
     state: nextState,
@@ -84,6 +85,7 @@ const applyLCutMove = (move: LCutMove, state: State) => {
     nextState.blocks.delete(blockId);
     nextState.blocks.set(`${blockId}.0`, left);
     nextState.blocks.set(`${blockId}.1`, right);
+    nextState.cost += calculateCost(move, size(block), state);
     return { kind: "state" as const, state: nextState };
   } else {
     const y = lineNumber;
@@ -103,6 +105,7 @@ const applyLCutMove = (move: LCutMove, state: State) => {
     nextState.blocks.delete(blockId);
     nextState.blocks.set(`${blockId}.0`, bottom);
     nextState.blocks.set(`${blockId}.1`, top);
+    nextState.cost += calculateCost(move, size(block), state);
     return { kind: "state" as const, state: nextState };
   }
 };
@@ -154,6 +157,7 @@ const applyPCutMove = (move: PCutMove, state: State) => {
   nextState.blocks.set(`${blockId}.1`, { ...rightBottom });
   nextState.blocks.set(`${blockId}.2`, { ...rightTop });
   nextState.blocks.set(`${blockId}.3`, { ...leftTop });
+  nextState.cost += calculateCost(move, size(block), state);
   return { kind: "state" as const, state: nextState };
 };
 
@@ -200,6 +204,7 @@ const applySwapMove = (move: SwapMove, state: State) => {
     }
   }
 
+  nextState.cost += calculateCost(move, size(block1), state);
   return {
     kind: "state" as const,
     state: nextState,
@@ -216,7 +221,6 @@ const applyMergeMove = (move: MergeMove, state: State) => {
     return undefinedBlockError(move.blockId2);
   }
 
-  // TODO rect check
   if (
     block1.x1 === block2.x1 &&
     block1.x2 === block2.x2 &&
@@ -247,14 +251,20 @@ const applyMergeMove = (move: MergeMove, state: State) => {
   nextState.blocks.delete(move.blockId2);
   nextState.blocks.set(nextState.globalCounter.toString(), { x1, y1, x2, y2 });
 
+  nextState.cost += calculateCost(
+    move,
+    Math.max(size(block1), size(block2)),
+    state
+  );
   return { kind: "state" as const, state: nextState };
 };
 
-type State = {
+export type State = {
   blocks: Map<string, Block>;
   width: number;
   height: number;
   globalCounter: number;
+  cost: number;
 
   r: Uint8Array;
   g: Uint8Array;
@@ -282,6 +292,7 @@ export const createNewState = (width: number, height: number): State => {
     b: new Uint8Array(width * height).fill(0),
     a: new Uint8Array(width * height).fill(0),
     globalCounter: 0,
+    cost: 0,
   };
   return state;
 };
@@ -319,4 +330,46 @@ const setColorInPlace = (
   state.g[y * state.width + x] = color.g;
   state.b[y * state.width + x] = color.b;
   state.a[y * state.width + x] = color.a;
+};
+
+const baseCost = (move: Move) => {
+  switch (move.kind) {
+    case "lcut-move": {
+      return 7;
+    }
+    case "pcut-move": {
+      return 10;
+    }
+    case "color-move": {
+      return 5;
+    }
+    case "swap-move": {
+      return 3;
+    }
+    case "merge-move": {
+      return 1;
+    }
+    default: {
+      const nv: never = move;
+      throw new Error(`${nv}`);
+    }
+  }
+};
+
+const calculateCost = (
+  move: Move,
+  blockSize: number,
+  canvas: { width: number; height: number }
+) => {
+  const base = baseCost(move);
+  const canvasSize = canvas.width * canvas.height;
+
+  return Math.round((base * canvasSize) / blockSize);
+};
+
+const size = (block: Block) => {
+  const dx = block.x2 - block.x1;
+  const dy = block.y2 - block.y1;
+  const blockSize = dx * dy;
+  return blockSize;
 };

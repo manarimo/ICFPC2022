@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Canvas } from "./canvas";
+import { Canvas } from "./viewer";
 import { parseProgram } from "./parser";
 
 function App() {
@@ -9,6 +9,7 @@ function App() {
     <div style={{ display: "flex" }}>
       <div>
         <textarea
+          style={{ width: "400px", height: "400px" }}
           value={program}
           onChange={(e) => {
             setProgram(e.target.value);
