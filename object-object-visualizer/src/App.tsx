@@ -1,11 +1,12 @@
 import React, { useState } from "react";
+import { Canvas } from "./canvas";
 import { parseProgram } from "./parser";
 
 function App() {
   const [program, setProgram] = useState("");
   const moves = parseProgram(program);
   return (
-    <div>
+    <div style={{ display: "flex" }}>
       <div>
         <textarea
           value={program}
@@ -14,7 +15,9 @@ function App() {
           }}
         />
       </div>
-      <div>{JSON.stringify(moves)}</div>
+      <div>
+        <Canvas moves={moves} width={400} height={400}></Canvas>
+      </div>
     </div>
   );
 }

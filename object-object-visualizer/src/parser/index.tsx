@@ -24,11 +24,25 @@ const parseSingleMove = (operation: string) => {
   console.error(`unsupported move: ${operation}`);
 };
 
-type Move =
-  | ReturnType<typeof parseCutMove>
-  | ReturnType<typeof parseColorMove>
-  | ReturnType<typeof parseSwapMove>
-  | ReturnType<typeof parseMergeMove>;
+export type LCutMove = {
+  blockId: string;
+  orientation: Orientation;
+  lineNumber: number;
+  kind: "lcut-move";
+};
+export type PCutMove = {
+  blockId: string;
+  x: number;
+  y: number;
+  kind: "pcut-move";
+  orientation?: undefined;
+  lineNumber?: undefined;
+};
+export type ColorMove = Exclude<ReturnType<typeof parseColorMove>, undefined>;
+export type SwapMove = ReturnType<typeof parseSwapMove>;
+export type MergeMove = ReturnType<typeof parseMergeMove>;
+
+export type Move = LCutMove | PCutMove | ColorMove | SwapMove | MergeMove;
 
 const parseCutMove = (token: string) => {
   let suffix = token.slice(3);
@@ -106,10 +120,7 @@ const parseColorMove = (operation: string) => {
   const color = parseColor(suffix);
   if (color) {
     return {
-      r: color.r,
-      g: color.g,
-      b: color.b,
-      a: color.a,
+      color: color.color,
       blockId: block.blockId,
       kind: "color-move" as const,
     };
@@ -130,10 +141,7 @@ const parseColor = (token: string) => {
     Number.isInteger(a)
   ) {
     return {
-      r,
-      g,
-      b,
-      a,
+      color: { r, g, b, a },
       suffix: block.suffix,
     };
   } else {
@@ -147,8 +155,8 @@ const parseSwapMove = (operation: string) => {
   suffix = block1.suffix;
   const block2 = parseBlock(suffix);
   return {
-    leftBlockId: block1.blockId,
-    rightBlockId: block2.blockId,
+    blockId1: block1.blockId,
+    blockId2: block2.blockId,
     kind: "swap-move" as const,
   };
 };
