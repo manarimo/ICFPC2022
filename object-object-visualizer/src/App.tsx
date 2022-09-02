@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Canvas } from "./viewer";
+import { Viewer } from "./viewer";
 import { parseProgram } from "./parser";
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
         />
       </div>
       <div>
-        <Canvas moves={moves} width={400} height={400}></Canvas>
+        <Viewer moves={moves} width={400} height={400}></Viewer>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas } from "../canvas";
 import { InfoTable } from "../info-table";
 import { Move } from "../parser";
 import { applySingleMove, createNewState, getColor, State } from "../simulate";
@@ -8,7 +9,7 @@ interface Props {
   width: number;
   height: number;
 }
-export const Canvas = ({ moves, height, width }: Props) => {
+export const Viewer = ({ moves, height, width }: Props) => {
   const [turn, setTurn] = useState(0);
   const result = useMemo(() => {
     return calculate(moves, width, height);
@@ -18,31 +19,15 @@ export const Canvas = ({ moves, height, width }: Props) => {
   }, [result]);
   const state = result.states[turn] as State | undefined;
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (ctx && state) {
-      ctx.fillStyle = "rgb(255,255,255)";
-      ctx.fillRect(0, 0, width, height);
-      for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-          const { r, g, b, a } = getColor(state, x, y);
-          ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-          ctx.fillRect(x, height - y - 1, 1, 1);
-        }
-      }
-    }
-  }, [canvasRef, width, height, state]);
-
   return (
     <div>
-      <canvas
-        style={{ margin: "10px" }}
+      <Canvas
         width={width}
         height={height}
-        ref={canvasRef}
-      ></canvas>
+        getColor={(x, y) =>
+          state ? getColor(state, x, y) : { r: 255, g: 255, b: 255, a: 255 }
+        }
+      />
       <div>
         <input
           style={{ width: `${width}px` }}
