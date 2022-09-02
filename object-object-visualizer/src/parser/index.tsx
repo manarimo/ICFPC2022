@@ -35,28 +35,28 @@ const parseCutMove = (token: string) => {
   const block = parseBlock(suffix);
   suffix = block.suffix;
   const blockId = block.blockId;
-  const next = suffix[0];
+  const next = suffix[1];
   if (isOrientation(next)) {
     // lcut-move "cut" <block> <orientation> <line-number>
-    suffix = suffix.slice(1);
+    suffix = suffix.slice(3);
     const lineNumber = parseLineNumber(suffix);
     return {
       blockId,
       orientation: next,
-      lineNumber,
-      kind: "pcut-move" as const,
+      lineNumber: lineNumber.lineNumber,
+      kind: "lcut-move" as const,
     };
   } else {
     // pcut-move "cut" <block> <point>
-    const block = parseBlock(suffix);
-    suffix = block.suffix;
     const point = parsePoint(suffix);
-    return {
-      blockId: block.blockId,
-      x: point.x,
-      y: point.y,
-      kind: "lcut-move" as const,
-    };
+    if (point) {
+      return {
+        blockId,
+        x: point.x,
+        y: point.y,
+        kind: "pcut-move" as const,
+      };
+    }
   }
 };
 
@@ -83,7 +83,11 @@ const parsePoint = (token: string) => {
   const xy = blockId.split(",");
   const x = Number.parseInt(xy[0]);
   const y = Number.parseInt(xy[1]);
-  return { x, y, suffix };
+  if (Number.isInteger(x) && Number.isInteger(y)) {
+    return { x, y, suffix };
+  } else {
+    console.error(`invalid point format: ${token}`);
+  }
 };
 
 const parseLineNumber = (token: string) => {
@@ -100,14 +104,16 @@ const parseColorMove = (operation: string) => {
   const block = parseBlock(suffix);
   suffix = block.suffix;
   const color = parseColor(suffix);
-  return {
-    r: color.r,
-    g: color.g,
-    b: color.b,
-    a: color.a,
-    blockId: block.blockId,
-    kind: "color-move" as const,
-  };
+  if (color) {
+    return {
+      r: color.r,
+      g: color.g,
+      b: color.b,
+      a: color.a,
+      blockId: block.blockId,
+      kind: "color-move" as const,
+    };
+  }
 };
 
 const parseColor = (token: string) => {
@@ -117,13 +123,22 @@ const parseColor = (token: string) => {
   const g = Number.parseInt(rgba[1]);
   const b = Number.parseInt(rgba[2]);
   const a = Number.parseInt(rgba[3]);
-  return {
-    r,
-    g,
-    b,
-    a,
-    suffix: block.suffix,
-  };
+  if (
+    Number.isInteger(r) &&
+    Number.isInteger(g) &&
+    Number.isInteger(b) &&
+    Number.isInteger(a)
+  ) {
+    return {
+      r,
+      g,
+      b,
+      a,
+      suffix: block.suffix,
+    };
+  } else {
+    console.error(`invalid color format: ${token}`);
+  }
 };
 
 const parseSwapMove = (operation: string) => {
