@@ -14,8 +14,7 @@ export const Canvas = ({ width, height, getColor }: Props) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (ctx) {
-      ctx.fillStyle = "rgb(255,255,255)";
-      ctx.fillRect(0, 0, width, height);
+      ctx.clearRect(0, 0, width, height);
       for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
           const { r, g, b, a } = getColor(x, y);
