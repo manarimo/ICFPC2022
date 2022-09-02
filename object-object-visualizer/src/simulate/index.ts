@@ -1,4 +1,4 @@
-import { ErrorResult } from "../error";
+import { ErrorResult } from "../error/index";
 import {
   ColorMove,
   LCutMove,
