@@ -42,6 +42,14 @@
       "plugin:prettier/recommended",
       "plugin:@typescript-eslint/recommended"
     ],
+    "overrides": [
+      {
+        "files": ["**/*.ts?(x)"],
+        "rules": {
+          "react/no-unknown-property": [1, { "ignore": ["key"] }]
+        }
+      }
+    ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "project": "./tsconfig.json"
