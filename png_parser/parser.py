@@ -1,20 +1,35 @@
 from PIL import Image
-import sys
+from pathlib import Path
 
-if __name__ == '__main__':
-    targets = sys.argv[1:]
 
-    for target in targets:
-        print(f"converting: {target}")
-        target_file = target + ".txt"
-        with Image.open(target) as image, open(target_file, "w") as target_file:
+root_dir = Path(__file__).parent.parent
+problem_dir = root_dir / "problem" / "original"
 
-            print(f"bands: {image.getbands()}")
-            print(f"bounding box: {image.getbbox()}")
-            _, _, w, h = image.getbbox()
+for problem_path in problem_dir.iterdir():
+    if not problem_path.name.endswith(".png"):
+        continue
+    print(f"{problem_path}")
+    problem_id = problem_path.name.replace(".png", "")
+    plaintext_path = root_dir / "problem" / "plaintext" / (problem_id + ".txt")
+
+    with Image.open(problem_path) as image:
+        _, _, w, h = image.getbbox()
+
+        with open(plaintext_path, "w") as target_file:
             print(f"{w} {h}", file=target_file)
             for band_id in range(4):
                 pixels = list(image.getdata(band_id))
                 for r in range(h):
                     offset = r * w
                     print(' '.join(map(str, pixels[offset: offset + w])), file=target_file)
+
+        for band_id, band_name in enumerate(image.getbands()):
+            band_image = Image.new('L', (w, h))
+            band_image_file = root_dir / "problem" / "channels" / f"{problem_id}.{band_name}.png"
+            pixels = list(image.getdata(band_id))
+            for r in range(h):
+                for c in range(w):
+                    band_image.putpixel((c, r), pixels[r * w + c])
+            print(band_image)
+            band_image.save(band_image_file, "png")
+
