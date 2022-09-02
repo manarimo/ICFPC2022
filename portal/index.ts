@@ -2,8 +2,10 @@ import serverlessExpress from '@vendia/serverless-express';
 import express from 'express';
 import { S3 } from 'aws-sdk';
 import { GetObjectOutput, ListObjectsV2Request } from 'aws-sdk/clients/s3';
+import cors from 'cors';
 
 const app = express();
+app.use(cors());
 const s3 = new S3();
 
 function listDirectories(prefix: string): Promise<string[]> {
