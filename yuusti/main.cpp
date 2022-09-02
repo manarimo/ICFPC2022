@@ -132,6 +132,8 @@ color get_color(int x1, int y1, int x2, int y2) {
 int cut_block(const block &node, char c, int val) {
     printf("cut [%s] [%c] [%d]\n", node.id.c_str(), c, val);
 
+    fprintf(stderr, "cut cost: %f\n", round(CANVAS_SIZE / node.size() * 7));
+
     return round(CANVAS_SIZE / node.size() * 7);
 }
 
@@ -146,11 +148,15 @@ int ycut_block(const block &node, int y) {
 int merge_block(const block &node1, const block &node2) {
     printf("merge [%s] [%s]\n", node1.id.c_str(), node2.id.c_str());
 
+    fprintf(stderr, "merge cost: %f\n", round(CANVAS_SIZE / max(node1.size(), node2.size())));
+
     return round(CANVAS_SIZE / max(node1.size(), node2.size()));
 }
 
 int paint_block(const block &node, color c) {
     printf("color [%s] [%d, %d, %d, %d]\n", node.id.c_str(), c.r, c.g, c.b, c.a);
+
+    fprintf(stderr, "paint cost: %f\n", round(CANVAS_SIZE / node.size() * 5));
 
     return round(CANVAS_SIZE / node.size() * 5);
 }
@@ -175,7 +181,7 @@ pair<block, int> paint_column(int left, int right, int bottom, int top, int heig
     block next_node = node;
     if (bottom + height < top) {
         cost += ycut_block(node, bottom + height);
-        node.y = height;
+        node.y = bottom + height;
         node.id += ".0";
 
         next_node.y -= node.y;
@@ -206,7 +212,7 @@ int paint(int left, int right, int height, int width, block painted_node, block 
     block next_node = node;
     if (left + width < right) {
         cost += xcut_block(node, left + width);
-        node.x = width;
+        node.x = left + width;
         node.id += ".0";
 
         next_node.x -= node.x;
