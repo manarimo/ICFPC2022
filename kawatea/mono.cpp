@@ -41,50 +41,37 @@ int main() {
             if (j > 0 && white[i][j] != white[i][j - 1]) v.push_back(j);
         }
         if (!update) continue;
+        
         printf("cut [%d] [y] [%d]\n", id, i);
         if (v.size() == 0) {
             printf("color [%d.1] [255, 255, 255, 255]\n", id);
             printf("merge [%d.0] [%d.1]\n", id, id);
         } else {
-            int left = 0, right = 0;
+            int left = 0, right = 0, dir = 1;
             for (int j = 0; j < v.size(); j++) {
                 left += round(5.0 * h * w / (h - i) / (w - v[j]));
                 right += round(5.0 * h * w / (h - i) / v[j]);
             }
             if (left <= right) {
                 if (start < v[0]) printf("color [%d.1] [255, 255, 255, 255]\n", id);
-                for (int j = 0; j < v.size(); j++) {
-                    if (j == 0) {
-                        printf("cut [%d.1] [x] [%d]\n", id, v[j]);
-                        printf("color [%d.1.1] [0, 0, 0, 255]\n", id);
-                        printf("merge [%d.1.0] [%d.1.1]\n", id, id);
-                    } else {
-                        printf("cut [%d] [x] [%d]\n", id + j, v[j]);
-                        if (j % 2 == 0) {
-                            printf("color [%d.1] [0, 0, 0, 255]\n", id + j);
-                        } else {
-                            printf("color [%d.1] [255, 255, 255, 255]\n", id + j);
-                        }
-                        printf("merge [%d.0] [%d.1]\n", id + j, id + j);
-                    }
-                }
             } else {
+                dir = 0;
                 reverse(v.begin(), v.end());
                 if (last > v[0]) printf("color [%d.1] [255, 255, 255, 255]\n", id);
-                for (int j = 0; j < v.size(); j++) {
-                    if (j == 0) {
-                        printf("cut [%d.1] [x] [%d]\n", id, v[j]);
-                        printf("color [%d.1.0] [0, 0, 0, 255]\n", id);
-                        printf("merge [%d.1.0] [%d.1.1]\n", id, id);
+            }
+            for (int j = 0; j < v.size(); j++) {
+                if (j == 0) {
+                    printf("cut [%d.1] [x] [%d]\n", id, v[j]);
+                    printf("color [%d.1.%d] [0, 0, 0, 255]\n", id, dir);
+                    printf("merge [%d.1.0] [%d.1.1]\n", id, id);
+                } else {
+                    printf("cut [%d] [x] [%d]\n", id + j, v[j]);
+                    if (j % 2 == 0) {
+                        printf("color [%d.%d] [0, 0, 0, 255]\n", id + j, dir);
                     } else {
-                        printf("cut [%d] [x] [%d]\n", id + j, v[j]);
-                        if (j % 2 == 0) {
-                            printf("color [%d.0] [0, 0, 0, 255]\n", id + j);
-                        } else {
-                            printf("color [%d.0] [255, 255, 255, 255]\n", id + j);
-                        }
-                        printf("merge [%d.0] [%d.1]\n", id + j, id + j);
+                        printf("color [%d.%d] [255, 255, 255, 255]\n", id + j, dir);
                     }
+                    printf("merge [%d.0] [%d.1]\n", id + j, id + j);
                 }
             }
             printf("merge [%d] [%d.0]\n", id + v.size(), id);
