@@ -66,13 +66,6 @@ function calculateScore(problem: Image, state: State): number {
     return state.cost + calculateSimilarity(problem, state);
 }
 
-async function doScoring(problemPngFile: string, solutionFile: string): Promise<number> {
-    const problem = await loadProblem(problemPngFile);
-    const solution = await loadSolution(solutionFile);
-    const solutionOutput = run(problem, solution);
-    return calculateScore(problem, solutionOutput);
-}
-
 async function writeSolutionImage(state: State, destFile: string): Promise<void> {
     const png = new PNG({
         width: state.width,
@@ -133,11 +126,18 @@ async function main() {
             // Calculate score of the solution
             const problemPngFile = `../../problem/original/${id}.png`;
             const solutionFile = `../../output/${entry.name}/${entry2.name}`;
-            const score = await doScoring(problemPngFile, solutionFile)
+            const problem = await loadProblem(problemPngFile);
+            const solution = await loadSolution(solutionFile);
+            const lastState = await run(problem, solution);
+            const score = calculateScore(problem, lastState);
 
             // Write out the score to spec JSON
             const specJsonFile = `../../output/${entry.name}/${id}.json`;
             await fsPromises.writeFile(specJsonFile, JSON.stringify({score: score}));
+
+            // Write out the last state image
+            const solutionPngFile = `../../output/${entry.name}/${id}.png`;
+            await writeSolutionImage(lastState, solutionPngFile);
         }
     }
 }
