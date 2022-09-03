@@ -5,7 +5,7 @@ import { Move } from '../src/parser';
 
 async function main() {
     const problemCache: Record<string, Image> = {};
-    const initialBlockCache: Record<string, InitialBlock[] | null> = {};
+    const initialBlockCache: Record<string, InitialBlock[] | undefined> = {};
     const bestTurns: Record<string, { score: number; turn: number; spec: Solution; moves: Move[] }> = {};
 
     for await (let solution of topNSolutions(3)) {
@@ -22,12 +22,12 @@ async function main() {
         const solutionPath = `../../output/${solution.batchName}/${solution.problemId}.isl`;
         const moves = await loadMoves(solutionPath);
 
-        let initialBlocks: InitialBlock[] | null;
+        let initialBlocks: InitialBlock[] | undefined;
         if (solution.problemId in initialBlockCache) {
             initialBlocks = initialBlockCache[solution.problemId];
         } else {
             const initialBlocksPath = `../../problem/original/${solution.problemId}.initial.json`;
-            initialBlocks = initialBlockCache[solution.problemId] = (await loadInitialBlocks(initialBlocksPath)) ?? null;
+            initialBlocks = initialBlockCache[solution.problemId] = (await loadInitialBlocks(initialBlocksPath)) ?? undefined;
         }
 
         let bestTurn: number = 0;
