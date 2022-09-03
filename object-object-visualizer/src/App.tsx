@@ -45,7 +45,7 @@ function App() {
     }
   }, [data]);
 
-  const programToUse = data?.code ?? program;
+  const programToUse = program;
   const moves = parseProgram(programToUse);
   return (
     <div style={{ display: "flex" }}>
