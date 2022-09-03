@@ -1,9 +1,9 @@
 import * as fsPromises from 'fs/promises';
-import {PNG} from 'pngjs';
-import {Move} from '../src/parser';
-import {applySingleMove, createNewState, State} from '../src/simulate';
-import {calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution} from "./util";
-import * as fs from "fs";
+import { PNG } from 'pngjs';
+import { Move } from '../src/parser';
+import { applySingleMove, createNewState, State } from '../src/simulate';
+import { calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution } from './util';
+import * as fs from 'fs';
 
 function run(image: Image, solution: Move[]): State {
     let state = createNewState(image.width, image.height);

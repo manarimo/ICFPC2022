@@ -13,8 +13,7 @@ export interface Image {
 }
 
 export class SolutionSpec {
-    constructor(readonly batchName: string, readonly problemId: string) {
-    }
+    constructor(readonly batchName: string, readonly problemId: string) {}
 
     get solutionPath(): string {
         return `${this.batchName}/${this.problemId}.isl`;

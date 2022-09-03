@@ -1,6 +1,6 @@
-import {topNSolutions} from "./util";
-import * as fs from "fs";
-import * as https from "https";
+import { topNSolutions } from './util';
+import * as fs from 'fs';
+import * as https from 'https';
 import FormData from 'form-data';
 
 async function main() {
