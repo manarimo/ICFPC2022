@@ -347,7 +347,7 @@ export const createNewState = (width: number, height: number, blocks?: InitialBl
   };
   initialBlocks.forEach(block => {
     for (let x = block.bottomLeft[0]; x < block.topRight[0]; x++) {
-      for (let y = block.bottomLeft[1]; y < block.topRight[0]; y++) {
+      for (let y = block.bottomLeft[1]; y < block.topRight[1]; y++) {
         const position = y * width + x;
         state.r[position] = block.color[0];
         state.g[position] = block.color[1];
