@@ -29,13 +29,10 @@ async function loadProblem(pngFile: string): Promise<Image> {
             };
             for (let px = 0; px < numPx; px++) {
                 const base = px * 4;
-                if (px == 0 || px == 1) {
-                    console.log(png.data[base + 0], png.data[base + 1], png.data[base + 2], png.data[base + 3]);
-                }
-                image.r[px] = png.data[base + 0];
-                image.g[px] = png.data[base + 1];
-                image.b[px] = png.data[base + 2];
-                image.a[px] = png.data[base + 3];
+                image.r[px] = this.data[base + 0];
+                image.g[px] = this.data[base + 1];
+                image.b[px] = this.data[base + 2];
+                image.a[px] = this.data[base + 3];
             }
             resolve(image);
         });
@@ -69,13 +66,17 @@ function calculateSimilarity(problem: Image, state: State): number {
     const numPx = problem.width * problem.height;
     let score = 0;
     for (let px = 0; px < numPx; px++) {
-        const rDiff = Math.pow(problem.r[px] - state.r[px], 2);
-        const gDiff = Math.pow(problem.g[px] - state.g[px], 2);
-        const bDiff = Math.pow(problem.b[px] - state.b[px], 2);
-        const aDiff = Math.pow(problem.a[px] - state.a[px], 2);
+        const probY = Math.floor(px / problem.width);
+        const probX = px % problem.width;
+        const solPx = (problem.height - probY - 1) * problem.width + probX;
+
+        const rDiff = Math.pow(problem.r[px] - state.r[solPx], 2);
+        const gDiff = Math.pow(problem.g[px] - state.g[solPx], 2);
+        const bDiff = Math.pow(problem.b[px] - state.b[solPx], 2);
+        const aDiff = Math.pow(problem.a[px] - state.a[solPx], 2);
         score += Math.sqrt(rDiff + gDiff + bDiff + aDiff);
     }
-    return score * 0.005;
+    return Math.round(score * 0.005);
 }
 
 function calculateScore(problem: Image, state: State): number {
@@ -88,11 +89,10 @@ async function main() {
 
     const problem = await loadProblem(problemPngFile);
     const solution = await loadSolution(solutionFile);
-    console.log(problem.width, problem.height);
     const solutionOutput = run(problem, solution);
     const score = calculateScore(problem, solutionOutput);
 
-    console.log(solutionOutput.cost, score);
+    console.log(score);
 }
 
 main();
