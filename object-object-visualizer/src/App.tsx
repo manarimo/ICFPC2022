@@ -25,7 +25,7 @@ function App() {
         <Viewer moves={moves} width={WIDTH} height={HEIGHT}></Viewer>
       </div>
       <div>
-        <ProblemViewer width={WIDTH} height={HEIGHT}></ProblemViewer>
+        <ProblemViewer></ProblemViewer>
       </div>
     </div>
   );
