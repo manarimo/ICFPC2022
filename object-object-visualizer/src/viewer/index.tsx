@@ -9,26 +9,33 @@ interface Props {
   width: number;
   height: number;
 }
+
+const unzoom = (v: number, zoom: number) => Math.floor(v / zoom);
+
 const Picture = React.memo(
   ({
     width,
     height,
     state,
     setMousePos,
+    zoom,
   }: {
     width: number;
     height: number;
     state: State | undefined;
     setMousePos: (obj: { x: number; y: number } | undefined) => void;
+    zoom: number;
   }) => (
     <Canvas
-      width={width}
-      height={height}
+      width={width * zoom}
+      height={height * zoom}
       getColor={(x, y) =>
-        state ? getColor(state, x, y) : { r: 255, g: 255, b: 255, a: 255 }
+        state
+          ? getColor(state, unzoom(x, zoom), unzoom(y, zoom))
+          : { r: 255, g: 255, b: 255, a: 255 }
       }
       onMouseMove={(x, y) => {
-        setMousePos({ x, y });
+        setMousePos({ x: unzoom(x, zoom), y: unzoom(y, zoom) });
       }}
     />
   )
@@ -46,6 +53,7 @@ export const Viewer = ({ moves, height, width }: Props) => {
   const [mousePos, setMousePos] = useState<
     { x: number; y: number } | undefined
   >();
+  const [zoom, setZoom] = useState(1);
 
   return (
     <div>
@@ -54,6 +62,7 @@ export const Viewer = ({ moves, height, width }: Props) => {
         height={height}
         state={state}
         setMousePos={setMousePos}
+        zoom={zoom}
       />
       <div>
         <input
@@ -63,6 +72,13 @@ export const Viewer = ({ moves, height, width }: Props) => {
           max={moves.length}
           value={turn}
           onChange={(e) => setTurn(Number.parseInt(e.target.value))}
+        />
+        <input
+          type="number"
+          min={1}
+          max={5}
+          value={zoom}
+          onChange={(e) => setZoom(Number.parseInt(e.target.value))}
         />
       </div>
       <div>
