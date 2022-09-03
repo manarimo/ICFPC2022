@@ -1,8 +1,9 @@
 import * as fsPromises from 'fs/promises';
-import {PNG} from 'pngjs';
-import {Move} from '../src/parser';
-import {applySingleMove, createNewState, State} from '../src/simulate';
-import {calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution} from "./util";
+import { PNG } from 'pngjs';
+import { Move } from '../src/parser';
+import { applySingleMove, createNewState, State } from '../src/simulate';
+import { calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution } from './util';
+import * as fs from 'fs';
 
 function run(image: Image, solution: Move[]): State {
     let state = createNewState(image.width, image.height);
@@ -50,8 +51,13 @@ async function writeSolutionImage(state: State, destFile: string): Promise<void>
     });
 }
 
-async function main() {
-    const solutionsByProblem: Record<string, Solution[]> = {};
+// When force = true, process all solutions and updates scores.
+// Otherwise, only processes solutions that don't have corresponding json file.
+async function main(force: boolean) {
+    let solutionsByProblem: Record<string, Solution[]> = {};
+    if (fs.existsSync(`../../output/ranking.json`)) {
+        solutionsByProblem = JSON.parse(fs.readFileSync('../../output/ranking.json').toString());
+    }
 
     // Enumerate all batches
     for await (let entry of dirEntries('../../output')) {
@@ -67,10 +73,15 @@ async function main() {
             if (!entry2.name.endsWith('.isl')) {
                 continue;
             }
-            console.log(`../../output/${entry.name}/${entry2.name}`);
 
             // Extract ID from the solution file
             const id = entry2.name.slice(0, -4);
+            if (!force && fs.existsSync(`../../output/${entry.name}/${id}.json`)) {
+                console.log(`Already processed: skip ../../output/${entry.name}/${entry2.name}`);
+                continue;
+            }
+
+            console.log(`../../output/${entry.name}/${entry2.name}`);
 
             // Calculate score of the solution
             const problemPngFile = `../../problem/original/${id}.png`;
@@ -91,7 +102,9 @@ async function main() {
             // Record solution in the buffer
             const solution = new Solution(entry.name, id, score);
             if (id in solutionsByProblem) {
-                solutionsByProblem[id].push(solution);
+                if (solutionsByProblem[id].every((s) => s.batchName != solution.batchName)) {
+                    solutionsByProblem[id].push(solution);
+                }
             } else {
                 solutionsByProblem[id] = [solution];
             }
@@ -113,4 +126,4 @@ async function main() {
     await fsPromises.writeFile(`../../output/ranking.json`, JSON.stringify(dict));
 }
 
-main();
+main(process.argv[2] == '--force');

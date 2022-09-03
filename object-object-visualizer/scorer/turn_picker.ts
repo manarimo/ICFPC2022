@@ -1,11 +1,11 @@
 import * as fsPromises from 'fs/promises';
-import {calculateScore, Image, loadMoves, loadProblem, Solution, topNSolutions} from "./util";
-import {applySingleMove, createNewState} from "../src/simulate";
-import {Move} from "../src/parser";
+import { calculateScore, Image, loadMoves, loadProblem, Solution, topNSolutions } from './util';
+import { applySingleMove, createNewState } from '../src/simulate';
+import { Move } from '../src/parser';
 
 async function main() {
     const problemCache: Record<string, Image> = {};
-    const bestTurns: Record<string, {score: number, turn: number, spec: Solution, moves: Move[]}> = {};
+    const bestTurns: Record<string, { score: number; turn: number; spec: Solution; moves: Move[] }> = {};
 
     for await (let solution of topNSolutions(3)) {
         console.log(`Scanning ${solution.batchName}/${solution.problemId}...`);
@@ -37,17 +37,17 @@ async function main() {
             }
         });
 
-        if (bestTurn < moves.length-1) {
+        if (bestTurn < moves.length - 1) {
             if (bestTurns[solution.problemId] === undefined || bestTurns[solution.problemId].score > bestScore) {
                 console.log(`Best for ${solution.problemId}: truncate ${solution.batchName} at ${bestTurn + 1} (/ ${moves.length})`);
-                bestTurns[solution.problemId] = {turn: bestTurn, score: bestScore, spec: solution, moves};
+                bestTurns[solution.problemId] = { turn: bestTurn, score: bestScore, spec: solution, moves };
             }
         }
     }
 
     const batchName = process.argv[2];
     const outDir = `../../output/${batchName}`;
-    await fsPromises.mkdir(outDir, {recursive: true});
+    await fsPromises.mkdir(outDir, { recursive: true });
 
     for (let best of Object.values(bestTurns)) {
         console.log(`Best move of ${best.spec.problemId}: ${best.spec.batchName} at ${best.turn}`);
@@ -68,7 +68,7 @@ async function main() {
             }
         });
         code.unshift(`# Based on ${best.spec.batchName}`);
-        await fsPromises.writeFile(`${outDir}/${best.spec.problemId}.isl`, code.join("\n"));
+        await fsPromises.writeFile(`${outDir}/${best.spec.problemId}.isl`, code.join('\n'));
     }
 }
 
