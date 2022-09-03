@@ -5,7 +5,9 @@
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "score": "ts-node ./index.ts"
+        "score": "ts-node ./index.ts",
+        "turn-picker": "ts-node turn_picker.ts",
+        "send-best": "ts-node send_best.ts"
     },
     "author": "",
     "license": "ISC",
@@ -17,6 +19,8 @@
         "typescript": "^4.8.2"
     },
     "dependencies": {
+        "@types/form-data": "^2.5.0",
+        "form-data": "^4.0.0",
         "pngjs": "^6.0.0"
     }
 }

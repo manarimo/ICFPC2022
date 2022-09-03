@@ -141,55 +141,92 @@ int main() {
                     color(now, get_id(id, 1), i, 0);
                     merge(now, get_id(id, 0), get_id(id, 1));
                     cost += round(5.0 * h / (h - i)) + round(1.0 * h / max(i, h - i));
+                    id++;
                 } else {
-                    int cost1 = 0, cost2 = 0;
+                    int cost1 = 0, cost2 = 0, cnt1 = 0, cnt2 = 0;
+                    bool first1 = false, first2 = false;
                     vector<string> tmp1, tmp2;
-                    if (!same(i, v[0] - 1, i - 1, v[0] - 1)) {
-                        color(tmp1, get_id(id, 1), i, v[0] - 1);
-                        cost1 += round(5.0 * h / (h - i));
+                    for (int k = 0; k < v[0]; k++) {
+                        if (!same(i, k, i - 1, k)) {
+                            first1 = true;
+                            color(tmp1, get_id(id, 1), i, v[0] - 1);
+                            cost1 += round(5.0 * h / (h - i));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first1 && cnt1 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? w : v[j + 1]);
+                            for (int k = v[j] - 1; k < next; k++) {
+                                if (!same(i, k, i - 1, k)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 1);
+                        if (cnt1 == 0) {
+                            sid = get_id(id + cnt1, 1);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt1);
                         }
                         cut(tmp1, sid, 0, v[j]);
                         color(tmp1, get_id(sid, 1), i, v[j]);
                         merge(tmp1, get_id(sid, 0), get_id(sid, 1));
                         cost1 += round(7.0 * h / (h - i)) + round(5.0 * h * w / (h - i) / (w - v[j])) + round(1.0 * h * w / (h - i) / max(v[j], w - v[j]));
+                        cnt1++;
                     }
                     
                     reverse(v.begin(), v.end());
-                    if (!same(i, v[0], i - 1, v[0])) {
-                        color(tmp2, get_id(id, 1), i, v[0]);
-                        cost2 += round(5.0 * h / (h - i));
+                    for (int k = v[0]; k < w; k++) {
+                        if (!same(i, k, i - 1, k)) {
+                            first2 = true;
+                            color(tmp2, get_id(id, 1), i, v[0]);
+                            cost2 += round(5.0 * h / (h - i));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first2 && cnt2 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? 0 : v[j + 1]);
+                            for (int k = next; k <= v[j]; k++) {
+                                if (!same(i, k, i - 1, k)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 1);
+                        if (cnt2 == 0) {
+                            sid = get_id(id + cnt2, 1);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt2);
                         }
                         cut(tmp2, sid, 0, v[j]);
                         color(tmp2, get_id(sid, 0), i, v[j] - 1);
                         merge(tmp2, get_id(sid, 0), get_id(sid, 1));
                         cost2 += round(7.0 * h / (h - i)) + round(5.0 * h * w / (h - i) / v[j]) + round(1.0 * h * w / (h - i) / max(v[j], w - v[j]));
+                        cnt2++;
                     }
                     
                     if (cost1 <= cost2) {
                         cost += cost1;
                         now.insert(now.end(), tmp1.begin(), tmp1.end());
+                        merge(now, get_id(id + cnt1), get_id(id, 0));
+                        cost += round(1.0 * h / max(i, h - i));
+                        id += cnt1 + 1;
                     } else {
                         cost += cost2;
                         now.insert(now.end(), tmp2.begin(), tmp2.end());
+                        merge(now, get_id(id + cnt2), get_id(id, 0));
+                        cost += round(1.0 * h / max(i, h - i));
+                        id += cnt2 + 1;
                     }
-                    merge(now, get_id(id + v.size()), get_id(id, 0));
-                    cost += round(1.0 * h / max(i, h - i));
                 }
-                id += v.size() + 1;
             }
         }
         
@@ -258,55 +295,92 @@ int main() {
                     color(now, get_id(id, 0), i, 0);
                     merge(now, get_id(id, 0), get_id(id, 1));
                     cost += round(5.0 * h / (i + 1)) + round(1.0 * h / max(i + 1, h - i - 1));
+                    id++;
                 } else {
-                    int cost1 = 0, cost2 = 0;
+                    int cost1 = 0, cost2 = 0, cnt1 = 0, cnt2 = 0;
+                    bool first1 = false, first2 = false;
                     vector<string> tmp1, tmp2;
-                    if (!same(i, v[0] - 1, i + 1, v[0] - 1)) {
-                        color(tmp1, get_id(id, 0), i, v[0] - 1);
-                        cost1 += round(5.0 * h / (i + 1));
+                    for (int k = 0; k < v[0]; k++) {
+                        if (!same(i, k, i + 1, k)) {
+                            first1 = true;
+                            color(tmp1, get_id(id, 0), i, v[0] - 1);
+                            cost1 += round(5.0 * h / (i + 1));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first1 && cnt1 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? w : v[j + 1]);
+                            for (int k = v[j] - 1; k < next; k++) {
+                                if (!same(i, k, i + 1, k)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 0);
+                        if (cnt1 == 0) {
+                            sid = get_id(id + cnt1, 0);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt1);
                         }
                         cut(tmp1, sid, 0, v[j]);
                         color(tmp1, get_id(sid, 1), i, v[j]);
                         merge(tmp1, get_id(sid, 0), get_id(sid, 1));
                         cost1 += round(7.0 * h / (i + 1)) + round(5.0 * h * w / (i + 1) / (w - v[j])) + round(1.0 * h * w / (i + 1) / max(v[j], w - v[j]));
+                        cnt1++;
                     }
                     
                     reverse(v.begin(), v.end());
-                    if (!same(i, v[0], i + 1, v[0])) {
-                        color(tmp2, get_id(id, 0), i, v[0]);
-                        cost2 += round(5.0 * h / (i + 1));
+                    for (int k = v[0]; k < w; k++) {
+                        if (!same(i, k, i + 1, k)) {
+                            first2 = true;
+                            color(tmp2, get_id(id, 0), i, v[0]);
+                            cost2 += round(5.0 * h / (i + 1));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first2 && cnt2 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? 0 : v[j + 1]);
+                            for (int k = next; k <= v[j]; k++) {
+                                if (!same(i, k, i + 1, k)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 0);
+                        if (cnt2 == 0) {
+                            sid = get_id(id + cnt2, 0);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt2);
                         }
                         cut(tmp2, sid, 0, v[j]);
                         color(tmp2, get_id(sid, 0), i, v[j] - 1);
                         merge(tmp2, get_id(sid, 0), get_id(sid, 1));
                         cost2 += round(7.0 * h / (i + 1)) + round(5.0 * h * w / (i + 1) / v[j]) + round(1.0 * h * w / (i + 1) / max(v[j], w - v[j]));
+                        cnt2++;
                     }
                     
                     if (cost1 <= cost2) {
                         cost += cost1;
                         now.insert(now.end(), tmp1.begin(), tmp1.end());
+                        merge(now, get_id(id + cnt1), get_id(id, 1));
+                        cost += round(1.0 * h / max(i + 1, h - i - 1));
+                        id += cnt1 + 1;
                     } else {
                         cost += cost2;
                         now.insert(now.end(), tmp2.begin(), tmp2.end());
+                        merge(now, get_id(id + cnt2), get_id(id, 1));
+                        cost += round(1.0 * h / max(i + 1, h - i - 1));
+                        id += cnt2 + 1;
                     }
-                    merge(now, get_id(id + v.size()), get_id(id, 1));
-                    cost += round(1.0 * h / max(i + 1, h - i - 1));
                 }
-                id += v.size() + 1;
             }
         }
         
@@ -375,55 +449,92 @@ int main() {
                     color(now, get_id(id, 1), 0, i);
                     merge(now, get_id(id, 0), get_id(id, 1));
                     cost += round(5.0 * w / (w - i)) + round(1.0 * w / max(i, w - i));
+                    id++;
                 } else {
-                    int cost1 = 0, cost2 = 0;
+                    int cost1 = 0, cost2 = 0, cnt1 = 0, cnt2 = 0;
+                    bool first1 = false, first2 = false;
                     vector<string> tmp1, tmp2;
-                    if (!same(v[0] - 1, i, v[0] - 1, i - 1)) {
-                        color(tmp1, get_id(id, 1), v[0] - 1, i);
-                        cost1 += round(5.0 * w / (w - i));
+                    for (int k = 0; k < v[0]; k++) {
+                        if (!same(k, i, k, i - 1)) {
+                            first1 = true;
+                            color(tmp1, get_id(id, 1), v[0] - 1, i);
+                            cost1 += round(5.0 * w / (w - i));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first1 && cnt1 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? h : v[j + 1]);
+                            for (int k = v[j] - 1; k < next; k++) {
+                                if (!same(k, i, k, i - 1)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 1);
+                        if (cnt1 == 0) {
+                            sid = get_id(id + cnt1, 1);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt1);
                         }
                         cut(tmp1, sid, 1, v[j]);
                         color(tmp1, get_id(sid, 1), v[j], i);
                         merge(tmp1, get_id(sid, 0), get_id(sid, 1));
                         cost1 += round(7.0 * w / (w - i)) + round(5.0 * h * w / (w - i) / (h - v[j])) + round(1.0 * h * w / (w - i) / max(v[j], h - v[j]));
+                        cnt1++;
                     }
                     
                     reverse(v.begin(), v.end());
-                    if (!same(v[0], i, v[0], i - 1)) {
-                        color(tmp2, get_id(id, 1), v[0], i);
-                        cost2 += round(5.0 * w / (w - i));
+                    for (int k = v[0]; k < w; k++) {
+                        if (!same(k, i, k, i - 1)) {
+                            first2 = true;
+                            color(tmp2, get_id(id, 1), v[0], i);
+                            cost2 += round(5.0 * w / (w - i));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first2 && cnt2 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? 0 : v[j + 1]);
+                            for (int k = next; k <= v[j]; k++) {
+                                if (!same(k, i, k, i - 1)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 1);
+                        if (cnt2 == 0) {
+                            sid = get_id(id + cnt2, 1);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt2);
                         }
                         cut(tmp2, sid, 1, v[j]);
                         color(tmp2, get_id(sid, 0), v[j] - 1, i);
                         merge(tmp2, get_id(sid, 0), get_id(sid, 1));
                         cost2 += round(7.0 * w / (w - i)) + round(5.0 * h * w / (w - i) / v[j]) + round(1.0 * h * w / (w - i) / max(v[j], h - v[j]));
+                        cnt2++;
                     }
                     
                     if (cost1 <= cost2) {
                         cost += cost1;
                         now.insert(now.end(), tmp1.begin(), tmp1.end());
+                        merge(now, get_id(id + cnt1), get_id(id, 0));
+                        cost += round(1.0 * w / max(i, w - i));
+                        id += cnt1 + 1;
                     } else {
                         cost += cost2;
                         now.insert(now.end(), tmp2.begin(), tmp2.end());
+                        merge(now, get_id(id + cnt2), get_id(id, 0));
+                        cost += round(1.0 * w / max(i, w - i));
+                        id += cnt2 + 1;
                     }
-                    merge(now, get_id(id + v.size()), get_id(id, 0));
-                    cost += round(1.0 * w / max(i, w - i));
                 }
-                id += v.size() + 1;
             }
         }
         
@@ -492,55 +603,92 @@ int main() {
                     color(now, get_id(id, 0), 0, i);
                     merge(now, get_id(id, 0), get_id(id, 1));
                     cost += round(5.0 * w / (i + 1)) + round(1.0 * w / max(i + 1, w - i - 1));
+                    id++;
                 } else {
-                    int cost1 = 0, cost2 = 0;
+                    int cost1 = 0, cost2 = 0, cnt1 = 0, cnt2 = 0;
+                    bool first1 = false, first2 = false;
                     vector<string> tmp1, tmp2;
-                    if (!same(v[0] - 1, i, v[0] - 1, i + 1)) {
-                        color(tmp1, get_id(id, 0), v[0] - 1, i);
-                        cost1 += round(5.0 * w / (i + 1));
+                    for (int k = 0; k < v[0]; k++) {
+                        if (!same(k, i, k, i + 1)) {
+                            first1 = true;
+                            color(tmp1, get_id(id, 0), v[0] - 1, i);
+                            cost1 += round(5.0 * w / (i + 1));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first1 && cnt1 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? h : v[j + 1]);
+                            for (int k = v[j] - 1; k < next; k++) {
+                                if (!same(k, i, k, i + 1)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 0);
+                        if (cnt1 == 0) {
+                            sid = get_id(id + cnt1, 0);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt1);
                         }
                         cut(tmp1, sid, 1, v[j]);
                         color(tmp1, get_id(sid, 1), v[j], i);
                         merge(tmp1, get_id(sid, 0), get_id(sid, 1));
                         cost1 += round(7.0 * w / (i + 1)) + round(5.0 * h * w / (i + 1) / (h - v[j])) + round(1.0 * h * w / (i + 1) / max(v[j], h - v[j]));
+                        cnt1++;
                     }
                     
                     reverse(v.begin(), v.end());
-                    if (!same(v[0], i, v[0], i + 1)) {
-                        color(tmp2, get_id(id, 0), v[0], i);
-                        cost2 += round(5.0 * w / (i + 1));
+                    for (int k = v[0]; k < w; k++) {
+                        if (!same(k, i, k, i + 1)) {
+                            first2 = true;
+                            color(tmp2, get_id(id, 0), v[0], i);
+                            cost2 += round(5.0 * w / (i + 1));
+                            break;
+                        }
                     }
                     for (int j = 0; j < v.size(); j++) {
+                        if (!first2 && cnt2 == 0) {
+                            bool ok = true;
+                            int next = ((j + 1 == v.size()) ? 0 : v[j + 1]);
+                            for (int k = next; k <= v[j]; k++) {
+                                if (!same(k, i, k, i + 1)) {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok) continue;
+                        }
                         string sid;
-                        if (j == 0) {
-                            sid = get_id(id + j, 0);
+                        if (cnt2 == 0) {
+                            sid = get_id(id + cnt2, 0);
                         } else {
-                            sid = get_id(id + j);
+                            sid = get_id(id + cnt2);
                         }
                         cut(tmp2, sid, 1, v[j]);
                         color(tmp2, get_id(sid, 0), v[j] - 1, i);
                         merge(tmp2, get_id(sid, 0), get_id(sid, 1));
                         cost2 += round(7.0 * w / (i + 1)) + round(5.0 * h * w / (i + 1) / v[j]) + round(1.0 * h * w / (i + 1) / max(v[j], h - v[j]));
+                        cnt2++;
                     }
                     
                     if (cost1 <= cost2) {
                         cost += cost1;
                         now.insert(now.end(), tmp1.begin(), tmp1.end());
+                        merge(now, get_id(id + cnt1), get_id(id, 1));
+                        cost += round(1.0 * w / max(i + 1, w - i - 1));
+                        id += cnt1 + 1;
                     } else {
                         cost += cost2;
                         now.insert(now.end(), tmp2.begin(), tmp2.end());
+                        merge(now, get_id(id + cnt2), get_id(id, 1));
+                        cost += round(1.0 * w / max(i + 1, w - i - 1));
+                        id += cnt2 + 1;
                     }
-                    merge(now, get_id(id + v.size()), get_id(id, 1));
-                    cost += round(1.0 * w / max(i + 1, w - i - 1));
                 }
-                id += v.size() + 1;
             }
         }
         

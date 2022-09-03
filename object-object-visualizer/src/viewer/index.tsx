@@ -7,9 +7,11 @@ import {
   calculateSimilarity,
   createNewState,
   getColor,
+  getHeatmapColor,
   State,
 } from "../simulate";
 import { Image } from "../types";
+import { pickBestTurn } from "../turn_picker/turn_picker";
 
 interface Props {
   moves: Move[];
@@ -25,23 +27,43 @@ const Picture = React.memo(
     width,
     height,
     state,
+    image,
     setMousePos,
     zoom,
+    isHeatmap,
   }: {
     width: number;
     height: number;
     state: State | undefined;
+    image: Image | undefined;
     setMousePos: (obj: { x: number; y: number } | undefined) => void;
     zoom: number;
+    isHeatmap: boolean;
   }) => (
     <Canvas
       width={width * zoom}
       height={height * zoom}
-      getColor={(x, y) =>
-        state
-          ? getColor(state, unzoom(x, zoom), unzoom(y, zoom))
-          : { r: 255, g: 255, b: 255, a: 255 }
-      }
+      getColor={(x, y) => {
+        if (x === 0 && y === 0) console.log(state, image, isHeatmap);
+
+        if (!state) {
+          return { r: 255, g: 255, b: 255, a: 255 };
+        }
+        if (isHeatmap) {
+          if (image) {
+            return getHeatmapColor(
+              state,
+              image,
+              unzoom(x, zoom),
+              unzoom(y, zoom)
+            );
+          } else {
+            return getColor(state, unzoom(x, zoom), unzoom(y, zoom));
+          }
+        } else {
+          return getColor(state, unzoom(x, zoom), unzoom(y, zoom));
+        }
+      }}
       onMouseMove={(x, y) => {
         setMousePos({ x: unzoom(x, zoom), y: unzoom(y, zoom) });
       }}
@@ -51,6 +73,7 @@ const Picture = React.memo(
 
 export const Viewer = ({ moves, height, width, problemImage }: Props) => {
   const [turn, setTurn] = useState(0);
+  const [isHeatmap, setisHeatmap] = useState(false);
   const result = useMemo(() => {
     return calculate(moves, width, height);
   }, [width, height, moves]);
@@ -76,8 +99,10 @@ export const Viewer = ({ moves, height, width, problemImage }: Props) => {
         width={width}
         height={height}
         state={state}
+        image={problemImage}
         setMousePos={setMousePos}
         zoom={zoom}
+        isHeatmap={isHeatmap}
       />
       <div>
         <input
@@ -88,13 +113,32 @@ export const Viewer = ({ moves, height, width, problemImage }: Props) => {
           value={turn}
           onChange={(e) => setTurn(Number.parseInt(e.target.value))}
         />
+        <div>
+          <input
+            type="number"
+            min={1}
+            max={5}
+            value={zoom}
+            onChange={(e) => setZoom(Number.parseInt(e.target.value))}
+          />
+          <button
+            type="button"
+            onClick={() =>
+              problemImage && setTurn(pickBestTurn(result.states, problemImage))
+            }
+          >
+            PickBestTurn
+          </button>
+        </div>
+      </div>
+      <div>
         <input
-          type="number"
-          min={1}
-          max={5}
-          value={zoom}
-          onChange={(e) => setZoom(Number.parseInt(e.target.value))}
-        />
+          id="isHeatmap"
+          type="checkbox"
+          checked={isHeatmap}
+          onChange={() => setisHeatmap(!isHeatmap)}
+        ></input>
+        <label htmlFor="isHeatmap">Similarity Heatmap</label>
       </div>
       <div>
         <InfoTable

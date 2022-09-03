@@ -1,59 +1,9 @@
 import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
-import { Move, parseProgram } from '../src/parser';
-import { State, createNewState, applySingleMove, calculateSimilarity } from '../src/simulate';
-
-interface Image {
-    r: Uint8Array;
-    g: Uint8Array;
-    b: Uint8Array;
-    a: Uint8Array;
-    width: number;
-    height: number;
-}
-
-class Solution {
-    constructor(readonly batchName: string, readonly problemId: string, readonly score: number) {
-    }
-}
-
-async function loadProblem(pngFile: string): Promise<Image> {
-    const handle = await fsPromises.open(pngFile);
-    const stream = await handle.createReadStream();
-    const png = new PNG();
-    const promise = new Promise<Image>((resolve, reject) => {
-        png.on('parsed', function () {
-            const numPx = png.width * png.height;
-            const image: Image = {
-                r: new Uint8Array(numPx),
-                g: new Uint8Array(numPx),
-                b: new Uint8Array(numPx),
-                a: new Uint8Array(numPx),
-                width: png.width,
-                height: png.height,
-            };
-            for (let px = 0; px < numPx; px++) {
-                const base = px * 4;
-                image.r[px] = this.data[base + 0];
-                image.g[px] = this.data[base + 1];
-                image.b[px] = this.data[base + 2];
-                image.a[px] = this.data[base + 3];
-            }
-            resolve(image);
-        });
-        png.on('error', function (err) {
-            reject(err);
-        });
-    });
-    stream.pipe(png);
-
-    return promise;
-}
-
-async function loadMoves(solutionFile: string): Promise<Move[]> {
-    const solutionBuffer = await fsPromises.readFile(solutionFile);
-    return parseProgram(solutionBuffer.toString());
-}
+import { Move } from '../src/parser';
+import { applySingleMove, createNewState, State } from '../src/simulate';
+import { calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution } from './util';
+import * as fs from 'fs';
 
 function run(image: Image, solution: Move[]): State {
     let state = createNewState(image.width, image.height);
@@ -65,10 +15,6 @@ function run(image: Image, solution: Move[]): State {
         state = res.state;
     });
     return state;
-}
-
-function calculateScore(problem: Image, state: State): number {
-    return state.cost + calculateSimilarity(problem, state);
 }
 
 async function writeSolutionImage(state: State, destFile: string): Promise<void> {
@@ -95,30 +41,23 @@ async function writeSolutionImage(state: State, destFile: string): Promise<void>
         const packed = png.pack();
         packed.on('end', () => {
             fileHandle.close();
-            resolve()
+            resolve();
         });
         packed.on('error', (err) => {
             fileHandle.close();
-            reject(err)
+            reject(err);
         });
         packed.pipe(fileHandle.createWriteStream());
     });
 }
 
-async function* dirEntries(path: string) {
-    const dirHandle = await fsPromises.opendir(path);
-    while(true) {
-        const dir = await dirHandle.read();
-        if (dir == null) {
-            break;
-        }
-        yield dir;
+// When force = true, process all solutions and updates scores.
+// Otherwise, only processes solutions that don't have corresponding json file.
+async function main(force: boolean) {
+    let solutionsByProblem: Record<string, Solution[]> = {};
+    if (fs.existsSync(`../../output/ranking.json`)) {
+        solutionsByProblem = JSON.parse(fs.readFileSync('../../output/ranking.json').toString());
     }
-    dirHandle.close();
-}
-
-async function main() {
-    const solutionsByProblem: Record<string, Solution[]> = {}
 
     // Enumerate all batches
     for await (let entry of dirEntries('../../output')) {
@@ -134,10 +73,15 @@ async function main() {
             if (!entry2.name.endsWith('.isl')) {
                 continue;
             }
-            console.log(`../../output/${entry.name}/${entry2.name}`);
 
             // Extract ID from the solution file
             const id = entry2.name.slice(0, -4);
+            if (!force && fs.existsSync(`../../output/${entry.name}/${id}.json`)) {
+                console.log(`Already processed: skip ../../output/${entry.name}/${entry2.name}`);
+                continue;
+            }
+
+            console.log(`../../output/${entry.name}/${entry2.name}`);
 
             // Calculate score of the solution
             const problemPngFile = `../../problem/original/${id}.png`;
@@ -149,7 +93,7 @@ async function main() {
 
             // Write out the score to spec JSON
             const specJsonFile = `../../output/${entry.name}/${id}.json`;
-            await fsPromises.writeFile(specJsonFile, JSON.stringify({score: score}));
+            await fsPromises.writeFile(specJsonFile, JSON.stringify({ score: score }));
 
             // Write out the last state image
             const solutionPngFile = `../../output/${entry.name}/${id}.png`;
@@ -158,7 +102,9 @@ async function main() {
             // Record solution in the buffer
             const solution = new Solution(entry.name, id, score);
             if (id in solutionsByProblem) {
-                solutionsByProblem[id].push(solution);
+                if (solutionsByProblem[id].every((s) => s.batchName != solution.batchName)) {
+                    solutionsByProblem[id].push(solution);
+                }
             } else {
                 solutionsByProblem[id] = [solution];
             }
@@ -180,4 +126,4 @@ async function main() {
     await fsPromises.writeFile(`../../output/ranking.json`, JSON.stringify(dict));
 }
 
-main();
+main(process.argv[2] == '--force');
