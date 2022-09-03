@@ -16,7 +16,7 @@ export function Problems() {
         <option value="rgba">RGBA分解</option>
       </select>
 
-      {Array.from(Array(20)).map((_, i) => renderProblemPane(i + 1, mode))}
+      {Array.from(Array(25)).map((_, i) => renderProblemPane(i + 1, mode))}
     </div>
   );
 }
@@ -24,6 +24,7 @@ export function Problems() {
 function renderProblemPane(problemId: number, viewMode: ViewMode) {
   return (
     <div className="problem-pane">
+      <div className="problem-id">{problemId}</div>
       {viewMode == "original" && (
         <img
           src={`http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/problem/original/${problemId}.png`}

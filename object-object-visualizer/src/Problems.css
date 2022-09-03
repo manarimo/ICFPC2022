@@ -5,6 +5,14 @@
   display: flex;
 }
 
+.problem-id {
+  padding: 2px;
+  margin-right: 8px;
+  background-color: darkgray;
+  color: white;
+  font-weight: bold;
+}
+
 .problem-image {
   height: 100%;
 }
