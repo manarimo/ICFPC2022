@@ -14,18 +14,18 @@ if __name__ == '__main__':
     parser.add_argument("--rotate", type=int, help="rotate degree. 1 = 90 deg = pi / 2 rad. positive = ccw in mathematical coordinate. accepts negative values", default=0)
     args = parser.parse_args()
 
-    def run(input: str) -> str:
+    def run(input: str, rotate: int, flip: bool) -> str:
         w, h = map(int, input.splitlines()[0].split())
 
-        rotated_input = main_plaintext(input, args.rotate, args.flip)
+        rotated_input = main_plaintext(input, rotate, flip)
         result = subprocess.run(args.solver, shell=True, input=rotated_input, text=True, capture_output=True)
         rotated_output = result.stdout
-        if args.rotate % 1 == 1:
+        if rotate % 1 == 1:
             w, h = h, w
-        flipped_output = main_isl(rotated_output, args.rotate, False, w, h)
-        if args.rotate % 1 == 1:
+        flipped_output = main_isl(rotated_output, rotate, False, w, h)
+        if rotate % 1 == 1:
             w, h = h, w
-        output = main_isl(flipped_output, 0, args.flip, w, h)
+        output = main_isl(flipped_output, 0, flip, w, h)
         return output
 
     if args.input_dir:
@@ -45,7 +45,7 @@ if __name__ == '__main__':
                         if output_path.exists():
                             continue
                         output_path.touch()
-                        output = run(input_file.read())
+                        output = run(input_file.read(), rotate, flip)
                         with output_path.open('w') as output_file:
                             output_file.write(output)
     else:
