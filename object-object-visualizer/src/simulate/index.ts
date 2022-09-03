@@ -16,19 +16,26 @@ interface Image {
   width: number;
   height: number;
 }
+
+export function calculatePixelSimilarity(problem: Image, state: State, probX: number, probY: number): number {
+  // y is in image coordinates (not problem definition coordinate)
+  const px = probX + probY * problem.width;
+  const solPx = (problem.height - probY - 1) * problem.width + probX;
+
+  const rDiff = Math.pow(problem.r[px] - state.r[solPx], 2);
+  const gDiff = Math.pow(problem.g[px] - state.g[solPx], 2);
+  const bDiff = Math.pow(problem.b[px] - state.b[solPx], 2);
+  const aDiff = Math.pow(problem.a[px] - state.a[solPx], 2);
+  return Math.sqrt(rDiff + gDiff + bDiff + aDiff);
+}
+
 export function calculateSimilarity(problem: Image, state: State): number {
   const numPx = problem.width * problem.height;
   let score = 0;
   for (let px = 0; px < numPx; px++) {
     const probY = Math.floor(px / problem.width);
     const probX = px % problem.width;
-    const solPx = (problem.height - probY - 1) * problem.width + probX;
-
-    const rDiff = Math.pow(problem.r[px] - state.r[solPx], 2);
-    const gDiff = Math.pow(problem.g[px] - state.g[solPx], 2);
-    const bDiff = Math.pow(problem.b[px] - state.b[solPx], 2);
-    const aDiff = Math.pow(problem.a[px] - state.a[solPx], 2);
-    score += Math.sqrt(rDiff + gDiff + bDiff + aDiff);
+    score += calculatePixelSimilarity(problem, state, probX, probY);
   }
   return Math.round(score * 0.005);
 }
@@ -342,6 +349,16 @@ export const getColor = (state: State, x: number, y: number) => {
     g: state.g[y * state.width + x],
     b: state.b[y * state.width + x],
     a: state.a[y * state.width + x],
+  };
+};
+
+export const getHeatmapColor = (state: State, image: Image, x: number, y: number) => {
+  const similarity = calculatePixelSimilarity(image, state, x, y);
+  return {
+    r: similarity / 2,
+    g: similarity / 2,
+    b: similarity / 2,
+    a: 255,
   };
 };
 
