@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <set>
 
 using namespace std;
 
@@ -295,18 +296,9 @@ int paint(int x, vector<int>& cut_x, vector<int>& cut_y, block painted_node, blo
     return cost;
 }
 
-int main() {
-    int w, h;
-    scanf("%d %d", &w, &h);
-    for (int k = 0; k < 4; k++) {
-        for (int i = 0; i < h; i++) {
-            for (int j = 0; j < w; j++) {
-                scanf("%d", &p[h - 1 - i][j][k]);
-            }
-        }
-    }
-    
-    for (int i = 0; i <= 255 * 255 * 4; i++) sq[i] = sqrt(i);
+void auto_border(int w, int h, vector<int>& cut_x, vector<int>& cut_y) {
+    int min_distance = 5;
+    int cut_count = 10;
 
     vector<pair<int, double>> diff_x;
     for (int x = 0; x + 1 < w; x++) {
@@ -324,10 +316,24 @@ int main() {
         return lhs.second > rhs.second;
     });
 
-    printf("XXXXXXXXXXXXX\n");
-    for (int i = 0; i < 20; i++) {
-        printf("%d: %.4f\n", diff_x[i].first + 1, diff_x[i].second);
+    set<int> xs;
+    cut_x.push_back(0); cut_x.push_back(w);
+    for (int i = 0; xs.size() < cut_count; i++) {
+        int x = diff_x[i].first;
+        bool ng = false;
+        for (int j = x - min_distance; j <= x + min_distance; j++) {
+            if (xs.count(j)) {
+                ng = true;
+                break;
+            }
+        }
+        if (ng) {
+            continue;
+        }
+        cut_x.push_back(x);
+        xs.insert(x);
     }
+    sort(cut_x.begin(), cut_x.end());
 
     vector<pair<int, double>> diff_y;
     for (int y = 0; y + 1 < h; y++) {
@@ -345,10 +351,94 @@ int main() {
         return lhs.second > rhs.second;
     });
 
-    printf("YYYYYYYYYYYY\n");
-    for (int i = 0; i < 30; i++) {
-        printf("%d: %.4f\n", diff_y[i].first + 1, diff_y[i].second);
+    set<int> ys;
+    cut_y.push_back(0); cut_y.push_back(w);
+    for (int i = 0; ys.size() < cut_count; i++) {
+        int y = diff_y[i].first;
+        bool ng = false;
+        for (int j = y - min_distance; j <= y + min_distance; j++) {
+            if (ys.count(j)) {
+                ng = true;
+                break;
+            }
+        }
+        if (ng) {
+            continue;
+        }
+        cut_y.push_back(y);
+        ys.insert(y);
     }
+    sort(cut_y.begin(), cut_y.end());
+}
+
+int main() {
+    int w, h;
+    scanf("%d %d", &w, &h);
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                scanf("%d", &p[h - 1 - i][j][k]);
+            }
+        }
+    }
+    
+    for (int i = 0; i <= 255 * 255 * 4; i++) sq[i] = sqrt(i);
+
+    int id = 0;
+
+    // #3
+    // vector<int> cut_x = {0, 16, 41, 67, 102, 118, 144, 169, 195, 200, 221, 237, 263, 272, 289, 298, 314, 323, 341, 349, 375, 400};
+    // vector<int> cut_y = {0, 25, 51, 77, 102, 128, 142, 153, 167, 179, 182, 193, 205, 208, 226, 233, 252, 259, 285, 303, 310, 336, 400};
+
+    // #9
+    // vector<int> cut_x = {0, 31, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 270, 290, 310, 330, 350, 377, 400};
+    // vector<int> cut_y = {0, 32, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 280, 300, 320, 340, 360, 383, 400};
+
+    // #15
+    // vector<int> cut_x = {0, 19, 40, 87, 97, 107, 117, 127, 137, 147, 157, 167, 177, 187, 197, 207, 217, 227, 237, 247, 257, 267, 277, 400};
+    // vector<int> cut_y = {0, 13, 42, 76, 87, 98, 109, 120, 131, 142, 152, 162, 172, 182, 192, 202, 212, 222, 232, 242, 252, 262, 272, 282, 292, 302, 312, 322, 332, 342, 400};
+
+    // #21
+    // vector<int> cut_x = {0, 8, 42, 48, 93, 100, 144, 151, 247, 254, 311, 319, 375, 383, 400};
+    // vector<int> cut_y = {0, 8, 14, 19, 24, 47, 53, 95, 103, 147, 154, 249, 257, 350, 358, 400};
+
+    // #23
+    // vector<int> cut_x = {0, 42, 126, 160, 196, 205, 208, 223, 227, 305, 358, 400};
+    // vector<int> cut_y = {0, 171, 180, 192, 211, 214, 242, 320, 324, 329, 334, 369, 400};
+
+    // general
+    /*
+    double target_cost = 4000;
+    double min_inv = 40;
+    vector<int> cut_x(1, w), cut_y(1, h);
+    for (double t = 1; t > 0; ) {
+        double dt = 1 / sqrt(target_cost * (1 + 1.0 / pow(target_cost, 0.25) - t) * (1 + 1.0 / pow(target_cost, 0.25) - t));
+        if (dt < 1 / min_inv) {
+            dt = 1.0 / min_inv;
+        }
+        t -= dt;
+        if (t < 0 || (int)(w * t) == 0 || (int)(h * t) == 0) {
+            t = 0;
+        }
+        cut_x.push_back(w * t);
+        cut_y.push_back(h * t);
+        fprintf(stderr, "%.4f\n", t);
+    }
+    reverse(cut_x.begin(), cut_x.end());
+    reverse(cut_y.begin(), cut_y.end());
+
+    for (int a : cut_x) {
+        fprintf(stderr, "%d ", a);
+    }
+    fprintf(stderr, "\n");
+    */
+
+    vector<int> cut_x, cut_y;
+    auto_border(w, h, cut_x, cut_y);
+
+    int cost = paint(0, cut_x, cut_y, block("", 0, 0), block("0", MAX_W, MAX_H), id);
+
+    fprintf(stderr, "total cost: %d", cost);
     
     return 0;
 }
