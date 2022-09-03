@@ -71,6 +71,7 @@ struct state {
 
     bool operator<(const state& s) const {
         return (score + cost) < (s.score + s.cost);
+        // return (score + cost * 3 / 4) < (s.score + s.cost * 3 / 4);
     }
 };
 
@@ -296,119 +297,109 @@ int paint_block(const block &node, color c, state &s) {
     return round(CANVAS_SIZE / node.size() * 5);
 }
 
-pair<block, int> paint_column(int x, int y, vector<int>& cut_x, vector<int>& cut_y, state &state, int draw_from, color current_color) {
-    auto &node = state.current_block;
-    if (y + 1 >= (int) cut_y.size()) return make_pair(node, 0);
-
-    int cost = 0;
-
-    auto c = fast_get_color(cut_x[x], cut_y[y], cut_x[x + 1], cut_y[y + 1]);
-    if (y > 0 && !c.similar(current_color)) {
-        auto new_c = fast_get_color(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y]);
-        double expected_cost = (draw_from > 0 ? round(CANVAS_SIZE / node.size() * 7) : 0)
-            + round(CANVAS_SIZE / (node.y - cut_y[draw_from]) / node.x * 5)
-            + (draw_from > 0 ? round(CANVAS_SIZE / max(cut_y[draw_from], (node.y - cut_y[draw_from])) / node.x * 1) : 0);
-
-        double expected_gain = similarity_cost(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y], state)
-            - similarity_cost(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y], new_c);
-
-        if (expected_gain > expected_cost) {
-            // cut bottom row
-            block node0 = node, node1 = node;
-            if (draw_from > 0) {
-                cost += ycut_block(node, cut_y[draw_from], state);
-                node0.y = cut_y[draw_from];
-                node0.id += ".0";
-                node1.bottom = cut_y[draw_from];
-                node1.y -= node0.y;
-                node1.id += ".1";
-            }
-
-            // paint row
-            cost += paint_block(node1, new_c, state);
-
-            // merge bottom row
-            if (draw_from > 0) {
-                cost += merge_block(node0, node1, state);
-                node.id = to_string(++state.id);
-            }
-        }
-
-        draw_from = y;
+void paint_column(int x, int y, vector<int>& cut_x, vector<int>& cut_y, state &state, int draw_from) {
+    // cut bottom row
+    block node0 = state.current_block, node1 = node0;
+    if (draw_from > 0) {
+        state.cost += ycut_block(node0, cut_y[draw_from], state);
+        node0.y = cut_y[draw_from];
+        node0.id += ".0";
+        node1.bottom = cut_y[draw_from];
+        node1.y -= node0.y;
+        node1.id += ".1";
     }
 
-    if (y + 2 == (int) cut_y.size()) {
-        auto new_c = fast_get_color(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y + 1]);
-        double expected_cost = (draw_from > 0 ? round(CANVAS_SIZE / node.size() * 7) : 0)
-            + round(CANVAS_SIZE / (node.y - cut_y[draw_from]) / node.x * 5)
-            + (draw_from > 0 ? round(CANVAS_SIZE / max(cut_y[draw_from], (node.y - cut_y[draw_from])) / node.x * 1) : 0);
+    auto new_c = fast_get_color(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y]);
+    // paint row
+    state.cost += paint_block(node1, new_c, state);
 
-        double expected_gain = similarity_cost(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y + 1], state)
-            - similarity_cost(cut_x[x], cut_y[draw_from], cut_x[x + 1], cut_y[y + 1], new_c);
-
-        if (expected_gain > expected_cost) {
-            // cut bottom row
-            block node0 = node, node1 = node;
-            if (draw_from > 0) {
-                cost += ycut_block(node, cut_y[draw_from], state);
-                node0.y = cut_y[draw_from];
-                node0.id += ".0";
-                node1.bottom = cut_y[draw_from];
-                node1.y -= node0.y;
-                node1.id += ".1";
-            }
-
-            // paint row
-            cost += paint_block(node1, new_c, state);
-
-            // merge bottom row
-            if (draw_from > 0) {
-                cost += merge_block(node0, node1, state);
-                node.id = to_string(++state.id);
-            }
-        }
-
-        draw_from = y;
-    }
-
-    auto r = paint_column(x, y + 1, cut_x, cut_y, state, draw_from, c);
-
-    return make_pair(r.first, r.second + cost);
-}
-
-void paint(int x, vector<int>& cut_x, vector<int>& cut_y, state &state) {
-    if (x + 1 >= (int) cut_x.size()) return;
-   
-    // paint_column
-    auto ret = paint_column(x, 0, cut_x, cut_y, state, 0, color(0,0,0,0));
-    state.current_block = ret.first;
-    int cost = ret.second;
-
-    // merge painted row
-    if (!state.prev_block.id.empty()) {
-        cost += merge_block(state.prev_block, state.current_block, state);
-        state.current_block.x += state.prev_block.x;
+    // merge bottom row
+    if (draw_from > 0) {
+        state.cost += merge_block(node0, node1, state);
         state.current_block.id = to_string(++state.id);
     }
+}
 
-    // cut target area
-    block next_block = state.current_block;
-    if (x + 2 < (int) cut_x.size()) {
-        cost += xcut_block(state.current_block, cut_x[x + 1], state);
-        state.current_block.x = cut_x[x + 1];
-        state.current_block.id += ".0";
+priority_queue<state> paint_column(int x, int y, vector<int>& cut_x, vector<int>& cut_y, priority_queue<state> state_queue, int draw_from) {
+    if (y + 1 >= (int) cut_y.size()) return state_queue;
 
-        next_block.x -= state.current_block.x;
-        next_block.id += ".1";
-        next_block.left = cut_x[x + 1];
+    fprintf(stderr, "y=%d\n", y);
+    priority_queue<state> next_queue;
+    fprintf(stderr, "column state queue size=%d\n", state_queue.size());
+    while(!state_queue.empty()) {
+        auto st = state_queue.top();
+        state_queue.pop();
+
+        auto not_paint = st;
+        not_paint.score = similarity_cost(cut_x[x + 1], MAX_H, not_paint);
+        next_queue.push(not_paint);
+
+        // fprintf(stderr, "not paint current cost: %d\n", not_paint.cost);
+        // fprintf(stderr, "not paint current score: %d\n", not_paint.score);
+        // fprintf(stderr, "total cost: %d\n\n", not_paint.cost + not_paint.score);
+
+        paint_column(x, y, cut_x, cut_y, st, draw_from);
+        next_queue.push(st);
+
+        // fprintf(stderr, "current cost: %d\n", state.cost);
+        // fprintf(stderr, "current score: %d\n", state.score);
+        // fprintf(stderr, "total cost: %d\n\n", state.cost + state.score);
+
+        while (next_queue.size() > 3) {
+            next_queue.pop();
+        }
     }
 
+    draw_from = y;
 
-    state.prev_block = state.current_block;
-    state.current_block = next_block;
+    return paint_column(x, y + 1, cut_x, cut_y, next_queue, draw_from);
+}
 
-    state.cost += cost;
-    state.score = similarity_cost(cut_x[x + 1], MAX_H, state);
+vector<state> paint(int x, vector<int>& cut_x, vector<int>& cut_y, state &st) {
+    if (x + 1 >= (int) cut_x.size()) {
+        vector<state> v;
+        v.push_back(st);
+        return v;
+    };
+   
+
+    priority_queue<state> state_queue;
+    state_queue.push(st);
+    // paint_column
+    auto queue = paint_column(x, 0, cut_x, cut_y, state_queue, 0);
+
+    vector<state> result;
+    while (!queue.empty()) {
+        auto s = queue.top(); queue.pop();
+
+        // merge painted row
+        if (!s.prev_block.id.empty()) {
+            s.cost += merge_block(s.prev_block, s.current_block, s);
+            s.current_block.x += s.prev_block.x;
+            s.current_block.id = to_string(++s.id);
+        }
+
+        // cut target area
+        block next_block = s.current_block;
+        if (x + 2 < (int) cut_x.size()) {
+            s.cost += xcut_block(s.current_block, cut_x[x + 1], s);
+            s.current_block.x = cut_x[x + 1];
+            s.current_block.id += ".0";
+
+            next_block.x -= s.current_block.x;
+            next_block.id += ".1";
+            next_block.left = cut_x[x + 1];
+        }
+
+        s.prev_block = s.current_block;
+        s.current_block = next_block;
+
+        s.score = similarity_cost(cut_x[x + 1], MAX_H, s);
+
+        result.push_back(s);
+    }
+
+    return result;
 }
 
 priority_queue<state> paint(int x, vector<int>& cut_x, vector<int>& cut_y, priority_queue<state> &state_queue) {
@@ -416,29 +407,31 @@ priority_queue<state> paint(int x, vector<int>& cut_x, vector<int>& cut_y, prior
 
     priority_queue<state> next_queue;
 
+    fprintf(stderr, "x=%d\n", x);
     fprintf(stderr, "state queue size=%d\n", state_queue.size());
     while(!state_queue.empty()) {
         auto state = state_queue.top();
+        fprintf(stderr, "remaining size=%d\n", state_queue.size());        
         state_queue.pop();
 
         auto not_paint = state;
         not_paint.score = similarity_cost(cut_x[x + 1], MAX_H, not_paint);
         next_queue.push(not_paint);
 
-        fprintf(stderr, "x=%d\n", x);
-        fprintf(stderr, "not paint current cost: %d\n", not_paint.cost);
-        fprintf(stderr, "not paint current score: %d\n", not_paint.score);
-        fprintf(stderr, "total cost: %d\n\n", not_paint.cost + not_paint.score);
+        // fprintf(stderr, "not paint current cost: %d\n", not_paint.cost);
+        // fprintf(stderr, "not paint current score: %d\n", not_paint.score);
+        // fprintf(stderr, "total cost: %d\n\n", not_paint.cost + not_paint.score);
 
-        paint(x, cut_x, cut_y, state);
-        next_queue.push(state);
+        auto painted = paint(x, cut_x, cut_y, state);
+        for (auto p : painted) {
+            next_queue.push(p);
+        }
 
-        fprintf(stderr, "x=%d\n", x);
-        fprintf(stderr, "current cost: %d\n", state.cost);
-        fprintf(stderr, "current score: %d\n", state.score);
-        fprintf(stderr, "total cost: %d\n\n", state.cost + state.score);
+        // fprintf(stderr, "current cost: %d\n", state.cost);
+        // fprintf(stderr, "current score: %d\n", state.score);
+        // fprintf(stderr, "total cost: %d\n\n", state.cost + state.score);
 
-        while (next_queue.size() > 5) {
+        while (next_queue.size() > 3) {
             next_queue.pop();
         }
     }
@@ -607,20 +600,23 @@ int main() {
 
     auto queue = paint(0, cut_x, cut_y, q);
 
-    if (!queue.empty()) {
-        while (queue.size() > 1) {
-            queue.pop();
-        }
+    int best = 1e9;
+
+    state best_state = s;
+    while (!queue.empty()) {
         auto state = queue.top(); queue.pop();
 
-        int similarity = round(similarity_cost(w, h, state));
         fprintf(stderr, "manipulation cost: %d\n", state.cost);
-        fprintf(stderr, "similarity cost: %d\n", similarity);
-        fprintf(stderr, "similarity cost2: %d\n", state.score);
-        fprintf(stderr, "total cost: %d\n\n", state.cost + similarity);
+        fprintf(stderr, "similarity cost: %d\n", state.score);
+        fprintf(stderr, "total cost: %d\n\n", state.cost + state.score);
 
-        state.print();
+        if (state.cost + state.score < best) {
+            best = state.cost + state.score;
+            best_state = state;
+        }
     }
+
+    best_state.print();
     
     return 0;
 }
