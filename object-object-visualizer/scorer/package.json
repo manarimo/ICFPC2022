@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "score": "ts-node ./index.ts"
+        "score": "ts-node ./index.ts",
+        "turn-picker": "ts-node turn_picker.ts"
     },
     "author": "",
     "license": "ISC",
