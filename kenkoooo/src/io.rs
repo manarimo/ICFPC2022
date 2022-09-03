@@ -5,7 +5,7 @@ use crate::ops::color::Color;
 use crate::ops::Move;
 use crate::types::{Block, Label, RGBA, State};
 
-pub fn read_input<P: AsRef<Path>>(path: P) -> Picture {
+pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
     let input = read_to_string(path).unwrap();
     let mut sc = IO::new(input.as_bytes(), Vec::<u8>::new());
 
@@ -40,5 +40,5 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> Picture {
         state.apply(color_move);
     }
 
-    Picture(rgba)
+    (Picture(rgba), state)
 }
