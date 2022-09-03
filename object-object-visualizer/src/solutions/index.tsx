@@ -8,9 +8,23 @@ export const Solutions = () => {
     return <p>loading...</p>;
   }
 
+  const bestSum = Object.entries(ranking.data!!)
+    .filter((e) => !e[0].startsWith("ex"))
+    .reduce((acc, item) => acc + item[1][0].score, 0);
+
   return (
     <table>
       <tbody>
+        <tr>
+          <td />
+          <td />
+          <td />
+          <td>
+            <ul>
+              <li>Best sum: {bestSum}</li>
+            </ul>
+          </td>
+        </tr>
         {Object.entries(ranking.data).map(([problemId, solutions]) => {
           const orderedSolutions = [...solutions].sort(
             (a, b) => a.score - b.score

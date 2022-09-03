@@ -1,4 +1,4 @@
-# Based on kawatea-multi-auto
+# Based on kawatea-multi-auto-no-waste
 color [0] [123, 159, 207, 255]
 cut [0] [x] [1]
 color [0.1] [255, 255, 255, 255]
