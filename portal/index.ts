@@ -22,6 +22,10 @@ class SolutionSpec {
     constructor(readonly batchName: string, readonly problemId: string) {}
 }
 
+interface CalcResult {
+    score: number;
+}
+
 const app = express();
 app.use(cors());
 const s3 = new S3();
@@ -137,10 +141,10 @@ app.get('/api/list_solutions', async function (req, res) {
             .map(async (item) => {
                 const aiName = item.path.split('/')[1];
                 const obj = await getObject(item.path);
-                const calcResult = JSON.parse(obj.Body!!.toString());
+                const calcResult = JSON.parse(obj.Body!!.toString()) as CalcResult;
 
                 return {
-                    score: Number.parseInt(calcResult['score']),
+                    score: calcResult.score,
                     aiName,
                 };
             }),
