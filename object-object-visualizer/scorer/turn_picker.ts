@@ -36,8 +36,12 @@ async function main() {
                 bestScore = newScore;
             }
         });
-        if (bestTurns[solution.problemId] === undefined || bestTurns[solution.problemId].score > bestScore) {
-            bestTurns[solution.problemId] = {turn: bestTurn, score: bestScore, spec: solution, moves};
+
+        if (bestTurn < moves.length-1) {
+            if (bestTurns[solution.problemId] === undefined || bestTurns[solution.problemId].score > bestScore) {
+                console.log(`Best for ${solution.problemId}: truncate ${solution.batchName} at ${bestTurn + 1} (/ ${moves.length})`);
+                bestTurns[solution.problemId] = {turn: bestTurn, score: bestScore, spec: solution, moves};
+            }
         }
     }
 
@@ -63,6 +67,7 @@ async function main() {
                     return `merge [${move.blockId1}] [${move.blockId2}]`;
             }
         });
+        code.unshift(`# Based on ${best.spec.batchName}`);
         await fsPromises.writeFile(`${outDir}/${best.spec.problemId}.isl`, code.join("\n"));
     }
 }
