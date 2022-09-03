@@ -309,28 +309,53 @@ export type State = {
   a: Uint8Array;
 };
 
-export const createNewState = (width: number, height: number): State => {
+export type InitialBlock = {
+  blockId: string;
+  bottomLeft: [number, number];
+  topRight: [number, number];
+  color: [number, number, number, number];
+}
+
+export const createNewState = (width: number, height: number, blocks?: InitialBlock[]): State => {
+  const initialBlocks: InitialBlock[] = blocks ?? [{
+    blockId: "0",
+    bottomLeft: [0, 0],
+    topRight:[400, 400],
+    color: [255, 255, 255, 255]
+  }]
+
   const state = {
-    blocks: new Map([
-      [
-        "0",
+    blocks: new Map(initialBlocks.map(block => {
+      return [
+        block.blockId,
         {
-          x1: 0,
-          y1: 0,
-          x2: width,
-          y2: height,
-        },
-      ],
-    ]),
+          x1: block.bottomLeft[0],
+          y1: block.bottomLeft[1],
+          x2: block.topRight[0],
+          y2: block.topRight[1],
+        }
+      ]
+    })),
     width,
     height,
     r: new Uint8Array(width * height).fill(255),
     g: new Uint8Array(width * height).fill(255),
     b: new Uint8Array(width * height).fill(255),
     a: new Uint8Array(width * height).fill(255),
-    globalCounter: 0,
+    globalCounter: initialBlocks.length - 1,
     cost: 0,
   };
+  initialBlocks.forEach(block => {
+    for (let x = block.bottomLeft[0]; x < block.topRight[0]; x++) {
+      for (let y = block.bottomLeft[1]; y < block.topRight[0]; y++) {
+        const position = y * width + x;
+        state.r[position] = block.color[0];
+        state.g[position] = block.color[1];
+        state.b[position] = block.color[2];
+        state.a[position] = block.color[3];
+      }  
+    }
+  })
   return state;
 };
 

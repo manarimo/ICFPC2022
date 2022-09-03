@@ -1,12 +1,12 @@
 import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
 import { Move } from '../src/parser';
-import { applySingleMove, createNewState, State } from '../src/simulate';
-import { calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution } from './util';
+import { applySingleMove, createNewState, State, InitialBlock } from '../src/simulate';
+import { calculateScore, dirEntries, Image, loadInitialBlocks, loadMoves, loadProblem, Solution } from './util';
 import * as fs from 'fs';
 
-function run(image: Image, solution: Move[]): State {
-    let state = createNewState(image.width, image.height);
+function run(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
+    let state = createNewState(image.width, image.height, initialBlocks);
     solution.forEach((move, i) => {
         const res = applySingleMove(move, state);
         if (res.kind == 'error') {
@@ -86,9 +86,11 @@ async function main(force: boolean) {
             // Calculate score of the solution
             const problemPngFile = `../../problem/original/${id}.png`;
             const solutionFile = `../../output/${entry.name}/${entry2.name}`;
+            const initialBlockFile = `../../problem/original/${id}.initial.json`;
             const problem = await loadProblem(problemPngFile);
             const moves = await loadMoves(solutionFile);
-            const lastState = await run(problem, moves);
+            const initialBlocks = await loadInitialBlocks(initialBlockFile);
+            const lastState = await run(problem, moves, initialBlocks);
             const score = calculateScore(problem, lastState);
 
             // Write out the score to spec JSON
