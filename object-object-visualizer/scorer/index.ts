@@ -12,6 +12,11 @@ interface Image {
     height: number;
 }
 
+class Solution {
+    constructor(readonly batchName: string, readonly problemId: string, readonly score: number) {
+    }
+}
+
 async function loadProblem(pngFile: string): Promise<Image> {
     const handle = await fsPromises.open(pngFile);
     const stream = await handle.createReadStream();
@@ -45,7 +50,7 @@ async function loadProblem(pngFile: string): Promise<Image> {
     return promise;
 }
 
-async function loadSolution(solutionFile: string): Promise<Move[]> {
+async function loadMoves(solutionFile: string): Promise<Move[]> {
     const solutionBuffer = await fsPromises.readFile(solutionFile);
     return parseProgram(solutionBuffer.toString());
 }
@@ -113,6 +118,8 @@ async function* dirEntries(path: string) {
 }
 
 async function main() {
+    const solutionsByProblem: Record<string, Solution[]> = {}
+
     // Enumerate all batches
     for await (let entry of dirEntries('../../output')) {
         if (!entry.isDirectory()) {
@@ -136,8 +143,8 @@ async function main() {
             const problemPngFile = `../../problem/original/${id}.png`;
             const solutionFile = `../../output/${entry.name}/${entry2.name}`;
             const problem = await loadProblem(problemPngFile);
-            const solution = await loadSolution(solutionFile);
-            const lastState = await run(problem, solution);
+            const moves = await loadMoves(solutionFile);
+            const lastState = await run(problem, moves);
             const score = calculateScore(problem, lastState);
 
             // Write out the score to spec JSON
@@ -147,8 +154,30 @@ async function main() {
             // Write out the last state image
             const solutionPngFile = `../../output/${entry.name}/${id}.png`;
             await writeSolutionImage(lastState, solutionPngFile);
+
+            // Record solution in the buffer
+            const solution = new Solution(entry.name, id, score);
+            if (entry.name in solutionsByProblem) {
+                solutionsByProblem[entry.name].push(solution);
+            } else {
+                solutionsByProblem[entry.name] = [solution];
+            }
         }
     }
+
+    // Sort solutions by ascending order of score
+    for (let solutions of Object.values(solutionsByProblem)) {
+        solutions.sort((a, b) => a.score - b.score);
+    }
+
+    // Fix the key for consistent output
+    const dict: typeof solutionsByProblem = {};
+    for (let problemId of Object.keys(solutionsByProblem).sort()) {
+        dict[problemId] = solutionsByProblem[problemId];
+    }
+
+    // Write out the summary JSON
+    await fsPromises.writeFile(`../../output/ranking.json`, JSON.stringify(dict));
 }
 
 main();
