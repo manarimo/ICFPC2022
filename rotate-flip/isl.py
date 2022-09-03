@@ -80,5 +80,5 @@ def serialize(commands: List[Dict]) -> str:
         elif command['move'] == 'merge':
             print(f"merge [{command['block']}] [{command['target']}]", file=buffer)
         else:
-            print(f"ignoring unknown command move: {command['move']}")
+            raise ValueError("unknown move type: " + command["move"])
     return buffer.getvalue()

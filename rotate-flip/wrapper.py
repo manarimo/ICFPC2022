@@ -16,16 +16,14 @@ if __name__ == '__main__':
 
     def run(input: str, rotate: int, flip: bool) -> str:
         w, h = map(int, input.splitlines()[0].split())
-
+        block_count = int(input.splitlines()[1 + 4 * h])
         rotated_input = main_plaintext(input, rotate, flip)
         result = subprocess.run(args.solver, shell=True, input=rotated_input, text=True, capture_output=True)
         rotated_output = result.stdout
-        if rotate % 1 == 1:
-            w, h = h, w
-        flipped_output = main_isl(rotated_output, rotate, False, w, h)
-        if rotate % 1 == 1:
-            w, h = h, w
-        output = main_isl(flipped_output, 0, flip, w, h)
+        rotated_width = h if rotate % 2 else w
+        rotated_height = w if rotate % 2 else h
+        flipped_output = main_isl(rotated_output, rotate, False, rotated_width, rotated_height, block_count)
+        output = main_isl(flipped_output, 0, flip, w, h, block_count)
         return output
 
     if args.input_dir:
@@ -50,4 +48,4 @@ if __name__ == '__main__':
                             output_file.write(output)
     else:
         input = sys.stdin.read()
-        sys.stdout.write(run(sys.stdin.read()))
+        sys.stdout.write(run(input, args.rotate, args.flip))

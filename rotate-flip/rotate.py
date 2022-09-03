@@ -3,6 +3,7 @@ import sys
 from typing import List
 from io import StringIO
 import isl
+from pathlib import Path
 
 
 def _read_int_list(line: str) -> List[int]:
@@ -54,7 +55,7 @@ def main_plaintext(input: str, rotate: int, flip: bool) -> str:
     for channel in channels:
         for row in channel:
             print(' '.join(map(str, row)), file=buffer)
-    print(len(blocks))
+    print(len(blocks), file=buffer)
     for block in blocks:
         print(block["blockId"], file=buffer)
         print(" ".join(map(str, block["bottomLeft"])), file=buffer)
@@ -63,13 +64,13 @@ def main_plaintext(input: str, rotate: int, flip: bool) -> str:
     return buffer.getvalue()
     
 
-def main_isl(input: str, rotate: int, flip: bool, width: int, height: int) -> str:
+def main_isl(input: str, rotate: int, flip: bool, width: int, height: int, initial_blocks: int) -> str:
     rotate = rotate % 4
     commands = isl.parse(input)
     if flip:
         new_commands = []
-        block_ids = {"0": "0"}  # old -> new
-        global_counter = 1
+        block_ids = {str(block_id): str(block_id) for block_id in range(initial_blocks)}  # old -> new
+        global_counter = initial_blocks
         for command in commands:
             if command['move'] == 'pcut':
                 original_id = command['block']
@@ -188,8 +189,7 @@ if __name__ == '__main__':
     parser.add_argument("--input-type", help="one of `plaintext` (competitive programming format input), `isl` (output)")
     parser.add_argument("--flip", action='store_true', help='reverse all *ROWS* *BEFORE* rotation')
     parser.add_argument("--rotate", type=int, help="rotate degree. 1 = 90 deg = pi / 2 rad. positive = ccw in mathematical coordinate. accepts negative values", default=0)
-    parser.add_argument("--width", type=int, default=400, help="image width. used in isl mode")
-    parser.add_argument("--height", type=int, default=400, help="image height. used in isl mode")
+    parser.add_argument("--problem", type=Path, help="path to plaintext problem. used in isl mode. if skipped, lightning definition will be used.")
     args = parser.parse_args()
 
     if args.input_type == 'plaintext':
@@ -197,8 +197,16 @@ if __name__ == '__main__':
         output = main_plaintext(input, args.rotate, args.flip)
         sys.stdout.write(output)
     elif args.input_type == 'isl':
+        if args.problem is None:
+            width, height = 400, 400
+            initial_blocks = 1
+        else:
+            with args.problem.open() as f:
+                lines = f.readlines()
+                width, height = map(int, lines[0].split())
+                initial_blocks = int(lines[1 + 4 * height])
         input = sys.stdin.read()
-        output = main_isl(input, args.rotate, args.flip, args.width, args.height)
+        output = main_isl(input, args.rotate, args.flip, width, height, initial_blocks)
         sys.stdout.write(output)
     else:
         raise ValueError(f"invalid input type: {args.input_type}")
