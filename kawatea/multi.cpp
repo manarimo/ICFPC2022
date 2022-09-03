@@ -354,7 +354,7 @@ int main() {
                     }
                     for (int j = 0; j < v.size(); j++) {
                         cut(tmp2, get_id(id + j), 1, v[j]);
-                        color(tmp2, get_id(id + j, 1), v[j] - 1, i);
+                        color(tmp2, get_id(id + j, 0), v[j] - 1, i);
                         merge(tmp2, get_id(id + j, 0), get_id(id + j, 1));
                         cost2 += round(7.0 * w / (w - i)) + round(5.0 * h * w / (w - i) / v[j]) + round(1.0 * h * w / (w - i) / max(v[j], h - v[j]));
                     }
