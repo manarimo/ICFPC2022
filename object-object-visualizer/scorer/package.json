@@ -4,7 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "score": "ts-node ./index.ts"
     },
     "author": "",
     "license": "ISC",
@@ -12,6 +13,7 @@
         "@types/node": "^18.7.14",
         "@types/pngjs": "^6.0.1",
         "prettier": "^2.7.1",
+        "ts-node": "^10.9.1",
         "typescript": "^4.8.2"
     },
     "dependencies": {
