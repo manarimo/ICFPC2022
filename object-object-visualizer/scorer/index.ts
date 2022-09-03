@@ -1,8 +1,8 @@
 import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
 import { Move } from '../src/parser';
-import { applySingleMove, createNewState, State } from '../src/simulate';
-import { allSolutions, calculateScore, Image, loadMoves, loadProblem, Solution, solutionsForBatch, SolutionSpec } from './util';
+import { applySingleMove, createNewState, State, InitialBlock } from '../src/simulate';
+import { calculateScore, dirEntries, Image, loadInitialBlocks, loadMoves, loadProblem, Solution } from './util';
 import * as fs from 'fs';
 import commandLineArgs from 'command-line-args';
 
@@ -14,8 +14,8 @@ interface Options {
     only: string[];
 }
 
-function run(image: Image, solution: Move[]): State {
-    let state = createNewState(image.width, image.height);
+function run(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
+    let state = createNewState(image.width, image.height, initialBlocks);
     solution.forEach((move, i) => {
         const res = applySingleMove(move, state);
         if (res.kind == 'error') {
@@ -87,8 +87,10 @@ async function main(options: Options) {
         console.log(`../../output/${spec.batchName}/${spec.problemId}`);
 
         // Calculate score of the solution
+        const initialBlockFile = `../../problem/original/${spec.problemId}.initial.json`;
         const problem = await loadProblem(spec.problemImagePath());
         const moves = await loadMoves(spec.solutionPath());
+        const initialBlocks = await loadInitialBlocks(initialBlockFile);
         const lastState = await run(problem, moves);
         const score = calculateScore(problem, lastState);
 

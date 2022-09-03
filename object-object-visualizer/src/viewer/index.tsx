@@ -8,6 +8,7 @@ import {
   createNewState,
   getColor,
   getHeatmapColor,
+  InitialBlock,
   State,
 } from "../simulate";
 import { Image } from "../types";
@@ -18,6 +19,7 @@ interface Props {
   problemImage?: Image;
   width: number;
   height: number;
+  initialBlocks?: InitialBlock[];
 }
 
 const unzoom = (v: number, zoom: number) => Math.floor(v / zoom);
@@ -71,11 +73,17 @@ const Picture = React.memo(
   )
 );
 
-export const Viewer = ({ moves, height, width, problemImage }: Props) => {
+export const Viewer = ({
+  moves,
+  height,
+  width,
+  problemImage,
+  initialBlocks,
+}: Props) => {
   const [turn, setTurn] = useState(0);
   const [isHeatmap, setisHeatmap] = useState(false);
   const result = useMemo(() => {
-    return calculate(moves, width, height);
+    return calculate(moves, width, height, initialBlocks);
   }, [width, height, moves]);
   useEffect(() => {
     setTurn(result.states.length - 1);
@@ -158,8 +166,13 @@ export const Viewer = ({ moves, height, width, problemImage }: Props) => {
   );
 };
 
-const calculate = (moves: Move[], width: number, height: number) => {
-  let state = createNewState(width, height);
+const calculate = (
+  moves: Move[],
+  width: number,
+  height: number,
+  initialBlocks?: InitialBlock[]
+) => {
+  let state = createNewState(width, height, initialBlocks);
   const states = [state];
   for (const move of moves) {
     const result = applySingleMove(move, state);

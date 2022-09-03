@@ -126,8 +126,8 @@ def main_isl(input: str, rotate: int, flip: bool, width: int, height: int, initi
     for _ in range(rotate):
         new_height, new_width = width, height
         new_commands = []
-        block_ids = {"0": "0"}  # old -> new
-        global_counter = 1
+        block_ids = {str(block_id): str(block_id) for block_id in range(initial_blocks)}  # old -> new
+        global_counter = initial_blocks
         for command in commands:
             if command['move'] == 'pcut':
                 original_id = command['block']

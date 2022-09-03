@@ -1,7 +1,8 @@
 import * as fsPromises from 'fs/promises';
+import * as fs from 'fs';
 import { PNG } from 'pngjs';
 import { Move, parseProgram } from '../src/parser';
-import { State, createNewState, applySingleMove, calculateSimilarity } from '../src/simulate';
+import { State, applySingleMove, calculateSimilarity, InitialBlock } from '../src/simulate';
 
 export interface Image {
     r: Uint8Array;
@@ -76,6 +77,14 @@ export async function loadProblem(pngFile: string): Promise<Image> {
 export async function loadMoves(solutionFile: string): Promise<Move[]> {
     const solutionBuffer = await fsPromises.readFile(solutionFile);
     return parseProgram(solutionBuffer.toString());
+}
+
+export async function loadInitialBlocks(initialBlocksFile: string): Promise<InitialBlock[] | undefined> {
+    if (!fs.existsSync(initialBlocksFile)) {
+        return undefined;
+    }
+    const initialBlockBuffer = await fsPromises.readFile(initialBlocksFile);
+    return JSON.parse(initialBlockBuffer.toString()).blocks as InitialBlock[];
 }
 
 export async function* dirEntries(path: string) {
