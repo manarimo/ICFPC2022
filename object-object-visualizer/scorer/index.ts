@@ -8,10 +8,10 @@ import commandLineArgs from 'command-line-args';
 
 interface Options {
     // Force recalculating everything
-    force: boolean;
+    force?: boolean;
 
     // Run scorer only on specified batches
-    only: string[];
+    only?: string[];
 }
 
 function run(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
@@ -67,17 +67,17 @@ async function main(options: Options) {
     }
 
     let solutionSpecsIter: AsyncIterable<SolutionSpec>;
-    if (options.only.length == 0) {
+    if (options.only === undefined) {
         solutionSpecsIter = allSolutions();
     } else {
         solutionSpecsIter = (async function* () {
-            for (let batchName of options.only) {
+            for (let batchName of options.only!!) {
                 yield* solutionsForBatch(batchName);
             }
         })();
     }
 
-    // Enumerate all batches
+    // Calculate scores for specified batches (or all batches if --only is not given)
     for await (let spec of solutionSpecsIter) {
         if (!options.force && fs.existsSync(spec.scoreJsonPath())) {
             console.log(`Already processed: skip ${spec.solutionPath()}`);
