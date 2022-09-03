@@ -103,6 +103,10 @@ void simplify(int h, int w) {
         max_x = min(max_x + 4, h);
         min_y = max(min_y - 3, 0);
         max_y = min(max_y + 4, w);
+        if (cnt == 4 || cnt == 6) {
+            cnt++;
+            continue;
+        }
         
         for (int x = min_x; x <= max_x; x++) {
             for (int y = min_y; y <= max_y; y++) {
