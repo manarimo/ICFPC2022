@@ -9,7 +9,7 @@ using namespace std;
 
 const int MAX_H = 400;
 const int MAX_W = 400;
-const int SIZE_LIMIT = 300;
+const int SIZE_LIMIT = 150;
 const int DIFF_LIMIT = 10;
 
 struct color {
