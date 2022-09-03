@@ -4,7 +4,7 @@ import itertools
 
 
 root_dir = Path(__file__).parent.parent
-problem_dir = root_dir / "problem" / "plaintext_color_reduced"
+problem_dir = root_dir / "problem" / "plaintext"
 
 
 def color_distance(c1, c2) -> float:
@@ -31,6 +31,23 @@ def parse_file(problem_path):
             image.append(row)
         image.reverse()
         return image
+
+
+def calculate_unicolor_cost_monochrome(image, top, bottom, left, right):
+    w, h = len(image[0]), len(image)
+    command_cost = round(5 * (w * h) / ((bottom - top) * (right - left)))
+    color_counts = defaultdict(int)
+    for y in range(top, bottom):
+        for x in range(left, right):
+            color_counts[image[y][x]] += 1
+    def color_cost_func(color):
+        return sum(color_distance(image_color, color) * count for image_color, count in color_counts.items())
+    color_sums = sum([[sum(color)] * count for color, count in color_counts.items()], [])
+    color_sums.sort()
+    best_color_value = round((color_sums[len(color_sums) // 2] - 255) // 3)
+    best_color = best_color_value, best_color_value, best_color_value, 255
+    best_cost = color_cost_func(best_color)
+    return best_cost * 0.005 + command_cost, best_color
 
 
 def calculate_unicolor_cost(image, top, bottom, left, right):
@@ -62,13 +79,10 @@ def color_command(block_id, color):
 
 
 def solve(image, top, bottom, left, right, block_id, cost_upperbound=1e100):
-    size_precision = 100
+    size_precision = 2
     w, h = len(image[0]), len(image)
     area = (bottom - top) * (right - left)
-
-    print(area, top, bottom, left, right)
-
-    unicolor_cost, best_color = calculate_unicolor_cost(image, top, bottom, left, right)
+    unicolor_cost, best_color = calculate_unicolor_cost_monochrome(image, top, bottom, left, right)
     if bottom - top < size_precision or right - left < size_precision or unicolor_cost > cost_upperbound:
         return unicolor_cost, [color_command(block_id, best_color)]
 
@@ -101,5 +115,5 @@ for problem_path in problem_dir.iterdir():
     image = parse_file(problem_path)
     cost, commands = solve(image, 0, len(image), 0, len(image[0]), "0")
     print(f"cost: {cost}, {len(commands)} lines")
-    with (root_dir / "output" / "amylase-recursive" / f"{problem_id}.isl").open("w") as f:
+    with (root_dir / "output" / "amylase-recursive-monochrome" / f"{problem_id}.isl").open("w") as f:
         f.write('\n'.join(commands))
