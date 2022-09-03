@@ -22,7 +22,7 @@ pub struct State {
     blocks: BTreeMap<Label, Block>,
     cost: i64,
     canvas: Block,
-    pub global_counter: u8,
+    pub global_counter: u32,
 }
 
 impl State {
@@ -110,10 +110,10 @@ impl RGBA {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
-pub struct Label(Vec<u8>);
+pub struct Label(pub Vec<u32>);
 
 impl Label {
-    pub fn push(&mut self, suffix: u8) {
+    pub fn push(&mut self, suffix: u32) {
         self.0.push(suffix);
     }
 }
