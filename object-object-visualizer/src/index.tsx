@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Link, Route, Routes } from "react-router-dom";
 import { Top } from "./Top";
 import { Problems } from "./Problems";
 const root = ReactDOM.createRoot(
@@ -11,6 +11,17 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <HashRouter>
+      <nav className="navbar">
+        <Link to="/" className="nav-link">
+          Top
+        </Link>
+        <Link to="/problems" className="nav-link">
+          Problems
+        </Link>
+        <Link to="/vis" className="nav-link">
+          Visualizer
+        </Link>
+      </nav>
       <Routes>
         <Route path="/" element={<Top />} />
         <Route path="/vis" element={<App />} />
