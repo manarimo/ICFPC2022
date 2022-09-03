@@ -28,6 +28,10 @@ struct color {
     bool operator!=(const color& c) const {
         return r != c.r || g != c.g || b != c.b || a != c.a;
     }
+
+    bool similar(const color& c) const {
+        return (r - c.r) * (r - c.r) + (g - c.g) * (g - c.g) + (b - c.b) * (b - c.b) + (a - c.a) * (a - c.a) < 1000;
+    }
 };
 
 struct block {
@@ -100,13 +104,13 @@ color fast_get_color(map<color, int>& mp) {
         }
     }
 
-    fprintf(stderr, "best:%d, (%d %d %d %d)\n", best / 200, br, bg, bb, ba);
+    //fprintf(stderr, "best:%d, (%d %d %d %d)\n", best / 200, br, bg, bb, ba);
     return color(br, bg, bb, ba);
 }
 
 
 color fast_get_color(int x1, int y1, int x2, int y2) {
-    fprintf(stderr, "(%d, %d) to (%d, %d)", x1, y1, x2, y2);
+    //fprintf(stderr, "(%d, %d) to (%d, %d)", x1, y1, x2, y2);
     map<color, int> mp;
     for (int i = y1; i < y2; i++) {
         for (int j = x1; j < x2; j++) {
@@ -118,7 +122,7 @@ color fast_get_color(int x1, int y1, int x2, int y2) {
 }
 
 color get_color(int x1, int y1, int x2, int y2) {
-    fprintf(stderr, "(%d, %d) to (%d, %d)", x1, y1, x2, y2);
+    //fprintf(stderr, "(%d, %d) to (%d, %d)", x1, y1, x2, y2);
     int min_r = 255, max_r = 0, min_g = 255, max_g = 0, min_b = 255, max_b = 0, min_a = 255, max_a = 0;
     map<color, int> mp;
     for (int i = y1; i < y2; i++) {
@@ -138,7 +142,7 @@ color get_color(int x1, int y1, int x2, int y2) {
     for (map<color, int>::iterator it = mp.begin(); it != mp.end(); it++) v.emplace_back(it->first, it->second);
     sort(v.begin(), v.end());
     reverse(v.begin(), v.end());
-    fprintf(stderr, "size:%d, r[%d, %d], g[%d, %d], b[%d, %d], a[%d, %d]\n", (int)v.size(), min_r, max_r, min_g, max_g, min_b, max_b, min_a, max_a);
+    //fprintf(stderr, "size:%d, r[%d, %d], g[%d, %d], b[%d, %d], a[%d, %d]\n", (int)v.size(), min_r, max_r, min_g, max_g, min_b, max_b, min_a, max_a);
     
     int best = 1e9, br = 0, bg = 0, bb = 0, ba = 0;
     const int color_div = 256;
@@ -165,14 +169,14 @@ color get_color(int x1, int y1, int x2, int y2) {
         }
     }
 
-    fprintf(stderr, "best:%d, (%d %d %d %d)\n", best / 200, br, bg, bb, ba);
+    //fprintf(stderr, "best:%d, (%d %d %d %d)\n", best / 200, br, bg, bb, ba);
     return color(br, bg, bb, ba);
 }
 
 int cut_block(const block &node, char c, int val) {
     printf("cut [%s] [%c] [%d]\n", node.id.c_str(), c, val);
 
-    fprintf(stderr, "cut cost: %f\n", round(CANVAS_SIZE / node.size() * 7));
+    //fprintf(stderr, "cut cost: %f\n", round(CANVAS_SIZE / node.size() * 7));
 
     return round(CANVAS_SIZE / node.size() * 7);
 }
@@ -188,7 +192,7 @@ int ycut_block(const block &node, int y) {
 int merge_block(const block &node1, const block &node2) {
     printf("merge [%s] [%s]\n", node1.id.c_str(), node2.id.c_str());
 
-    fprintf(stderr, "merge cost: %f\n", round(CANVAS_SIZE / max(node1.size(), node2.size())));
+    //fprintf(stderr, "merge cost: %f\n", round(CANVAS_SIZE / max(node1.size(), node2.size())));
 
     return round(CANVAS_SIZE / max(node1.size(), node2.size()));
 }
@@ -196,7 +200,7 @@ int merge_block(const block &node1, const block &node2) {
 int paint_block(const block &node, color c) {
     printf("color [%s] [%d, %d, %d, %d]\n", node.id.c_str(), c.r, c.g, c.b, c.a);
 
-    fprintf(stderr, "paint cost: %f\n", round(CANVAS_SIZE / node.size() * 5));
+    //fprintf(stderr, "paint cost: %f\n", round(CANVAS_SIZE / node.size() * 5));
 
     return round(CANVAS_SIZE / node.size() * 5);
 }
@@ -207,7 +211,7 @@ pair<block, int> paint_column(int x, int y, vector<int>& cut_x, vector<int>& cut
     int cost = 0;
 
     auto c = fast_get_color(cut_x[x], cut_y[y], cut_x[x + 1], cut_y[y + 1]);
-    if (y > 0 && c != current_color) {
+    if (y > 0 && !c.similar(current_color)) {
         // cut bottom row
         block node0 = node, node1 = node;
         if (draw_from > 0) {
@@ -251,7 +255,6 @@ pair<block, int> paint_column(int x, int y, vector<int>& cut_x, vector<int>& cut
         }
 
         draw_from = y;
-
     }
 
     auto r = paint_column(x, y + 1, cut_x, cut_y, node, id, draw_from, c);
@@ -306,12 +309,37 @@ int main() {
     int id = 0;
 
     // #3
-    vector<int> cut_x = {0, 16, 41, 67, 102, 118, 144, 169, 195, 200, 221, 237, 263, 272, 289, 298, 314, 323, 341, 349, 375, 400};
-    vector<int> cut_y = {0, 25, 51, 77, 102, 128, 142, 153, 167, 179, 182, 193, 205, 208, 226, 233, 252, 259, 285, 303, 310, 336, 400};
+    // vector<int> cut_x = {0, 16, 41, 67, 102, 118, 144, 169, 195, 200, 221, 237, 263, 272, 289, 298, 314, 323, 341, 349, 375, 400};
+    // vector<int> cut_y = {0, 25, 51, 77, 102, 128, 142, 153, 167, 179, 182, 193, 205, 208, 226, 233, 252, 259, 285, 303, 310, 336, 400};
 
     // #15
     // vector<int> cut_x = {0, 19, 40, 87, 97, 107, 117, 127, 137, 147, 157, 167, 177, 187, 197, 207, 217, 227, 237, 247, 257, 267, 277, 400};
     // vector<int> cut_y = {0, 13, 42, 76, 87, 98, 109, 120, 131, 142, 152, 162, 172, 182, 192, 202, 212, 222, 232, 242, 252, 262, 272, 282, 292, 302, 312, 322, 332, 342, 400};
+
+    // general
+    double target_cost = 4000;
+    double min_inv = 40;
+    vector<int> cut_x(1, w), cut_y(1, h);
+    for (double t = 1; t > 0; ) {
+        double dt = 1.0 / sqrt(target_cost * (1 + 1.0 / pow(target_cost, 0.25) - t) * (1 + 1.0 / pow(target_cost, 0.25) - t));
+        if (dt < 1 / min_inv) {
+            dt = 1.0 / min_inv;
+        }
+        t -= dt;
+        if (t < 0) {
+            t = 0;
+        }
+        cut_x.push_back(w * t);
+        cut_y.push_back(h * t);
+        fprintf(stderr, "%.4f\n", t);
+    }
+    reverse(cut_x.begin(), cut_x.end());
+    reverse(cut_y.begin(), cut_y.end());
+
+    for (int a : cut_x) {
+        fprintf(stderr, "%d ", a);
+    }
+    fprintf(stderr, "\n");
 
     int cost = paint(0, cut_x, cut_y, block("", 0, 0), block("0", MAX_W, MAX_H), id);
 
