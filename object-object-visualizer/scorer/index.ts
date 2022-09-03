@@ -2,8 +2,17 @@ import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
 import { Move } from '../src/parser';
 import { applySingleMove, createNewState, State } from '../src/simulate';
-import { calculateScore, dirEntries, Image, loadMoves, loadProblem, Solution } from './util';
+import { allSolutions, calculateScore, Image, loadMoves, loadProblem, Solution, solutionsForBatch, SolutionSpec } from './util';
 import * as fs from 'fs';
+import commandLineArgs from 'command-line-args';
+
+interface Options {
+    // Force recalculating everything
+    force: boolean;
+
+    // Run scorer only on specified batches
+    only: string[];
+}
 
 function run(image: Image, solution: Move[]): State {
     let state = createNewState(image.width, image.height);
@@ -51,63 +60,52 @@ async function writeSolutionImage(state: State, destFile: string): Promise<void>
     });
 }
 
-// When force = true, process all solutions and updates scores.
-// Otherwise, only processes solutions that don't have corresponding json file.
-async function main(force: boolean) {
+async function main(options: Options) {
     let solutionsByProblem: Record<string, Solution[]> = {};
     if (fs.existsSync(`../../output/ranking.json`)) {
         solutionsByProblem = JSON.parse(fs.readFileSync('../../output/ranking.json').toString());
     }
 
+    let solutionSpecsIter: AsyncIterable<SolutionSpec>;
+    if (options.only.length == 0) {
+        solutionSpecsIter = allSolutions();
+    } else {
+        solutionSpecsIter = (async function* () {
+            for (let batchName of options.only) {
+                yield* solutionsForBatch(batchName);
+            }
+        })();
+    }
+
     // Enumerate all batches
-    for await (let entry of dirEntries('../../output')) {
-        if (!entry.isDirectory()) {
+    for await (let spec of solutionSpecsIter) {
+        if (!options.force && fs.existsSync(spec.scoreJsonPath())) {
+            console.log(`Already processed: skip ${spec.solutionPath()}`);
             continue;
         }
 
-        // Enumerate all solutions in the batch
-        for await (let entry2 of dirEntries(`../../output/${entry.name}`)) {
-            if (entry2.isDirectory()) {
-                continue;
+        console.log(`../../output/${spec.batchName}/${spec.problemId}`);
+
+        // Calculate score of the solution
+        const problem = await loadProblem(spec.problemImagePath());
+        const moves = await loadMoves(spec.solutionPath());
+        const lastState = await run(problem, moves);
+        const score = calculateScore(problem, lastState);
+
+        // Write out the score to spec JSON
+        await fsPromises.writeFile(spec.scoreJsonPath(), JSON.stringify({ score: score }));
+
+        // Write out the last state image
+        await writeSolutionImage(lastState, spec.solutionImagePath());
+
+        // Record solution in the buffer
+        const solution = new Solution(spec.batchName, spec.problemId, score);
+        if (spec.problemId in solutionsByProblem) {
+            if (solutionsByProblem[spec.problemId].every((s) => s.batchName != solution.batchName)) {
+                solutionsByProblem[spec.problemId].push(solution);
             }
-            if (!entry2.name.endsWith('.isl')) {
-                continue;
-            }
-
-            // Extract ID from the solution file
-            const id = entry2.name.slice(0, -4);
-            if (!force && fs.existsSync(`../../output/${entry.name}/${id}.json`)) {
-                console.log(`Already processed: skip ../../output/${entry.name}/${entry2.name}`);
-                continue;
-            }
-
-            console.log(`../../output/${entry.name}/${entry2.name}`);
-
-            // Calculate score of the solution
-            const problemPngFile = `../../problem/original/${id}.png`;
-            const solutionFile = `../../output/${entry.name}/${entry2.name}`;
-            const problem = await loadProblem(problemPngFile);
-            const moves = await loadMoves(solutionFile);
-            const lastState = await run(problem, moves);
-            const score = calculateScore(problem, lastState);
-
-            // Write out the score to spec JSON
-            const specJsonFile = `../../output/${entry.name}/${id}.json`;
-            await fsPromises.writeFile(specJsonFile, JSON.stringify({ score: score }));
-
-            // Write out the last state image
-            const solutionPngFile = `../../output/${entry.name}/${id}.png`;
-            await writeSolutionImage(lastState, solutionPngFile);
-
-            // Record solution in the buffer
-            const solution = new Solution(entry.name, id, score);
-            if (id in solutionsByProblem) {
-                if (solutionsByProblem[id].every((s) => s.batchName != solution.batchName)) {
-                    solutionsByProblem[id].push(solution);
-                }
-            } else {
-                solutionsByProblem[id] = [solution];
-            }
+        } else {
+            solutionsByProblem[spec.problemId] = [solution];
         }
     }
 
@@ -126,4 +124,8 @@ async function main(force: boolean) {
     await fsPromises.writeFile(`../../output/ranking.json`, JSON.stringify(dict));
 }
 
-main(process.argv[2] == '--force');
+const options: Options = commandLineArgs([
+    { name: 'force', alias: 'f', type: Boolean },
+    { name: 'only', type: String, multiple: true },
+]) as Options;
+main(options);
