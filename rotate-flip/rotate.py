@@ -13,26 +13,53 @@ def _read_int_matrix(lines: List[str]) -> List[List[int]]:
     return [_read_int_list(line) for line in lines]
 
 
+def _read_blocks(lines: List[str]):
+    return {
+        "blockId": lines[0].strip(),
+        "bottomLeft": _read_int_list(lines[1]),
+        "topRight": _read_int_list(lines[2]),
+        "color": _read_int_list(lines[3]),
+    }
+
+
 def main_plaintext(input: str, rotate: int, flip: bool) -> str:
     rotate = rotate % 4
     input_lines = input.splitlines()
     w, h = _read_int_list(input_lines[0])
     channels = [_read_int_matrix(input_lines[1 + h * channel: 1 + h * (channel + 1)]) for channel in range(4)]
+    block_count = int(input_lines[1 + h * 4])
+    blocks = [_read_blocks(input_lines[1 + h * 4 + 1 + 4 * block_index: 1 + h * 4 + 1 + 4 * (block_index + 1)]) for block_index in range(block_count)]
 
     if flip:
         for channel in channels:
             for row in channel:
                 row.reverse()
+        for block in blocks:
+            left, bottom = block["bottomLeft"]
+            right, top = block["topRight"]
+            block["bottomLeft"] = [bottom, w - right]
+            block["topRight"] = [top, w - left]
 
     for _ in range(rotate):
-        h, w = w, h
+        for block in blocks:
+            left, bottom = block["bottomLeft"]
+            right, top = block["topRight"]
+            block["bottomLeft"] = [h - top, left]
+            block["topRight"] = [h - bottom, right]
         channels = [list(zip(*reversed(channel))) for channel in channels]
+        h, w = w, h
     
     buffer = StringIO()
     print(w, h, file=buffer)
     for channel in channels:
         for row in channel:
             print(' '.join(map(str, row)), file=buffer)
+    print(len(blocks))
+    for block in blocks:
+        print(block["blockId"], file=buffer)
+        print(" ".join(map(str, block["bottomLeft"])), file=buffer)
+        print(" ".join(map(str, block["topRight"])), file=buffer)
+        print(" ".join(map(str, block["color"])), file=buffer)
     return buffer.getvalue()
     
 
