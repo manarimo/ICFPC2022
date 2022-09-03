@@ -113,15 +113,16 @@ struct grid {
         if (cut_x[xid_mid] != x) {
             xid_mid++;
             cut_x.insert(cut_x.begin() + xid_mid, x);
+
+            vector<block> new_column;
+            vector<color> new_color_column;
+            for (int yid = 0; yid < cut_y.size(); yid++) {
+                new_column.push_back(B[xid_mid - 1][yid]);
+                new_color_column.push_back(C[xid_mid - 1][yid]);
+            }
+            B.insert(B.begin() + xid_mid, new_column);
+            C.insert(C.begin() + xid_mid, new_color_column);
         }
-        vector<block> new_column;
-        vector<color> new_color_column;
-        for (int yid = 0; yid < cut_y.size(); yid++) {
-            new_column.push_back(B[xid_mid - 1][yid]);
-            new_color_column.push_back(C[xid_mid - 1][yid]);
-        }
-        B.insert(B.begin() + xid_mid, new_column);
-        C.insert(C.begin() + xid_mid, new_color_column);
 
         auto children = node.xcut(x);
         int xid_from = to_xid(node.left);
@@ -144,10 +145,11 @@ struct grid {
         if (cut_y[yid_mid] != y) {
             yid_mid++;
             cut_y.insert(cut_y.begin() + yid_mid, y);
-        }
-        for (int xid = 0; xid < cut_x.size(); xid++) {
-            B[xid].insert(B[xid].begin() + yid_mid, B[xid][yid_mid - 1]);
-            C[xid].insert(C[xid].begin() + yid_mid, C[xid][yid_mid - 1]);
+
+            for (int xid = 0; xid < cut_x.size(); xid++) {
+                B[xid].insert(B[xid].begin() + yid_mid, B[xid][yid_mid - 1]);
+                C[xid].insert(C[xid].begin() + yid_mid, C[xid][yid_mid - 1]);
+            }
         }
 
         auto children = node.ycut(y);
@@ -292,6 +294,7 @@ struct solver {
 
     solver(const problem& P, const setting& S, ostream& out) : P(P), S(S), out(out) {
         set<int> cut_x, cut_y;
+        cut_x.insert(P.width); cut_y.insert(P.height);
         for (auto bc : P.initial_blocks) {
             cut_x.insert(bc.first.left);
             cut_y.insert(bc.first.bottom);
