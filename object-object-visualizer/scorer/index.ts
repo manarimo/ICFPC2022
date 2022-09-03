@@ -13,8 +13,7 @@ interface Image {
 }
 
 class Solution {
-    constructor(readonly batchName: string, readonly problemId: string, readonly score: number) {
-    }
+    constructor(readonly batchName: string, readonly problemId: string, readonly score: number) {}
 }
 
 async function loadProblem(pngFile: string): Promise<Image> {
@@ -95,11 +94,11 @@ async function writeSolutionImage(state: State, destFile: string): Promise<void>
         const packed = png.pack();
         packed.on('end', () => {
             fileHandle.close();
-            resolve()
+            resolve();
         });
         packed.on('error', (err) => {
             fileHandle.close();
-            reject(err)
+            reject(err);
         });
         packed.pipe(fileHandle.createWriteStream());
     });
@@ -107,7 +106,7 @@ async function writeSolutionImage(state: State, destFile: string): Promise<void>
 
 async function* dirEntries(path: string) {
     const dirHandle = await fsPromises.opendir(path);
-    while(true) {
+    while (true) {
         const dir = await dirHandle.read();
         if (dir == null) {
             break;
@@ -118,7 +117,7 @@ async function* dirEntries(path: string) {
 }
 
 async function main() {
-    const solutionsByProblem: Record<string, Solution[]> = {}
+    const solutionsByProblem: Record<string, Solution[]> = {};
 
     // Enumerate all batches
     for await (let entry of dirEntries('../../output')) {
@@ -149,7 +148,7 @@ async function main() {
 
             // Write out the score to spec JSON
             const specJsonFile = `../../output/${entry.name}/${id}.json`;
-            await fsPromises.writeFile(specJsonFile, JSON.stringify({score: score}));
+            await fsPromises.writeFile(specJsonFile, JSON.stringify({ score: score }));
 
             // Write out the last state image
             const solutionPngFile = `../../output/${entry.name}/${id}.png`;

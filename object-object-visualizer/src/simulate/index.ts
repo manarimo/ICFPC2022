@@ -17,7 +17,12 @@ interface Image {
   height: number;
 }
 
-export function calculatePixelSimilarity(problem: Image, state: State, probX: number, probY: number): number {
+export function calculatePixelSimilarity(
+  problem: Image,
+  state: State,
+  probX: number,
+  probY: number
+): number {
   // y is in image coordinates (not problem definition coordinate)
   const px = probX + probY * problem.width;
   const solPx = (problem.height - probY - 1) * problem.width + probX;
@@ -352,7 +357,12 @@ export const getColor = (state: State, x: number, y: number) => {
   };
 };
 
-export const getHeatmapColor = (state: State, image: Image, x: number, y: number) => {
+export const getHeatmapColor = (
+  state: State,
+  image: Image,
+  x: number,
+  y: number
+) => {
   const similarity = calculatePixelSimilarity(image, state, x, y);
   return {
     r: similarity / 2,

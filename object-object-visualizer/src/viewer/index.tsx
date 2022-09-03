@@ -51,7 +51,12 @@ const Picture = React.memo(
         }
         if (isHeatmap) {
           if (image) {
-            return getHeatmapColor(state, image, unzoom(x, zoom), unzoom(y, zoom));
+            return getHeatmapColor(
+              state,
+              image,
+              unzoom(x, zoom),
+              unzoom(y, zoom)
+            );
           } else {
             return getColor(state, unzoom(x, zoom), unzoom(y, zoom));
           }
@@ -127,7 +132,12 @@ export const Viewer = ({ moves, height, width, problemImage }: Props) => {
         </div>
       </div>
       <div>
-        <input id="isHeatmap" type="checkbox" checked={isHeatmap} onChange={() => setisHeatmap(!isHeatmap)}></input>
+        <input
+          id="isHeatmap"
+          type="checkbox"
+          checked={isHeatmap}
+          onChange={() => setisHeatmap(!isHeatmap)}
+        ></input>
         <label htmlFor="isHeatmap">Similarity Heatmap</label>
       </div>
       <div>
