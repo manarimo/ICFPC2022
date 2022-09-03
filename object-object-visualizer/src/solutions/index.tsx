@@ -13,7 +13,7 @@ export const Solutions = () => {
       <tbody>
         {Object.entries(ranking.data).map(([problemId, solutions]) => {
           const orderedSolutions = [...solutions].sort(
-            (a, b) => b.score - a.score
+            (a, b) => a.score - b.score
           );
           return (
             <tr key={problemId}>
