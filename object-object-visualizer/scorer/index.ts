@@ -1,7 +1,7 @@
 import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
-import { Move, parseProgram } from './parser';
-import { State, createNewState, applySingleMove, calculateSimilarity } from './simulate';
+import { Move, parseProgram } from '../src/parser';
+import { State, createNewState, applySingleMove, calculateSimilarity } from '../src/simulate';
 
 interface Image {
     r: Uint8Array;
@@ -86,22 +86,31 @@ async function* dirEntries(path: string) {
 }
 
 async function main() {
+    // Enumerate all batches
     for await (let entry of dirEntries('../../output')) {
         if (!entry.isDirectory()) {
             continue;
         }
+
+        // Enumerate all solutions in the batch
         for await (let entry2 of dirEntries(`../../output/${entry.name}`)) {
             if (entry2.isDirectory()) {
                 continue;
             }
-
+            if (!entry2.name.endsWith('.isl')) {
+                continue;
+            }
             console.log(`../../output/${entry.name}/${entry2.name}`);
+
+            // Extract ID from the solution file
             const id = entry2.name.slice(0, -4);
 
+            // Calculate score of the solution
             const problemPngFile = `../../problem/original/${id}.png`;
             const solutionFile = `../../output/${entry.name}/${entry2.name}`;
             const score = await doScoring(problemPngFile, solutionFile)
 
+            // Write out the score to spec JSON
             const specJsonFile = `../../output/${entry.name}/${id}.json`;
             await fsPromises.writeFile(specJsonFile, JSON.stringify({score: score}));
         }
