@@ -4,6 +4,8 @@ import { S3 } from 'aws-sdk';
 import { GetObjectOutput, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import cors from 'cors';
 
+const BUCKET = 'icfpc2022-manarimo';
+
 class S3Item {
     constructor(readonly path: string) {}
 
@@ -26,7 +28,7 @@ const s3 = new S3();
 
 function listDirectories(prefix: string): Promise<S3Item[]> {
     const req: ListObjectsV2Request = {
-        Bucket: 'icfpc2022-manarimo',
+        Bucket: BUCKET,
         Prefix: prefix,
         Delimiter: '/',
     };
@@ -49,8 +51,8 @@ function listDirectories(prefix: string): Promise<S3Item[]> {
 }
 
 function listObjects(prefix: string): Promise<S3Item[]> {
-        const req: ListObjectsV2Request = {
-        Bucket: 'icfpc2022-manarimo',
+    const req: ListObjectsV2Request = {
+        Bucket: BUCKET,
         Prefix: prefix,
         Delimiter: '/',
     };
@@ -75,7 +77,7 @@ function listObjects(prefix: string): Promise<S3Item[]> {
 function getObject(path: string): Promise<GetObjectOutput> {
     const s3 = new S3();
     return new Promise((resolve, reject) => {
-        s3.getObject({ Bucket: 'icfpc2022-manarimo', Key: path }, (err, data) => {
+        s3.getObject({ Bucket: BUCKET, Key: path }, (err, data) => {
             if (err) {
                 reject(err);
             } else {
@@ -120,6 +122,30 @@ app.get('/api/solution_all', async function (req, res) {
         batchName: b.baseName,
         solutions: solutions[b.baseName],
     }));
+    res.json({
+        solutions: orderedSolutions,
+    });
+});
+
+// GET /api/list_solutions?problemId=1
+app.get('/api/list_solutions', async function (req, res) {
+    const problemId = req.query['problemId'];
+    const items = await listObjects('output/');
+    const solutions = await Promise.all(
+        items
+            .filter((item) => item.path.endsWith(`${problemId}.json`))
+            .map(async (item) => {
+                const aiName = item.path.split('/')[1];
+                const obj = await getObject(item.path);
+                const calcResult = JSON.parse(obj.Body!!.toString());
+
+                return {
+                    score: Number.parseInt(calcResult['score']),
+                    aiName,
+                };
+            }),
+    );
+    const orderedSolutions = solutions.sort((a, b) => b.score - a.score);
     res.json({
         solutions: orderedSolutions,
     });
