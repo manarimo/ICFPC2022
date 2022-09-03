@@ -2,13 +2,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { Link } from "react-router-dom";
 import "./Top.css";
-
-async function fetcher<T>(path: string): Promise<T> {
-  const response = await fetch(
-    `https://gxtbs67iyup735zlzm54b6574i0pmpwl.lambda-url.us-east-1.on.aws/${path}`
-  );
-  return response.json();
-}
+import { manarimoFetch } from "./fetch";
 
 interface SolutionsAll {
   solutions: BatchSpec[];
@@ -27,7 +21,7 @@ interface Solution {
 export function Top() {
   const { data, error } = useSWR<SolutionsAll, Error>(
     "api/solution_all",
-    fetcher
+    manarimoFetch
   );
 
   if (data === undefined) {
@@ -43,14 +37,12 @@ export function Top() {
 
 function renderBatchPane(batchSpec: BatchSpec) {
   return (
-    <div className="batch-pane">
+    <div className="batch-pane" key={batchSpec.batchName}>
       <h2 className="batch-name">{batchSpec.batchName}</h2>
       <div className="batch-solutions-list">
         {batchSpec.solutions.map((sol) => (
           <div className="batch-solution-link">
-            <Link
-              to={`/vis?batchName=${sol.batchName}&problemId=${sol.problemId}`}
-            >
+            <Link to={`/vis/${sol.batchName}/${sol.problemId}`}>
               {sol.problemId}
             </Link>
           </div>
