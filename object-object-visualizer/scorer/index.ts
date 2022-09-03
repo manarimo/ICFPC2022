@@ -5,6 +5,7 @@ import { applySingleMove, createNewState, InitialBlock, State } from '../src/sim
 import { allSolutions, calculateScore, Image, loadInitialBlocks, loadMoves, loadProblem, Solution, solutionsForBatch, SolutionSpec } from './util';
 import * as fs from 'fs';
 import commandLineArgs from 'command-line-args';
+import { buildRaking } from './ranker';
 
 interface Options {
     // Force recalculating everything
@@ -110,19 +111,11 @@ async function main(options: Options) {
         }
     }
 
-    // Sort solutions by ascending order of score
-    for (let solutions of Object.values(solutionsByProblem)) {
-        solutions.sort((a, b) => a.score - b.score);
-    }
-
-    // Fix the order of keys for consistent output
-    const dict: typeof solutionsByProblem = {};
-    for (let problemId of Object.keys(solutionsByProblem).sort()) {
-        dict[problemId] = solutionsByProblem[problemId];
-    }
-
-    // Write out the summary JSON
-    await fsPromises.writeFile(`../../output/ranking.json`, JSON.stringify(dict));
+    // Now all score files are guaranteed to be up-to-date.
+    // Recalculate the ranking JSON.
+    console.log('Rebuilding ranking.json...');
+    const ranking = await buildRaking();
+    await fsPromises.writeFile(`../../output/ranking.json`, JSON.stringify(ranking));
 }
 
 const options: Options = commandLineArgs([
