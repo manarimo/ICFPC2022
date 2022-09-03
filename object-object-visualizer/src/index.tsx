@@ -12,6 +12,7 @@ root.render(
   <React.StrictMode>
     <HashRouter>
       <nav className="navbar">
+        <img src="/portal/manarimo.png" className="logo" />
         <Link to="/" className="nav-link">
           Top
         </Link>
