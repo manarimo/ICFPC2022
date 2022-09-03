@@ -8,6 +8,31 @@ import {
   SwapMove,
 } from "../parser";
 
+interface Image {
+  r: Uint8Array;
+  g: Uint8Array;
+  b: Uint8Array;
+  a: Uint8Array;
+  width: number;
+  height: number;
+}
+export function calculateSimilarity(problem: Image, state: State): number {
+  const numPx = problem.width * problem.height;
+  let score = 0;
+  for (let px = 0; px < numPx; px++) {
+    const probY = Math.floor(px / problem.width);
+    const probX = px % problem.width;
+    const solPx = (problem.height - probY - 1) * problem.width + probX;
+
+    const rDiff = Math.pow(problem.r[px] - state.r[solPx], 2);
+    const gDiff = Math.pow(problem.g[px] - state.g[solPx], 2);
+    const bDiff = Math.pow(problem.b[px] - state.b[solPx], 2);
+    const aDiff = Math.pow(problem.a[px] - state.a[solPx], 2);
+    score += Math.sqrt(rDiff + gDiff + bDiff + aDiff);
+  }
+  return Math.round(score * 0.005);
+}
+
 export const applySingleMove = (
   move: Move,
   state: State

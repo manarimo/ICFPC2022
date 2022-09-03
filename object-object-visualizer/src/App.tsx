@@ -6,6 +6,8 @@ import { ProblemViewer } from "./problem-viewer";
 import { useParams } from "react-router-dom";
 import useSWR, { BareFetcher } from "swr";
 import { manarimoFetch } from "./fetch";
+import { useProblemData } from "./hooks/useProblemData";
+import { calculateSimilarity } from "./simulate";
 
 const WIDTH = 400;
 const HEIGHT = 400;
@@ -35,6 +37,7 @@ function App() {
     fetcher(batchName, problemId)
   );
   const [program, setProgram] = useLocalStorage("ProgramEditor", "");
+  const problem = useProblemData(problemId);
 
   useEffect(() => {
     if (data !== undefined) {
@@ -56,10 +59,15 @@ function App() {
         />
       </div>
       <div>
-        <Viewer moves={moves} width={WIDTH} height={HEIGHT}></Viewer>
+        <Viewer
+          problemImage={problem.data}
+          moves={moves}
+          width={WIDTH}
+          height={HEIGHT}
+        ></Viewer>
       </div>
       <div>
-        <ProblemViewer></ProblemViewer>
+        <ProblemViewer image={problem.data} />
       </div>
     </div>
   );

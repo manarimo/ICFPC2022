@@ -2,10 +2,18 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Canvas } from "../canvas";
 import { InfoTable } from "../info-table";
 import { Move } from "../parser";
-import { applySingleMove, createNewState, getColor, State } from "../simulate";
+import {
+  applySingleMove,
+  calculateSimilarity,
+  createNewState,
+  getColor,
+  State,
+} from "../simulate";
+import { Image } from "../types";
 
 interface Props {
   moves: Move[];
+  problemImage?: Image;
   width: number;
   height: number;
 }
@@ -41,7 +49,7 @@ const Picture = React.memo(
   )
 );
 
-export const Viewer = ({ moves, height, width }: Props) => {
+export const Viewer = ({ moves, height, width, problemImage }: Props) => {
   const [turn, setTurn] = useState(0);
   const result = useMemo(() => {
     return calculate(moves, width, height);
@@ -54,6 +62,13 @@ export const Viewer = ({ moves, height, width }: Props) => {
     { x: number; y: number } | undefined
   >();
   const [zoom, setZoom] = useState(1);
+  const similarity = useMemo(() => {
+    if (problemImage && state) {
+      return calculateSimilarity(problemImage, state);
+    } else {
+      return 0;
+    }
+  }, [problemImage, state]);
 
   return (
     <div>
@@ -83,6 +98,7 @@ export const Viewer = ({ moves, height, width }: Props) => {
       </div>
       <div>
         <InfoTable
+          similarity={similarity}
           cost={state?.cost ?? 0}
           turn={turn}
           move={turn > 0 ? moves[turn - 1] : undefined}

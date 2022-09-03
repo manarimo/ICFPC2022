@@ -3,6 +3,7 @@ import { Move } from "../parser";
 
 interface Props {
   cost: number;
+  similarity: number;
   errorMessage?: string;
   move?: Move;
   turn: number;
@@ -11,6 +12,7 @@ interface Props {
 
 export const InfoTable = ({
   cost,
+  similarity,
   errorMessage,
   move,
   turn,
@@ -24,8 +26,16 @@ export const InfoTable = ({
           <td>{turn}</td>
         </tr>
         <tr>
+          <th>スコア</th>
+          <td>{cost + similarity}</td>
+        </tr>
+        <tr>
           <th>累積操作コスト</th>
           <td>{cost}</td>
+        </tr>
+        <tr>
+          <th>similarity</th>
+          <td>{similarity}</td>
         </tr>
         <tr>
           <th>座標</th>
