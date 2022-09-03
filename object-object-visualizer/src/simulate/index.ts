@@ -363,7 +363,12 @@ export const getHeatmapColor = (
   x: number,
   y: number
 ) => {
-  const similarity = calculatePixelSimilarity(image, state, x, image.height - 1 - y);
+  const similarity = calculatePixelSimilarity(
+    image,
+    state,
+    x,
+    image.height - 1 - y
+  );
   return {
     r: similarity / 2,
     g: similarity / 2,
