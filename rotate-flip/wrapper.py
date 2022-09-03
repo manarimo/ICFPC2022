@@ -36,12 +36,15 @@ if __name__ == '__main__':
             for flip in [False, True]:
                 dir_name = f"{args.output_dir.name}-{rotate}-{str(flip).lower()}"
                 output_dir = parent_dir / dir_name
-                output_dir.mkdir(parents=True)
+                output_dir.mkdir(parents=True, exist_ok=True)
                 for input_path in args.input_dir.iterdir():
                     with input_path.open() as input_file:
                         problem_id = input_path.name.replace(".txt", "")
                         output_path = output_dir / f"{problem_id}.isl"
                         print(output_path)
+                        if output_path.exists():
+                            continue
+                        output_path.touch()
                         output = run(input_file.read())
                         with output_path.open('w') as output_file:
                             output_file.write(output)
