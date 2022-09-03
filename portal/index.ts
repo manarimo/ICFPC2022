@@ -134,10 +134,12 @@ app.get('/api/solution_all', async function (req, res) {
 // GET /api/list_solutions?problemId=1
 app.get('/api/list_solutions', async function (req, res) {
     const problemId = req.query['problemId'];
-    const items = await listObjects('output/');
+    const directories = await listDirectories('output/');
+    const directoryItems = await Promise.all(directories.map((dir) => listObjects(dir.path)));
     const solutions = await Promise.all(
-        items
-            .filter((item) => item.path.endsWith(`${problemId}.json`))
+        directoryItems
+            .flat()
+            .filter((item) => item.path.endsWith(`/${problemId}.json`))
             .map(async (item) => {
                 const aiName = item.path.split('/')[1];
                 const obj = await getObject(item.path);
