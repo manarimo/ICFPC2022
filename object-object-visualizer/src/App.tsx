@@ -8,6 +8,7 @@ import useSWR, { BareFetcher } from "swr";
 import { manarimoFetch } from "./fetch";
 import { useProblemData } from "./hooks/useProblemData";
 import { calculateSimilarity } from "./simulate";
+import { useInitial } from "./hooks/useInitial";
 
 const WIDTH = 400;
 const HEIGHT = 400;
@@ -38,6 +39,7 @@ function App() {
   );
   const [program, setProgram] = useLocalStorage("ProgramEditor", "");
   const problem = useProblemData(problemId);
+  const initial = useInitial(problemId);
 
   useEffect(() => {
     if (data !== undefined) {
@@ -64,6 +66,7 @@ function App() {
           moves={moves}
           width={WIDTH}
           height={HEIGHT}
+          initialBlocks={initial.data?.blocks}
         ></Viewer>
       </div>
       <div>

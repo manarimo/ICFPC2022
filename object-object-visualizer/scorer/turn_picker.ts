@@ -1,10 +1,11 @@
 import * as fsPromises from 'fs/promises';
-import { calculateScore, Image, loadMoves, loadProblem, Solution, topNSolutions } from './util';
-import { applySingleMove, createNewState } from '../src/simulate';
+import { calculateScore, Image, loadInitialBlocks, loadMoves, loadProblem, Solution, topNSolutions } from './util';
+import { applySingleMove, createNewState, InitialBlock } from '../src/simulate';
 import { Move } from '../src/parser';
 
 async function main() {
     const problemCache: Record<string, Image> = {};
+    const initialBlockCache: Record<string, InitialBlock[] | null> = {};
     const bestTurns: Record<string, { score: number; turn: number; spec: Solution; moves: Move[] }> = {};
 
     for await (let solution of topNSolutions(3)) {
@@ -21,9 +22,17 @@ async function main() {
         const solutionPath = `../../output/${solution.batchName}/${solution.problemId}.isl`;
         const moves = await loadMoves(solutionPath);
 
+        let initialBlocks: InitialBlock[] | null;
+        if (solution.problemId in initialBlockCache) {
+            initialBlocks = initialBlockCache[solution.problemId];
+        } else {
+            const initialBlocksPath = `../../problem/original/${solution.problemId}.initial.json`;
+            initialBlocks = initialBlockCache[solution.problemId] = (await loadInitialBlocks(initialBlocksPath)) ?? null;
+        }
+
         let bestTurn: number = 0;
         let bestScore = 1e9;
-        let state = createNewState(problem.width, problem.height);
+        let state = createNewState(problem.width, problem.height, initialBlocks);
         moves.forEach((move, i) => {
             const res = applySingleMove(move, state);
             if (res.kind == 'error') {

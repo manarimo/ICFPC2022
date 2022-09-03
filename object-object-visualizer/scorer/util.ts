@@ -1,7 +1,8 @@
 import * as fsPromises from 'fs/promises';
+import * as fs from 'fs';
 import { PNG } from 'pngjs';
 import { Move, parseProgram } from '../src/parser';
-import { State, createNewState, applySingleMove, calculateSimilarity } from '../src/simulate';
+import { State, applySingleMove, calculateSimilarity, InitialBlock } from '../src/simulate';
 
 export interface Image {
     r: Uint8Array;
@@ -15,8 +16,24 @@ export interface Image {
 export class SolutionSpec {
     constructor(readonly batchName: string, readonly problemId: string) {}
 
-    get solutionPath(): string {
-        return `${this.batchName}/${this.problemId}.isl`;
+    solutionPath(prefix: string = '../..'): string {
+        return `${prefix}/output/${this.batchName}/${this.problemId}.isl`;
+    }
+
+    scoreJsonPath(prefix: string = '../..'): string {
+        return `${prefix}/output/${this.batchName}/${this.problemId}.json`;
+    }
+
+    solutionImagePath(prefix: string = '../..'): string {
+        return `${prefix}/output/${this.batchName}/${this.problemId}.png`;
+    }
+
+    problemImagePath(prefix: string = '../..'): string {
+        return `${prefix}/problem/original/${this.problemId}.png`;
+    }
+
+    initialBlocksPath(prefix: string = '../..'): string {
+        return `${prefix}/problem/original/${this.problemId}.initial.json`;
     }
 }
 
@@ -62,6 +79,14 @@ export async function loadMoves(solutionFile: string): Promise<Move[]> {
     return parseProgram(solutionBuffer.toString());
 }
 
+export async function loadInitialBlocks(initialBlocksFile: string): Promise<InitialBlock[] | undefined> {
+    if (!fs.existsSync(initialBlocksFile)) {
+        return undefined;
+    }
+    const initialBlockBuffer = await fsPromises.readFile(initialBlocksFile);
+    return JSON.parse(initialBlockBuffer.toString()).blocks as InitialBlock[];
+}
+
 export async function* dirEntries(path: string) {
     const dirHandle = await fsPromises.opendir(path);
     while (true) {
@@ -74,25 +99,28 @@ export async function* dirEntries(path: string) {
     dirHandle.close();
 }
 
+export async function* solutionsForBatch(batchName: string): AsyncGenerator<SolutionSpec> {
+    for await (let entry of dirEntries(`../../output/${batchName}`)) {
+        if (entry.isDirectory()) {
+            continue;
+        }
+        if (!entry.name.endsWith('.isl')) {
+            continue;
+        }
+
+        const problemId = entry.name.slice(0, -4);
+        yield new SolutionSpec(batchName, problemId);
+    }
+}
+
 export async function* allSolutions(): AsyncGenerator<SolutionSpec> {
-    // Enumerate all batches
     for await (let entry of dirEntries('../../output')) {
+        // Batch must be a directory
         if (!entry.isDirectory()) {
             continue;
         }
 
-        // Enumerate all solutions in the batch
-        for await (let entry2 of dirEntries(`../../output/${entry.name}`)) {
-            if (entry2.isDirectory()) {
-                continue;
-            }
-            if (!entry2.name.endsWith('.isl')) {
-                continue;
-            }
-
-            const problemId = entry2.name.slice(0, -4);
-            yield new SolutionSpec(entry.name, problemId);
-        }
+        yield* solutionsForBatch(entry.name);
     }
 }
 
