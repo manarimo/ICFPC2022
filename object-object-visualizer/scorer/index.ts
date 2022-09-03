@@ -1,7 +1,7 @@
 import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
-import { Move, parseProgram } from './parser';
-import { State, createNewState, applySingleMove, calculateSimilarity } from './simulate';
+import { Move, parseProgram } from '../src/parser';
+import { State, createNewState, applySingleMove, calculateSimilarity } from '../src/simulate';
 
 interface Image {
     r: Uint8Array;
