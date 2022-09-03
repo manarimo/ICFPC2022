@@ -9,6 +9,31 @@ interface Props {
   width: number;
   height: number;
 }
+const Picture = React.memo(
+  ({
+    width,
+    height,
+    state,
+    setMousePos,
+  }: {
+    width: number;
+    height: number;
+    state: State | undefined;
+    setMousePos: (obj: { x: number; y: number } | undefined) => void;
+  }) => (
+    <Canvas
+      width={width}
+      height={height}
+      getColor={(x, y) =>
+        state ? getColor(state, x, y) : { r: 255, g: 255, b: 255, a: 255 }
+      }
+      onMouseMove={(x, y) => {
+        setMousePos({ x, y });
+      }}
+    />
+  )
+);
+
 export const Viewer = ({ moves, height, width }: Props) => {
   const [turn, setTurn] = useState(0);
   const result = useMemo(() => {
@@ -24,15 +49,11 @@ export const Viewer = ({ moves, height, width }: Props) => {
 
   return (
     <div>
-      <Canvas
+      <Picture
         width={width}
         height={height}
-        getColor={(x, y) =>
-          state ? getColor(state, x, y) : { r: 255, g: 255, b: 255, a: 255 }
-        }
-        onMouseMove={(x, y) => {
-          setMousePos({ x, y });
-        }}
+        state={state}
+        setMousePos={setMousePos}
       />
       <div>
         <input

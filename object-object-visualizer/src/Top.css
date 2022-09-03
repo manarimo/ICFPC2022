@@ -1,0 +1,20 @@
+.batch-pane {
+  border: 1px solid black;
+  margin-top: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.batch-name {
+  font-size: 20px;
+}
+
+.batch-solutions-list {
+  display: flex;
+}
+
+.batch-solution-link {
+  display: block;
+  padding: 0 8px;
+}

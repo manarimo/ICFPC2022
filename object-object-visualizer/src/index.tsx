@@ -13,6 +13,7 @@ root.render(
       <Routes>
         <Route path="/" element={<Top />} />
         <Route path="/vis" element={<App />} />
+        <Route path="/vis/:batchName/:problemId" element={<App />} />
       </Routes>
     </HashRouter>
   </React.StrictMode>
