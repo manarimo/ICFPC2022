@@ -22,6 +22,7 @@ pub struct State {
     blocks: BTreeMap<Label, Block>,
     cost: i64,
     canvas: Block,
+    pub global_counter: u8,
 }
 
 impl State {
@@ -44,7 +45,13 @@ impl State {
                 y1: 0,
                 y2: height,
             },
+            global_counter: 0,
         }
+    }
+
+    pub fn new_label(&mut self) -> Label {
+        self.global_counter += 1;
+        Label(vec![self.global_counter])
     }
 
     pub fn push_block(&mut self, label: Label, block: Block) {
@@ -75,10 +82,15 @@ pub struct Block {
 }
 
 impl Block {
-    fn size(&self) -> i64 {
+    pub fn size(&self) -> i64 {
+        let (dx, dy) = self.rect();
+        dx * dy
+    }
+
+    pub fn rect(&self) -> (i64, i64) {
         let dx = self.x2 - self.x1;
         let dy = self.y2 - self.y1;
-        (dx * dy) as i64
+        (dx as i64, dy as i64)
     }
 }
 

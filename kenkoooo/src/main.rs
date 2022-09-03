@@ -13,35 +13,6 @@ fn main() {
         score: state.calc_score(&picture),
         value: state,
     }));
-
-    let mut rng = StdRng::seed_from_u64(181);
-    loop {
-        let mut next = BinaryHeap::new();
-        for _ in 0..30 {
-            let state = match heap.pop() {
-                Some(Reverse(Sortable {
-                    score: _,
-                    value: state,
-                })) => state,
-                _ => {
-                    break;
-                }
-            };
-
-            for _ in 0..1000 {
-                match rng.gen::<u32>() % 3 {
-                    0 => {
-                        // lcut
-                    }
-                    1 => {
-                        //
-                    }
-                    2 => {}
-                    _ => unimplemented!(),
-                }
-            }
-        }
-    }
 }
 
 struct Sortable<S, V> {
