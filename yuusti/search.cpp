@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <queue>
 
 using namespace std;
 
@@ -52,19 +53,24 @@ struct block {
 
 struct state {
     vector<vector<vector<int>>> board;
+    int cost;
     int score;
     vector<string> operation;
     block prev_block;
     block current_block;
     int id;
 
-    state(vector<vector<vector<int>>> board, int score, vector<string> operation, block prev_block, block current_block, int id) 
-    : board(board), score(score), operation(operation), prev_block(prev_block), current_block(current_block), id(id) {}
+    state(vector<vector<vector<int>>> board, int cost, int score, vector<string> operation, block prev_block, block current_block, int id) 
+    : board(board), cost(cost), score(score), operation(operation), prev_block(prev_block), current_block(current_block), id(id) {}
 
     void print() const {
         for (auto s: operation) {
             printf("%s", s.c_str());
         }
+    }
+
+    bool operator<(const state& s) const {
+        return (score + cost) < (s.score + s.cost);
     }
 };
 
@@ -370,9 +376,9 @@ pair<block, int> paint_column(int x, int y, vector<int>& cut_x, vector<int>& cut
     return make_pair(r.first, r.second + cost);
 }
 
-int paint(int x, vector<int>& cut_x, vector<int>& cut_y, state &state) {
-    if (x + 1 >= (int) cut_x.size()) return 0;
-    
+void paint(int x, vector<int>& cut_x, vector<int>& cut_y, state &state) {
+    if (x + 1 >= (int) cut_x.size()) return;
+   
     // paint_column
     auto ret = paint_column(x, 0, cut_x, cut_y, state, 0, color(0,0,0,0));
     state.current_block = ret.first;
@@ -397,12 +403,39 @@ int paint(int x, vector<int>& cut_x, vector<int>& cut_y, state &state) {
         next_block.left = cut_x[x + 1];
     }
 
+
     state.prev_block = state.current_block;
     state.current_block = next_block;
 
-    cost += paint(x + 1, cut_x, cut_y, state);
+    state.cost += cost;
+    state.score = similarity_cost(cut_x[x + 1], MAX_H, state);
+}
 
-    return cost;
+priority_queue<state> paint(int x, vector<int>& cut_x, vector<int>& cut_y, priority_queue<state> &state_queue) {
+    if (x + 1 >= (int) cut_x.size()) return state_queue;
+
+    priority_queue<state> next_queue;
+
+    while(!state_queue.empty()) {
+        auto state = state_queue.top();
+        state_queue.pop();
+
+        fprintf(stderr, "x=%d\n", x);
+        fprintf(stderr, "current cost: %d\n", state.cost);
+        fprintf(stderr, "current score: %d\n", state.score);
+
+        auto not_paint = state;
+        next_queue.push(not_paint);
+
+        paint(x, cut_x, cut_y, state);
+        next_queue.push(state);
+
+        if (next_queue.size() > 2) {
+            next_queue.pop();
+        }
+    }
+
+    return paint(x + 1, cut_x, cut_y, next_queue);
 }
 
 void auto_border(int w, int h, vector<int>& cut_x, vector<int>& cut_y) {
@@ -560,14 +593,24 @@ int main() {
         }
     }
 
-    state s = state(board, 0, vector<string>(), block("", 0, 0, 0, 0), block("0", MAX_W, MAX_H, 0, 0), id);
+    state s = state(board, 0, 0, vector<string>(), block("", 0, 0, 0, 0), block("0", MAX_W, MAX_H, 0, 0), id);
+    priority_queue<state> q;
+    q.push(s);
 
-    int cost = paint(0, cut_x, cut_y, s);
-    int similarity = round(similarity_cost(w, h, s));
+    auto queue = paint(0, cut_x, cut_y, q);
 
-    fprintf(stderr, "manipulation cost: %d\n", cost);
-    fprintf(stderr, "similarity cost: %d\n", similarity);
-    fprintf(stderr, "total cost: %d\n", cost + similarity);
+    while (!queue.empty()) {
+        auto state = queue.top(); queue.pop();
+
+        int similarity = round(similarity_cost(w, h, state));
+        fprintf(stderr, "manipulation cost: %d\n", state.cost);
+        fprintf(stderr, "similarity cost: %d\n", similarity);
+        fprintf(stderr, "similarity cost2: %d\n", state.score);
+        fprintf(stderr, "total cost: %d\n\n", state.cost + similarity);
+
+        state.print();
+        break;
+    }
     
     return 0;
 }
