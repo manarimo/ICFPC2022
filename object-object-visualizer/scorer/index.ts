@@ -66,16 +66,46 @@ function calculateScore(problem: Image, state: State): number {
     return state.cost + calculateSimilarity(problem, state);
 }
 
-async function main() {
-    const problemPngFile = process.argv[2];
-    const solutionFile = process.argv[3];
-
+async function doScoring(problemPngFile: string, solutionFile: string): Promise<number> {
     const problem = await loadProblem(problemPngFile);
     const solution = await loadSolution(solutionFile);
     const solutionOutput = run(problem, solution);
-    const score = calculateScore(problem, solutionOutput);
+    return calculateScore(problem, solutionOutput);
+}
 
-    console.log(score);
+async function* dirEntries(path: string) {
+    const dirHandle = await fsPromises.opendir(path);
+    while(true) {
+        const dir = await dirHandle.read();
+        if (dir == null) {
+            break;
+        }
+        yield dir;
+    }
+    dirHandle.close();
+}
+
+async function main() {
+    for await (let entry of dirEntries('../../output')) {
+        if (!entry.isDirectory()) {
+            continue;
+        }
+        for await (let entry2 of dirEntries(`../../output/${entry.name}`)) {
+            if (entry2.isDirectory()) {
+                continue;
+            }
+
+            console.log(`../../output/${entry.name}/${entry2.name}`);
+            const id = entry2.name.slice(0, -4);
+
+            const problemPngFile = `../../problem/original/${id}.png`;
+            const solutionFile = `../../output/${entry.name}/${entry2.name}`;
+            const score = await doScoring(problemPngFile, solutionFile)
+
+            const specJsonFile = `../../output/${entry.name}/${id}.json`;
+            await fsPromises.writeFile(specJsonFile, JSON.stringify({score: score}));
+        }
+    }
 }
 
 main();
