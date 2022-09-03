@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <set>
 
 using namespace std;
 
@@ -295,6 +296,84 @@ int paint(int x, vector<int>& cut_x, vector<int>& cut_y, block painted_node, blo
     return cost;
 }
 
+void auto_border(int w, int h, vector<int>& cut_x, vector<int>& cut_y) {
+    int min_distance = 10;
+    int cut_count = 15;
+
+    vector<pair<int, double>> diff_x;
+    for (int x = 0; x + 1 < w; x++) {
+        double diff = 0;
+        for (int y = 0; y < h; y++) {
+            double d = 0;
+            for (int k = 0; k < 4; k++) {
+                d += (p[y][x][k] - p[y][x+1][k]) * (p[y][x][k] - p[y][x+1][k]);
+            }
+            diff += sqrt(d);
+        }
+        diff_x.push_back(make_pair(x, diff));
+    }
+    sort(diff_x.begin(), diff_x.end(), [](auto const& lhs, auto const& rhs){
+        return lhs.second > rhs.second;
+    });
+
+    set<int> xs;
+    cut_x.push_back(0); cut_x.push_back(w);
+    xs.insert(0); xs.insert(w);
+    for (int i = 0; xs.size() < cut_count; i++) {
+        int x = diff_x[i].first + 1;
+        bool ng = false;
+        for (int j = x - min_distance; j <= x + min_distance; j++) {
+            if (xs.count(j)) {
+                ng = true;
+                break;
+            }
+        }
+        if (ng) {
+            continue;
+        }
+        cut_x.push_back(x);
+        xs.insert(x);
+    }
+    sort(cut_x.begin(), cut_x.end());
+
+    vector<pair<int, double>> diff_y;
+    for (int y = 0; y + 1 < h; y++) {
+        double diff = 0;
+        for (int x = 0; x < w; x++) {
+            double d = 0;
+            for (int k = 0; k < 4; k++) {
+                d += (p[y][x][k] - p[y+1][x][k]) * (p[y][x][k] - p[y+1][x][k]);
+            }
+            diff += sqrt(d);
+        }
+        diff_y.push_back(make_pair(y, diff));
+    }
+    sort(diff_y.begin(), diff_y.end(), [](auto const& lhs, auto const& rhs){
+        return lhs.second > rhs.second;
+    });
+
+    set<int> ys;
+    cut_y.push_back(0); cut_y.push_back(w);
+    ys.insert(0);
+    ys.insert(w);
+    for (int i = 0; ys.size() < cut_count; i++) {
+        int y = diff_y[i].first + 1;
+        bool ng = false;
+        for (int j = y - min_distance; j <= y + min_distance; j++) {
+            if (ys.count(j)) {
+                ng = true;
+                break;
+            }
+        }
+        if (ng) {
+            continue;
+        }
+        cut_y.push_back(y);
+        ys.insert(y);
+    }
+    sort(cut_y.begin(), cut_y.end());
+}
+
 int main() {
     int w, h;
     scanf("%d %d", &w, &h);
@@ -322,10 +401,13 @@ int main() {
     // vector<int> cut_x = {0, 19, 40, 87, 97, 107, 117, 127, 137, 147, 157, 167, 177, 187, 197, 207, 217, 227, 237, 247, 257, 267, 277, 400};
     // vector<int> cut_y = {0, 13, 42, 76, 87, 98, 109, 120, 131, 142, 152, 162, 172, 182, 192, 202, 212, 222, 232, 242, 252, 262, 272, 282, 292, 302, 312, 322, 332, 342, 400};
 
-
     // #21
-    vector<int> cut_x = {0, 8, 42, 48, 93, 100, 144, 151, 247, 254, 311, 319, 375, 383, 400};
-    vector<int> cut_y = {0, 8, 14, 19, 24, 47, 53, 95, 103, 147, 154, 249, 257, 350, 358, 400};
+    // vector<int> cut_x = {0, 8, 42, 48, 93, 100, 144, 151, 247, 254, 311, 319, 375, 383, 400};
+    // vector<int> cut_y = {0, 8, 14, 19, 24, 47, 53, 95, 103, 147, 154, 249, 257, 350, 358, 400};
+
+    // #23
+    // vector<int> cut_x = {0, 42, 126, 160, 196, 205, 208, 223, 227, 305, 358, 400};
+    // vector<int> cut_y = {0, 171, 180, 192, 211, 214, 242, 320, 324, 329, 334, 369, 400};
 
     // general
     /*
@@ -353,6 +435,9 @@ int main() {
     }
     fprintf(stderr, "\n");
     */
+
+    vector<int> cut_x, cut_y;
+    auto_border(w, h, cut_x, cut_y);
 
     int cost = paint(0, cut_x, cut_y, block("", 0, 0), block("0", MAX_W, MAX_H), id);
 
