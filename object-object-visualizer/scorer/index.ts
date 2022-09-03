@@ -157,10 +157,10 @@ async function main() {
 
             // Record solution in the buffer
             const solution = new Solution(entry.name, id, score);
-            if (entry.name in solutionsByProblem) {
-                solutionsByProblem[entry.name].push(solution);
+            if (id in solutionsByProblem) {
+                solutionsByProblem[id].push(solution);
             } else {
-                solutionsByProblem[entry.name] = [solution];
+                solutionsByProblem[id] = [solution];
             }
         }
     }
@@ -170,7 +170,7 @@ async function main() {
         solutions.sort((a, b) => a.score - b.score);
     }
 
-    // Fix the key for consistent output
+    // Fix the order of keys for consistent output
     const dict: typeof solutionsByProblem = {};
     for (let problemId of Object.keys(solutionsByProblem).sort()) {
         dict[problemId] = solutionsByProblem[problemId];
