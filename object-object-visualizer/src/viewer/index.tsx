@@ -73,7 +73,13 @@ const Picture = React.memo(
   )
 );
 
-export const Viewer = ({ moves, height, width, problemImage, initialBlocks }: Props) => {
+export const Viewer = ({
+  moves,
+  height,
+  width,
+  problemImage,
+  initialBlocks,
+}: Props) => {
   const [turn, setTurn] = useState(0);
   const [isHeatmap, setisHeatmap] = useState(false);
   const result = useMemo(() => {
@@ -160,7 +166,12 @@ export const Viewer = ({ moves, height, width, problemImage, initialBlocks }: Pr
   );
 };
 
-const calculate = (moves: Move[], width: number, height: number, initialBlocks?: InitialBlock[]) => {
+const calculate = (
+  moves: Move[],
+  width: number,
+  height: number,
+  initialBlocks?: InitialBlock[]
+) => {
   let state = createNewState(width, height, initialBlocks);
   const states = [state];
   for (const move of moves) {

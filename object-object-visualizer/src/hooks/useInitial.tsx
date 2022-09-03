@@ -2,10 +2,10 @@ import useSWR from "swr";
 import { InitialBlock } from "../simulate";
 
 type Initial = {
-  width: number,
-  height: number,
-  blocks: InitialBlock[],
-}
+  width: number;
+  height: number;
+  blocks: InitialBlock[];
+};
 
 export const useInitial = (problemId: string | undefined) => {
   return useSWR(
@@ -17,7 +17,5 @@ export const useInitial = (problemId: string | undefined) => {
 };
 
 const fetchJson = async (url: string) => {
-  return fetch(url).then((response) => {
-    return response.json() as Promise<Initial>
-  );
+  return fetch(url).then((response) => response.json() as Promise<Initial>);
 };

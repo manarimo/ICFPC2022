@@ -314,28 +314,36 @@ export type InitialBlock = {
   bottomLeft: [number, number];
   topRight: [number, number];
   color: [number, number, number, number];
-}
+};
 
-export const createNewState = (width: number, height: number, blocks?: InitialBlock[]): State => {
-  const initialBlocks: InitialBlock[] = blocks ?? [{
-    blockId: "0",
-    bottomLeft: [0, 0],
-    topRight:[400, 400],
-    color: [255, 255, 255, 255]
-  }]
+export const createNewState = (
+  width: number,
+  height: number,
+  blocks?: InitialBlock[]
+): State => {
+  const initialBlocks: InitialBlock[] = blocks ?? [
+    {
+      blockId: "0",
+      bottomLeft: [0, 0],
+      topRight: [400, 400],
+      color: [255, 255, 255, 255],
+    },
+  ];
 
   const state = {
-    blocks: new Map(initialBlocks.map(block => {
-      return [
-        block.blockId,
-        {
-          x1: block.bottomLeft[0],
-          y1: block.bottomLeft[1],
-          x2: block.topRight[0],
-          y2: block.topRight[1],
-        }
-      ]
-    })),
+    blocks: new Map(
+      initialBlocks.map((block) => {
+        return [
+          block.blockId,
+          {
+            x1: block.bottomLeft[0],
+            y1: block.bottomLeft[1],
+            x2: block.topRight[0],
+            y2: block.topRight[1],
+          },
+        ];
+      })
+    ),
     width,
     height,
     r: new Uint8Array(width * height).fill(255),
@@ -345,7 +353,7 @@ export const createNewState = (width: number, height: number, blocks?: InitialBl
     globalCounter: initialBlocks.length - 1,
     cost: 0,
   };
-  initialBlocks.forEach(block => {
+  initialBlocks.forEach((block) => {
     for (let x = block.bottomLeft[0]; x < block.topRight[0]; x++) {
       for (let y = block.bottomLeft[1]; y < block.topRight[1]; y++) {
         const position = y * width + x;
@@ -353,9 +361,9 @@ export const createNewState = (width: number, height: number, blocks?: InitialBl
         state.g[position] = block.color[1];
         state.b[position] = block.color[2];
         state.a[position] = block.color[3];
-      }  
+      }
     }
-  })
+  });
   return state;
 };
 

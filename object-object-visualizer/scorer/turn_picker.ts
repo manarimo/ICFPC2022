@@ -27,7 +27,7 @@ async function main() {
             initialBlocks = initialBlockCache[solution.problemId];
         } else {
             const initialBlocksPath = `../../problem/original/${solution.problemId}.initial.json`;
-            initialBlocks = initialBlockCache[solution.problemId] = await loadInitialBlocks(initialBlocksPath) ?? null;
+            initialBlocks = initialBlockCache[solution.problemId] = (await loadInitialBlocks(initialBlocksPath)) ?? null;
         }
 
         let bestTurn: number = 0;
