@@ -1,3 +1,5 @@
+const PNG = require("pngjs/browser");
+
 import React, { useState } from "react";
 import useSWR from "swr";
 import { Canvas } from "../canvas";
@@ -43,34 +45,47 @@ export const ProblemViewer = ({ width, height }: Props) => {
   );
 };
 
+interface Image {
+  r: Uint8Array;
+  g: Uint8Array;
+  b: Uint8Array;
+  a: Uint8Array;
+  width: number;
+  height: number;
+}
 const fetchProblem = async (url: string) => {
-  const body = await fetch(url, { mode: "no-cors" }).then((response) =>
-    response.text()
+  const blob = await fetch(url, { mode: "no-cors" }).then((response) =>
+    response.blob()
   );
-  const values = body
-    .split("\n")
-    .flatMap((line) => line.split(" "))
-    .map((value) => Number.parseInt(value.trim()))
-    .filter((value) => Number.isInteger(value));
-  const width = values[0];
-  const height = values[1];
-  const r = new Uint8Array(width * height);
-  const g = new Uint8Array(width * height);
-  const b = new Uint8Array(width * height);
-  const a = new Uint8Array(width * height);
-  for (let i = 0; i < width * height; i++) {
-    r[i] = values[i + 2];
-    g[i] = values[i + 2 + width * height];
-    b[i] = values[i + 2 + width * height * 2];
-    a[i] = values[i + 2 + width * height * 3];
-  }
-  return { r, g, b, a };
+
+  const p = new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = () => {
+      reject(reader.error);
+    };
+
+    reader.readAsBinaryString(blob);
+  });
+
+  const binaryString = await p;
+  console.log(binaryString);
+  new PNG({ filterType: 4 }).parse(
+    binaryString,
+    function (error: unknown, data: unknown) {
+      console.log(error, data);
+    }
+  );
 };
 
 const useProblemData = (problemId: number) => {
   return useSWR(
     problemId
-      ? `http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/problem/plaintext/${problemId}.txt`
+      ? `http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/problem/original/${problemId}.png`
       : null,
     (url) => fetchProblem(url)
   );
