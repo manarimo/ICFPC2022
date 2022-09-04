@@ -74,7 +74,7 @@ pub fn optimize_color_free_lunch(
         .collect()
 }
 
-fn old_optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
+fn _old_optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
     let mut cur_color = initial_color;
     let mut cur_similarity = point_raw_similarity(target, &cur_color, points);
     loop {
