@@ -3,7 +3,7 @@ import express from 'express';
 import { S3 } from 'aws-sdk';
 import { GetObjectOutput, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import cors from 'cors';
-// import fetch from 'node-fetch';
+import https from 'node:https';
 
 const BUCKET = 'icfpc2022-manarimo';
 
@@ -158,41 +158,80 @@ app.get('/api/list_solutions', async function (req, res) {
     });
 });
 
-// app.get('/api/best_scores', async function (req, res) {
-//     const response = await fetch('https://robovinci.xyz/api/users/login', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({
-//             email: 'osak.63@gmail.com',
-//             password: process.env['PASSWORD'],
-//         }),
-//     });
-//     const body = (await response.json()) as {
-//         token: string;
-//     };
+app.get('/api/best_scores', async function (req, res) {
+    const postData = JSON.stringify({
+        email: 'osak.63@gmail.com',
+        password: process.env['PASSWORD'],
+    });
 
-//     const result = await fetch('https://robovinci.xyz/api/results/user', {
-//         headers: {
-//             Authorization: `Bearer ${body.token}`,
-//         },
-//     });
-//     const resultBody = (await result.json()) as {
-//         results: {
-//             problem_id: number;
-//             overall_best_cost: number;
-//         }[];
-//     };
+    const body = await new Promise<{ token: string }>((resolve, reject) => {
+        const req = https.request(
+            {
+                host: 'robovinci.xyz',
+                path: '/api/users/login',
+                port: 443,
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': postData.length,
+                },
+            },
+            (res) => {
+                res.on('data', (d: Buffer) => {
+                    resolve(
+                        JSON.parse(d.toString()) as {
+                            token: string;
+                        },
+                    );
+                });
+            },
+        );
 
-//     const bestScores = resultBody.results.map(({ problem_id, overall_best_cost }) => ({
-//         problemId: problem_id.toString(),
-//         bestScore: overall_best_cost,
-//     }));
-//     res.json({
-//         bestScores,
-//     });
-// });
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        req.write(postData);
+        req.end();
+    });
+
+    const resultBody = await new Promise<{ results: { problem_id: number; overall_best_cost: number }[] }>((resolve, reject) => {
+        const req = https.request(
+            {
+                host: 'robovinci.xyz',
+                path: '/api/results/user',
+                port: 443,
+                method: 'get',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${body.token}`,
+                },
+            },
+            (res) => {
+                const data: string[] = [];
+                res.on('data', (d: Buffer) => {
+                    data.push(d.toString());
+                });
+                res.on('end', () => {
+                    resolve(JSON.parse(data.join('')));
+                });
+            },
+        );
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+        req.end();
+    });
+
+    const bestScores = resultBody.results.map(({ problem_id, overall_best_cost }) => ({
+        problemId: problem_id.toString(),
+        bestScore: overall_best_cost,
+    }));
+    res.json({
+        bestScores,
+    });
+});
 
 export const handler = serverlessExpress({ app });
 
