@@ -9,6 +9,7 @@ import { Input, Output, Processor } from './metaprocessor';
 import { parseProgram } from '../src/parser';
 import { CopyrightPlugin } from './plugin/copyright_plugin';
 import { Rotator } from './rotator';
+import {TurnPicker} from "./plugin/turn_picker";
 
 interface Options {
     problemId: string;
@@ -113,6 +114,9 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
 
     // Sink
     let pipeline = (input: Input) => processRunner.run(input);
+
+    // Add turn-picker plugin
+    pipeline = wrap(pipeline, new TurnPicker());
 
     // Add rotator plugin
     if (options.rotate || options.flip) {
