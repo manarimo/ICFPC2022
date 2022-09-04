@@ -12,7 +12,9 @@ using namespace std;
 
 const int MAX_H = 400;
 const int MAX_W = 400;
-const int MAX_COLOR = 50;
+const int MAX_AUTO_COLOR = 30;
+const int MAX_EXTRACT_COLOR = 20;
+const int MAX_COLOR = MAX_AUTO_COLOR + MAX_EXTRACT_COLOR;
 const int LIMIT_X = 100;
 const int LIMIT_Y = 400;
 const double INF = 1e9;
@@ -450,12 +452,9 @@ vector<color> additional_color(const vector<color>& pallet, int to_add) {
 int main() {
     input();
     
-    int additional_pallet_size = 20;
+    colors = create_color_pallet(MAX_AUTO_COLOR);
 
-    int pallet_size = MAX_COLOR - additional_pallet_size;
-    colors = create_color_pallet(pallet_size);
-
-    for (auto c : additional_color(colors, additional_pallet_size)) {
+    for (auto c : additional_color(colors, MAX_EXTRACT_COLOR)) {
         colors.push_back(c);
     }
     
