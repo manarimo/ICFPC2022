@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::types::{Label, State};
 
+#[derive(Clone)]
 pub struct LineCut {
     pub label: Label,
     pub orientation: Orientation,
@@ -14,6 +15,7 @@ impl Display for LineCut {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum Orientation {
     X,
     Y,

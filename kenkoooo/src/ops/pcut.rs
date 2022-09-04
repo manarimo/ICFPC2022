@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use crate::types::{Label, State};
-
+#[derive(Clone)]
 pub struct PointCut {
     pub label: Label,
     pub x: usize,

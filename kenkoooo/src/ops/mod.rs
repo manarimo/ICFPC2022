@@ -10,6 +10,7 @@ use crate::types::State;
 
 use self::{color::Color, lcut::LineCut, merge::Merge, pcut::PointCut, swap::Swap};
 
+#[derive(Clone)]
 pub enum Move {
     LineCut(LineCut),
     PointCut(PointCut),

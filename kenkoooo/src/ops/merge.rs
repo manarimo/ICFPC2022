@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::types::{Block, Label, State};
 
+#[derive(Clone)]
 pub struct Merge {
     pub label1: Label,
     pub label2: Label,

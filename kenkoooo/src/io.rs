@@ -14,12 +14,14 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
 
     let mut rgba = vec![vec![crate::types::RGBA([255; 4]); w]; h];
     for color in 0..4 {
-        for i in 0..h {
+        // 使いやすいように上下反転させておく
+        for i in (0..h).rev() {
             for j in 0..w {
                 rgba[i][j].0[color] = sc.read();
             }
         }
     }
+    let target = Picture(rgba);
 
     let mut state = State::new(w, h);
     state.pop_block(&Label(vec![0]));
@@ -47,5 +49,5 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
         state.global_counter = state.global_counter.max(id);
     }
     state.cost = 0;
-    (Picture(rgba), state)
+    (target, state)
 }

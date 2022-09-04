@@ -96,7 +96,7 @@ impl Block {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct RGBA(pub [u8; 4]);
 
 impl Display for RGBA {
@@ -136,4 +136,10 @@ impl Label {
     pub fn push(&mut self, suffix: u32) {
         self.0.push(suffix);
     }
+}
+
+#[derive(Clone, Copy)]
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
 }
