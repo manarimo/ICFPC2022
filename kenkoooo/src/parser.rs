@@ -12,11 +12,10 @@ use crate::{
     types::{Label, RGBA},
 };
 
-/// 提出用の ISL は Y 座標が反転している
-pub fn read_solution<P: AsRef<Path>>(path: P) -> Vec<Move> {
-    let code = read_to_string(path).unwrap();
+pub fn read_solution<P: AsRef<Path>>(path: P) -> anyhow::Result<Vec<Move>> {
+    let code = read_to_string(path)?;
     let moves = parse_code(&code);
-    moves
+    Ok(moves)
 }
 
 fn parse_code(code: &str) -> Vec<Move> {

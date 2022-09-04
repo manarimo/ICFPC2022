@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use anyhow::Result;
+
 use crate::types::{Block, Label, State};
 
 #[derive(Clone)]
@@ -15,10 +17,10 @@ impl Display for Merge {
 }
 
 impl State {
-    pub(super) fn apply_merge(&self, m: &Merge) -> Self {
+    pub(super) fn apply_merge(&self, m: &Merge) -> Result<Self> {
         let mut new_state = self.clone();
-        let block1 = new_state.pop_block(&m.label1);
-        let block2 = new_state.pop_block(&m.label2);
+        let block1 = new_state.pop_block(&m.label1)?;
+        let block2 = new_state.pop_block(&m.label2)?;
 
         let x1 = block1.x1.min(block2.x1);
         let y1 = block1.y1.min(block2.y1);
@@ -32,6 +34,6 @@ impl State {
         } else {
             new_state.add_cost(1, &block2);
         }
-        new_state
+        Ok(new_state)
     }
 }

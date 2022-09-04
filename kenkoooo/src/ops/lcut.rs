@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use anyhow::Result;
+
 use crate::types::{Label, State};
 
 #[derive(Clone)]
@@ -31,9 +33,9 @@ impl Display for Orientation {
 }
 
 impl State {
-    pub(super) fn apply_lcut(&self, m: &LineCut) -> Self {
+    pub(super) fn apply_lcut(&self, m: &LineCut) -> Result<Self> {
         let mut new_state = self.clone();
-        let block = new_state.pop_block(&m.label);
+        let block = new_state.pop_block(&m.label)?;
         new_state.add_cost(7, &block);
         match m.orientation {
             Orientation::X => {
@@ -53,7 +55,7 @@ impl State {
                 new_state.push_block(left_label, left);
                 new_state.push_block(right_label, right);
 
-                new_state
+                Ok(new_state)
             }
             Orientation::Y => {
                 assert!(block.y1 <= m.pos && m.pos < block.y2);
@@ -72,7 +74,7 @@ impl State {
                 new_state.push_block(top_label, top);
                 new_state.push_block(bottom_label, bottom);
 
-                new_state
+                Ok(new_state)
             }
         }
     }

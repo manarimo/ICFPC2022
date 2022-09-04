@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use anyhow::{anyhow, Result};
+
 use crate::types::{Label, State};
 #[derive(Clone)]
 pub struct PointCut {
@@ -14,12 +16,16 @@ impl Display for PointCut {
 }
 
 impl State {
-    pub(super) fn apply_pcut(&self, m: &PointCut) -> Self {
+    pub(super) fn apply_pcut(&self, m: &PointCut) -> Result<Self> {
         let mut new_state = self.clone();
-        let block = new_state.pop_block(&m.label);
+        let block = new_state.pop_block(&m.label)?;
         let (x, y) = (m.x, m.y);
-        assert!(block.x1 <= x && x < block.x2);
-        assert!(block.y1 <= y && y < block.y2);
+        if x < block.x1 && block.x2 <= x {
+            return Err(anyhow!("failed to cut"));
+        }
+        if y < block.y1 && block.y2 <= y {
+            return Err(anyhow!("failed to cut"));
+        }
 
         let mut bottom_left = block.clone();
         bottom_left.x2 = x;
@@ -54,6 +60,6 @@ impl State {
         new_state.push_block(top_left_label, top_left);
 
         new_state.add_cost(10, &block);
-        new_state
+        Ok(new_state)
     }
 }

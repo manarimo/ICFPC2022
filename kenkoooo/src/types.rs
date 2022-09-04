@@ -1,5 +1,7 @@
 use std::{collections::BTreeMap, fmt::Display};
 
+use anyhow::{anyhow, Result};
+
 #[derive(Clone)]
 pub struct Picture(pub Vec<Vec<RGBA>>);
 impl Picture {
@@ -57,8 +59,10 @@ impl State {
     pub fn push_block(&mut self, label: Label, block: Block) {
         self.blocks.insert(label, block);
     }
-    pub fn pop_block(&mut self, label: &Label) -> Block {
-        self.blocks.remove(label).unwrap()
+    pub fn pop_block(&mut self, label: &Label) -> Result<Block> {
+        self.blocks
+            .remove(label)
+            .ok_or_else(|| anyhow!("undefined block: {:?}", label.0))
     }
     pub fn get_block(&self, label: &Label) -> &Block {
         self.blocks.get(label).unwrap()
