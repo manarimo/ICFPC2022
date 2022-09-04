@@ -13,35 +13,35 @@ export class Rotator implements Processor {
 
     readonly rotate90 = (image: Image): Image => {
         const nImg: Image = {
-            r: new Uint8Array(),
-            g: new Uint8Array(),
-            b: new Uint8Array(),
-            a: new Uint8Array(),
-            width: image.width,
-            height: image.height,
+            r: new Uint8Array(image.width * image.height),
+            g: new Uint8Array(image.width * image.height),
+            b: new Uint8Array(image.width * image.height),
+            a: new Uint8Array(image.width * image.height),
+            width: image.height,
+            height: image.width,
         };
-        for (let x = 0; x < image.width; x++) {
-            for (let y = 0; y < image.height; y++) {
+        for (let x = 0; x < image.height; x++) {
+            for (let y = 0; y < image.width; y++) {
                 let cx = image.height - y - 1;
                 let cy = x;
 
-                const newIdx = x + y * image.width;
-                const originalIdx = cx + cy * image.width;
+                const newIdx = x + y * image.height;
+                const originalIdx = cx + cy * image.height;
                 nImg.r[newIdx] = image.r[originalIdx];
                 nImg.g[newIdx] = image.g[originalIdx];
                 nImg.b[newIdx] = image.b[originalIdx];
                 nImg.a[newIdx] = image.a[originalIdx];
             }
         }
-        return image;
+        return nImg;
     };
 
     readonly flipImage = (image: Image): Image => {
         const nImg: Image = {
-            r: new Uint8Array(),
-            g: new Uint8Array(),
-            b: new Uint8Array(),
-            a: new Uint8Array(),
+            r: new Uint8Array(image.width * image.height),
+            g: new Uint8Array(image.width * image.height),
+            b: new Uint8Array(image.width * image.height),
+            a: new Uint8Array(image.width * image.height),
             width: image.width,
             height: image.height,
         };
@@ -58,7 +58,7 @@ export class Rotator implements Processor {
                 nImg.a[newIdx] = image.a[originalIdx];
             }
         }
-        return image;
+        return nImg;
     };
 
     readonly flipMoves = (moves: Move[], initialBlocks: InitialBlock[], image: Image) => {
@@ -254,18 +254,15 @@ export class Rotator implements Processor {
             nextImage = this.rotate90(nextImage);
         }
 
-        const output = await next({
-            ...input,
-            image: nextImage,
-        });
+        const output = await next(new Input(nextImage, input.initialBlocks));
 
         let newMoves = [...output.moves];
 
-        if (flip) {
-            newMoves = this.flipMoves(newMoves, input.initialBlocks, input.image);
-        }
         for (let i = 0; i < rotate % 4; i++) {
             newMoves = this.rotateMoves(newMoves, input.initialBlocks, input.image);
+        }
+        if (flip) {
+            newMoves = this.flipMoves(newMoves, input.initialBlocks, input.image);
         }
 
         return new Output(newMoves);
