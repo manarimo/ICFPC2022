@@ -53,8 +53,12 @@ def process_dir(problem_dir, suffix=""):
             print(len(initial_config["blocks"]), file=target_file)
             for block in initial_config["blocks"]:
                 print(block["blockId"], file=target_file)
+
+                # TODO たぶんY座標を反転する必要があるが、既存のソルバは最初に全マージしているので、影響を受けておらず、いったん放置
+                # 初期状態のブロックを再利用する場合は修正する必要がある
                 print(' '.join(map(str, block["bottomLeft"])), file=target_file)
                 print(' '.join(map(str, block["topRight"])), file=target_file)
+
                 print(' '.join(map(str, block["color"])), file=target_file)
 
 
