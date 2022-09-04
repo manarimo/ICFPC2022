@@ -14,17 +14,7 @@ interface Options {
     command: string;
 }
 
-class Input {
-    constructor(readonly image: Image, readonly initialBlocks: InitialBlock[]) {}
-}
 
-class Output {
-    constructor(readonly moves: Move[]) {}
-}
-
-interface Processor {
-    run(input: Input, next: (input: Input) => Promise<Output>): Promise<Output>
-}
 
 class ProcessRunner {
     constructor(private command: string, private outDir: string, private problemId: string) {
