@@ -1,3 +1,5 @@
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+
 use crate::{
     ops::Move,
     types::{Picture, Point, State, RGBA},
@@ -70,7 +72,7 @@ pub fn optimize_color_free_lunch(
         .collect()
 }
 
-fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
+fn old_optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
     let mut cur_color = initial_color;
     let mut cur_similarity = point_raw_similarity(target, &cur_color, points);
     loop {
@@ -97,6 +99,52 @@ fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
         }
     }
     cur_color
+}
+fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
+    let mut min_max = [(255, 0), (255, 0), (255, 0), (255, 0)];
+    for i in 0..4 {
+        for point in points {
+            min_max[i].0 = min_max[i].0.min(target.0[point.y][point.x].0[i]);
+            min_max[i].1 = min_max[i].1.max(target.0[point.y][point.x].0[i]);
+        }
+    }
+
+    let init_similarity = point_raw_similarity(target, &initial_color, points);
+    let cur_color = initial_color;
+    let cur_similarity = init_similarity;
+    let (similarity, color) = (min_max[0].0..=min_max[0].1)
+        .into_par_iter()
+        .map(|r| {
+            let mut cur_color = cur_color;
+            let mut cur_similarity = cur_similarity;
+            for g in min_max[1].0..=min_max[1].1 {
+                for b in min_max[2].0..=min_max[2].1 {
+                    for a in min_max[3].0..=min_max[3].1 {
+                        let next_color = RGBA([r, g, b, a]);
+                        let next_similarity = point_raw_similarity(target, &next_color, points);
+                        if cur_similarity > next_similarity {
+                            cur_color = next_color;
+                            cur_similarity = next_similarity;
+                        }
+                    }
+                }
+            }
+            (cur_similarity, cur_color)
+        })
+        .reduce(
+            || (cur_similarity, cur_color),
+            |cur, next| {
+                if cur.0 > next.0 {
+                    next
+                } else {
+                    cur
+                }
+            },
+        );
+    if init_similarity > similarity {
+        eprintln!("{} -> {}", init_similarity, similarity);
+    }
+    color
 }
 
 fn point_raw_similarity(target: &Picture, color: &RGBA, points: &[Point]) -> f64 {
