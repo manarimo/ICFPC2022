@@ -2,7 +2,7 @@ import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
 import { PNG } from 'pngjs';
 import { Move, parseProgram } from '../src/parser';
-import { State, applySingleMove, calculateSimilarity, InitialBlock } from '../src/simulate';
+import { State, applySingleMove, calculateSimilarity, InitialBlock, createNewState } from '../src/simulate';
 
 export interface Image {
     r: Uint8Array;
@@ -86,6 +86,18 @@ export async function loadInitialBlocks(initialBlocksFile: string): Promise<Init
     }
     const initialBlockBuffer = await fsPromises.readFile(initialBlocksFile);
     return JSON.parse(initialBlockBuffer.toString()).blocks as InitialBlock[];
+}
+
+export function runSolution(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
+    let state = createNewState(image.width, image.height, initialBlocks);
+    solution.forEach((move, i) => {
+        const res = applySingleMove(move, state);
+        if (res.kind == 'error') {
+            throw new Error(`Simulation failed at ${i}-th move: ${res.errorMessage}`);
+        }
+        state = res.state;
+    });
+    return state;
 }
 
 export async function* dirEntries(path: string) {
