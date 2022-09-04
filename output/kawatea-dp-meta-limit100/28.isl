@@ -99,7 +99,11 @@ merge [195] [171]
 merge [196] [180]
 merge [197] [189]
 color [198] [255, 255, 255, 255]
-# rotator: {"rotate":0,"flip":true}
+# rotator: 14490 pts ({"rotate":0,"flip":false})
+# rotator: 14198 pts ({"rotate":0,"flip":true})
+# rotator: 14640 pts ({"rotate":1,"flip":false})
+# rotator: 14640 pts ({"rotate":1,"flip":true})
+# rotator: best {"rotate":0,"flip":true}
 cut [198] [y] [22]
 color [198.1] [26, 35, 126, 255]
 merge [198.0] [198.1]
@@ -516,3 +520,4 @@ cut [340] [y] [202]
 color [340.1] [92, 107, 192, 255]
 merge [340.0] [340.1]
 cut [341] [y] [308]
+color [341.1] [57, 73, 171, 255]

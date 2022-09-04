@@ -26,9 +26,9 @@ interface Options {
 const ROTATION_PRESET: Record<string, RotationSpec[]> = {
     'kawatea-dp-special': [
         { rotate: 0, flip: false },
-        { rotate: 0, flip: true },
         { rotate: 1, flip: false },
-        { rotate: 1, flip: true },
+        { rotate: 2, flip: false },
+        { rotate: 3, flip: false },
     ],
 };
 
