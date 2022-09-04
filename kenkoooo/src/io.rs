@@ -53,23 +53,23 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
     (target, state)
 }
 
-pub fn read_input2(problem_id: &str) -> anyhow::Result<(Picture, State)> {
-    let png = File::open(format!("../problem/original/${problem_id}.png"))?;
-    let decoder = png::Decoder::new(png);
-    let mut reader = decoder.read_info()?;
-    let mut reader = decoder.read_info()?;
-    let mut img_data = vec![0; reader.output_buffer_size()];
-    let info = reader.next_frame(&mut img_data)?;
+// pub fn read_input2(problem_id: &str) -> anyhow::Result<(Picture, State)> {
+//     let png = File::open(format!("../problem/original/${problem_id}.png"))?;
+//     let decoder = png::Decoder::new(png);
+//     let mut reader = decoder.read_info()?;
+//     let mut reader = decoder.read_info()?;
+//     let mut img_data = vec![0; reader.output_buffer_size()];
+//     let info = reader.next_frame(&mut img_data)?;
 
-    let w = info.width as usize;
-    let h = info.height as usize;
+//     let w = info.width as usize;
+//     let h = info.height as usize;
 
-    let mut rgba = vec![vec![crate::types::RGBA([255; 4]); w]; h];
-    for i in 0..h {
-        for j in 0..w {
-            for c in 0..4 {
-                rgba[i][j][c]=img_data[]
-            }
-        }
-    }
-}
+//     let mut rgba = vec![vec![crate::types::RGBA([255; 4]); w]; h];
+//     for i in 0..h {
+//         for j in 0..w {
+//             for c in 0..4 {
+//                 rgba[i][j][c]=img_data[]
+//             }
+//         }
+//     }
+// }
