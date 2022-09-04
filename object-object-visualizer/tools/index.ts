@@ -1,8 +1,7 @@
 import * as fsPromises from 'fs/promises';
 import { PNG } from 'pngjs';
-import { Move } from '../src/parser';
-import { applySingleMove, createNewState, InitialBlock, State } from '../src/simulate';
-import { allSolutions, calculateScore, Image, loadInitialBlocks, loadMoves, loadProblem, Solution, solutionsForBatch, SolutionSpec } from './util';
+import { State } from '../src/simulate';
+import { allSolutions, calculateScore, loadInitialBlocks, loadMoves, loadProblem, runSolution, solutionsForBatch, SolutionSpec } from './util';
 import * as fs from 'fs';
 import commandLineArgs from 'command-line-args';
 import { buildRaking } from './ranker';
@@ -13,18 +12,6 @@ interface Options {
 
     // Run scorer only on specified batches
     only?: string[];
-}
-
-function run(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
-    let state = createNewState(image.width, image.height, initialBlocks);
-    solution.forEach((move, i) => {
-        const res = applySingleMove(move, state);
-        if (res.kind == 'error') {
-            throw new Error(`Simulation failed at ${i}-th move: ${res.errorMessage}`);
-        }
-        state = res.state;
-    });
-    return state;
 }
 
 async function writeSolutionImage(state: State, destFile: string): Promise<void> {
@@ -68,7 +55,7 @@ async function doScoring(spec: SolutionSpec) {
     const problem = await loadProblem(spec.problemImagePath());
     const moves = await loadMoves(spec.solutionPath());
     const initialBlocks = await loadInitialBlocks(spec.initialBlocksPath());
-    const lastState = await run(problem, moves, initialBlocks);
+    const lastState = await runSolution(problem, moves, initialBlocks);
     const score = calculateScore(problem, lastState);
 
     // Write out the score to spec JSON

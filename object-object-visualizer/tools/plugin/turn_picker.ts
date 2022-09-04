@@ -1,6 +1,6 @@
-import {Input, Output, Processor} from "../metaprocessor";
-import {applySingleMove, createNewState} from "../../src/simulate";
-import {calculateScore} from "../util";
+import { Input, Output, Processor } from '../metaprocessor';
+import { applySingleMove, createNewState } from '../../src/simulate';
+import { calculateScore } from '../util';
 
 export class TurnPicker implements Processor {
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
@@ -22,5 +22,5 @@ export class TurnPicker implements Processor {
         });
         const finalMoves = output.moves.slice(0, bestTurn);
         return new Output(finalMoves);
-    }
+    };
 }

@@ -1,10 +1,15 @@
-import { Image } from '../util';
+import { calculateScore, Image, runSolution } from '../util';
 import { InitialBlock } from '../../src/simulate';
 import { Move } from '../../src/parser';
 import { Input, Output, Processor } from '../metaprocessor';
 
+export interface RotationSpec {
+    rotate: number;
+    flip: boolean;
+}
+
 export class Rotator implements Processor {
-    constructor(readonly rotate: number, readonly flip: boolean) {}
+    constructor(readonly rotations: RotationSpec[]) {}
 
     readonly rotate90 = (image: Image): Image => {
         const nImg: Image = {
@@ -215,15 +220,37 @@ export class Rotator implements Processor {
     };
 
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
+        let bestMoves: Move[] = [];
+        let bestScore = 1e9;
+        let bestRotation: RotationSpec | undefined = undefined;
+
+        for (let spec of this.rotations) {
+            console.log(`rotator: running ${JSON.stringify(spec)}`);
+
+            const output = await this.runInternal(input, next, spec.rotate, spec.flip);
+            const state = await runSolution(input.image, output.moves, input.initialBlocks);
+            const score = calculateScore(input.image, state);
+            if (bestScore > score) {
+                bestScore = score;
+                bestMoves = output.moves;
+                bestRotation = spec;
+            }
+        }
+
+        bestMoves.unshift({ kind: 'comment-move', comment: `rotator: ${JSON.stringify(bestRotation)}` });
+        return new Output(bestMoves);
+    };
+
+    readonly runInternal = async (input: Input, next: (input: Input) => Promise<Output>, rotate: number, flip: boolean) => {
         if (input.initialBlocks.length !== 1) {
             throw new Error(`not supported`);
         }
 
         let nextImage: Image = input.image;
-        if (this.flip) {
+        if (flip) {
             nextImage = this.flipImage(nextImage);
         }
-        for (let i = 0; i < this.rotate % 4; i++) {
+        for (let i = 0; i < rotate % 4; i++) {
             nextImage = this.rotate90(nextImage);
         }
 
@@ -234,10 +261,10 @@ export class Rotator implements Processor {
 
         let newMoves = [...output.moves];
 
-        if (this.flip) {
+        if (flip) {
             newMoves = this.flipMoves(newMoves, input.initialBlocks, input.image);
         }
-        for (let i = 0; i < this.rotate % 4; i++) {
+        for (let i = 0; i < rotate % 4; i++) {
             newMoves = this.rotateMoves(newMoves, input.initialBlocks, input.image);
         }
 

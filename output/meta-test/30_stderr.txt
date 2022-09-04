@@ -1,0 +1,3 @@
+manipulation cost: 8602
+similarity cost: 19784
+total cost: 28386

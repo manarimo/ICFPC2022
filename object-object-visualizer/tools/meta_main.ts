@@ -8,9 +8,9 @@ import { Readable, Writable } from 'stream';
 import { Input, Output, Processor } from './metaprocessor';
 import { parseProgram } from '../src/parser';
 import { CopyrightPlugin } from './plugin/copyright_plugin';
-import { Rotator } from './rotator';
-import {TurnPicker} from "./plugin/turn_picker";
-import {Merger} from "./merger";
+import { RotationSpec, Rotator } from './rotator';
+import { TurnPicker } from './plugin/turn_picker';
+import { Merger } from './merger';
 
 interface Options {
     problemId: string;
@@ -20,7 +20,17 @@ interface Options {
     // Rotator plugin
     rotate?: number;
     flip?: boolean;
+    rotator?: string;
 }
+
+const ROTATION_PRESET: Record<string, RotationSpec[]> = {
+    'kawatea-dp-special': [
+        { rotate: 0, flip: false },
+        { rotate: 0, flip: true },
+        { rotate: 1, flip: false },
+        { rotate: 1, flip: true },
+    ],
+};
 
 class ProcessRunner {
     constructor(private command: string, private outDir: string, private problemId: string) {}
@@ -121,10 +131,15 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
 
     // Add rotator plugin
     if (options.rotate || options.flip) {
-        const rotateAngle = options.rotate || 0;
+        const rotate = options.rotate || 0;
         const flip = options.flip == true;
-        const rotatorPlugin = new Rotator(rotateAngle, flip);
-        pipeline = wrap(pipeline, rotatorPlugin);
+        const rotatorPlugin = (pipeline = wrap(pipeline, new Rotator([{ rotate, flip }])));
+    } else if (options.rotator != undefined) {
+        const preset = ROTATION_PRESET[options.rotator];
+        if (preset === undefined) {
+            throw new Error(`Unrecognized rotator preset: ${options.rotator}`);
+        }
+        pipeline = wrap(pipeline, new Rotator(preset));
     }
 
     // Add merger plugin
@@ -163,5 +178,12 @@ const options: Options = commandLineArgs([
     { name: 'command', type: String },
     { name: 'rotate', type: Number },
     { name: 'flip', type: Boolean },
+    { name: 'rotator', type: String },
 ]) as Options;
+
+if (options.rotator != undefined && (options.rotate != undefined || options.flip != undefined)) {
+    console.error("Can't use --rotator with --rotate or --flip");
+    process.exit(1);
+}
+
 main(options);
