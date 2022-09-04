@@ -12,7 +12,7 @@ using namespace std;
 const int MAX_H = 400;
 const int MAX_W = 400;
 const int MAX_COLOR = 30;
-const int LIMIT_X = 30;
+const int LIMIT_X = 100;
 const int LIMIT_Y = 400;
 const double INF = 1e9;
 
