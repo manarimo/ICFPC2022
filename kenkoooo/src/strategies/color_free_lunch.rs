@@ -52,10 +52,12 @@ pub fn optimize_color_free_lunch(
     }
 
     let mut result = vec![None; moves.len()];
-    for (i, points) in move_to_places {
+    let all = move_to_places.len();
+    for (i, (move_id, points)) in move_to_places.into_iter().enumerate() {
         let color = state.picture.0[points[0].y][points[0].x];
         let new_color = optimize(&target, color, &points);
-        result[i] = Some(new_color);
+        result[move_id] = Some(new_color);
+        eprintln!("{} of {}", i + 1, all);
     }
 
     moves
