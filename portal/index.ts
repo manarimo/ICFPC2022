@@ -3,6 +3,7 @@ import express from 'express';
 import { S3 } from 'aws-sdk';
 import { GetObjectOutput, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import cors from 'cors';
+import fetch from 'node-fetch';
 
 const BUCKET = 'icfpc2022-manarimo';
 
@@ -154,6 +155,42 @@ app.get('/api/list_solutions', async function (req, res) {
     const orderedSolutions = solutions.sort((a, b) => b.score - a.score);
     res.json({
         solutions: orderedSolutions,
+    });
+});
+
+app.get('/api/best_scores', async function (req, res) {
+    const response = await fetch('https://robovinci.xyz/api/users/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: 'osak.63@gmail.com',
+            password: process.env['PASSWORD'],
+        }),
+    });
+    const body = (await response.json()) as {
+        token: string;
+    };
+
+    const result = await fetch('https://robovinci.xyz/api/results/user', {
+        headers: {
+            Authorization: `Bearer ${body.token}`,
+        },
+    });
+    const resultBody = (await result.json()) as {
+        results: {
+            problem_id: number;
+            overall_best_cost: number;
+        }[];
+    };
+
+    const bestScores = resultBody.results.map(({ problem_id, overall_best_cost }) => ({
+        problemId: problem_id.toString(),
+        bestScore: overall_best_cost,
+    }));
+    res.json({
+        bestScores,
     });
 });
 
