@@ -1,14 +1,20 @@
 export const parseProgram = (submission: string) => {
   const operations = submission.split("\n");
   const moves = operations
-    .map((line) => line.replaceAll(" ", ""))
-    .filter((line) => line.length > 0)
-    .map((line) => parseSingleMove(line))
+    .map((line) => parseSingleMove(line.trim()))
     .filter((move): move is Move => !!move);
   return moves;
 };
 
-const parseSingleMove = (operation: string) => {
+const parseSingleMove = (line: string) => {
+  if (line.startsWith("#")) {
+    return { kind: "comment-move", comment: line };
+  }
+
+  const operation = line.replaceAll(" ", "");
+  if (operation.length === 0) {
+    return;
+  }
   if (operation.startsWith("cut")) {
     return parseCutMove(operation);
   }
@@ -41,8 +47,18 @@ export type PCutMove = {
 export type ColorMove = Exclude<ReturnType<typeof parseColorMove>, undefined>;
 export type SwapMove = ReturnType<typeof parseSwapMove>;
 export type MergeMove = ReturnType<typeof parseMergeMove>;
+export type CommentMove = {
+  kind: "comment-move";
+  comment: string;
+};
 
-export type Move = LCutMove | PCutMove | ColorMove | SwapMove | MergeMove;
+export type Move =
+  | LCutMove
+  | PCutMove
+  | ColorMove
+  | SwapMove
+  | MergeMove
+  | CommentMove;
 
 const parseCutMove = (token: string) => {
   let suffix = token.slice(3);
