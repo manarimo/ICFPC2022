@@ -363,13 +363,14 @@ export const createNewState = (
   if (initialImage) {
     for (let x = 0; x < initialImage.width; x++) {
       for (let y = 0; y < initialImage.height; y++) {
+        const pngPosition = y * width + x;
         const probX = x;
         const probY = initialImage.height - 1 - y;
-        const position = probY * width + probX;
-        state.r[position] = initialImage.r[position];
-        state.g[position] = initialImage.g[position];
-        state.b[position] = initialImage.b[position];
-        state.a[position] = initialImage.a[position];
+        const probPosition = probY * width + probX;
+        state.r[probPosition] = initialImage.r[pngPosition];
+        state.g[probPosition] = initialImage.g[pngPosition];
+        state.b[probPosition] = initialImage.b[pngPosition];
+        state.a[probPosition] = initialImage.a[pngPosition];
       }
     }
   } else {

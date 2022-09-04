@@ -4,7 +4,7 @@ import { Input, Output, Processor } from '../metaprocessor';
 
 export class Merger implements Processor {
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
-        const merger = MergerInner.create(input.image, input.initialBlocks);
+        const merger = MergerInner.create(input.image, input.initialBlocks, input.initialImage ?? undefined);
         const [moves, finalId] = merger.generateMoves();
         moves.push({
             color: { r: 255, g: 255, b: 255, a: 255 },
@@ -21,6 +21,7 @@ export class Merger implements Processor {
                     color: [255, 255, 255, 255],
                 },
             ],
+            initialImage: input.initialImage,
         });
 
         const overrideId = (id: string) => {

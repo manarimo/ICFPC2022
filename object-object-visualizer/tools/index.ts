@@ -55,7 +55,8 @@ async function doScoring(spec: SolutionSpec) {
     const problem = await loadProblem(spec.problemImagePath());
     const moves = await loadMoves(spec.solutionPath());
     const initialBlocks = await loadInitialBlocks(spec.initialBlocksPath());
-    const lastState = await runSolution(problem, moves, initialBlocks);
+    const initialImage = fs.existsSync(spec.initialImagePath()) ? await loadProblem(spec.initialImagePath()) : undefined;
+    const lastState = await runSolution(problem, moves, initialBlocks, initialImage);
     const score = calculateScore(problem, lastState);
 
     // Write out the score to spec JSON

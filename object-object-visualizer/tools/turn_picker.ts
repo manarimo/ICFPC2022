@@ -1,4 +1,5 @@
 import * as fsPromises from 'fs/promises';
+import * as fs from 'fs';
 import { calculateScore, Image, loadInitialBlocks, loadMoves, loadProblem, moveToString, Solution, topNSolutions } from './util';
 import { applySingleMove, createNewState, InitialBlock } from '../src/simulate';
 import { Move } from '../src/parser';
@@ -30,9 +31,12 @@ async function main() {
             initialBlocks = initialBlockCache[solution.problemId] = (await loadInitialBlocks(initialBlocksPath)) ?? undefined;
         }
 
+        const initialImagePath = `../../problem/original_initial/${solution.problemId}.initial.png`;
+        const initialImage = fs.existsSync(initialImagePath) ? await loadProblem(initialImagePath) : undefined;
+
         let bestTurn: number = 0;
         let bestScore = 1e9;
-        let state = createNewState(problem.width, problem.height, initialBlocks);
+        let state = createNewState(problem.width, problem.height, initialBlocks, initialImage);
         moves.forEach((move, i) => {
             const res = applySingleMove(move, state);
             if (res.kind == 'error') {

@@ -1,5 +1,6 @@
 import { Move, parseProgram } from '../../src/parser';
 import * as fsPromises from 'fs/promises';
+import * as fs from 'fs';
 import { Image, loadInitialBlocks, loadMoves, loadProblem } from '../util';
 import { applySingleMove, calculatePixelSimilarity, createNewState, State } from '../../src/simulate';
 
@@ -205,7 +206,9 @@ const main = async () => {
         const solutions = ranking[problemId];
         const problem = await loadProblem(`../../problem/original/${problemId}.png`);
         const initial = await loadInitialBlocks(`../../problem/original/${problemId}.initial.json`);
-        const initialState = createNewState(problem.width, problem.height, initial);
+        const initialImagePath = `../../problem/original_initial/${problemId}.initial.png`;
+        const initialImage = fs.existsSync(initialImagePath) ? await loadProblem(initialImagePath) : undefined;
+        const initialState = createNewState(problem.width, problem.height, initial, initialImage);
 
         if (solutions.length === 0) {
             continue;
@@ -235,7 +238,9 @@ const test = async () => {
     const problemId = process.argv[3];
     const problem = await loadProblem(`../../problem/original/${problemId}.png`);
     const initial = await loadInitialBlocks(`../../problem/original/${problemId}.initial.json`);
-    const initialState = createNewState(problem.width, problem.height, initial);
+    const initialImagePath = `../../problem/original_initial/${problemId}.initial.png`;
+    const initialImage = fs.existsSync(initialImagePath) ? await loadProblem(initialImagePath) : undefined;
+    const initialState = createNewState(problem.width, problem.height, initial, initialImage);
     const moves = await loadMoves(`../../output/${solver}/${problemId}.isl`);
 
     const score = calcScore(problem, moves, initialState);

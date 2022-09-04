@@ -35,6 +35,10 @@ export class SolutionSpec {
     initialBlocksPath(prefix: string = '../..'): string {
         return `${prefix}/problem/original/${this.problemId}.initial.json`;
     }
+
+    initialImagePath(prefix: string = '../..'): string {
+        return `${prefix}/problem/original_initial/${this.problemId}.initial.png`;
+    }
 }
 
 export class Solution {
@@ -117,8 +121,8 @@ export function createImageFromBlocks(blocks: InitialBlock[]): Image {
     return image;
 }
 
-export function runSolution(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
-    let state = createNewState(image.width, image.height, initialBlocks);
+export function runSolution(image: Image, solution: Move[], initialBlocks?: InitialBlock[], initialImage?: Image): State {
+    let state = createNewState(image.width, image.height, initialBlocks, initialImage);
     solution.forEach((move, i) => {
         const res = applySingleMove(move, state);
         if (res.kind == 'error') {

@@ -9,8 +9,8 @@ export class MergerInner {
         this.history.push(initialState);
     }
 
-    static create(problem: Image, initialBlocks: InitialBlock[] = []) {
-        let state = createNewState(problem.width, problem.height, initialBlocks);
+    static create(problem: Image, initialBlocks: InitialBlock[] = [], initialImage?: Image) {
+        let state = createNewState(problem.width, problem.height, initialBlocks, initialImage);
         const blockArea = (problem.width * problem.height) / state.blocks.size;
         const blockEdge = Math.floor(Math.sqrt(blockArea));
         const Y = problem.height / blockEdge;

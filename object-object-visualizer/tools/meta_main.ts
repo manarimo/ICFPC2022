@@ -185,7 +185,7 @@ async function main(options: Options) {
     // Load input from files
     const problemImage = await loadProblem(`../../problem/original/${options.problemId}.png`);
     const initialBlocks = await loadInitialBlocks(`../../problem/original/${options.problemId}.initial.json`);
-    const initialImagePath = `../../problem/original_initial/${options.problemId}.png`;
+    const initialImagePath = `../../problem/original_initial/${options.problemId}.initial.png`;
     const initialProblemImage = fs.existsSync(initialImagePath) ? await loadProblem(initialImagePath) : null;
     const input = new Input(problemImage, initialBlocks, initialProblemImage);
 

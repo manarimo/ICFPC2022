@@ -230,7 +230,7 @@ export class Rotator implements Processor {
             console.log(`rotator: running ${JSON.stringify(spec)}`);
 
             const output = await this.runInternal(input, next, spec.rotate, spec.flip);
-            const state = await runSolution(input.image, output.moves, input.initialBlocks);
+            const state = await runSolution(input.image, output.moves, input.initialBlocks, input.initialImage ?? undefined);
             const score = calculateScore(input.image, state);
             if (bestScore > score) {
                 bestScore = score;
