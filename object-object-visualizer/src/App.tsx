@@ -7,8 +7,11 @@ import { useParams } from "react-router-dom";
 import useSWR, { BareFetcher } from "swr";
 import { manarimoFetch } from "./fetch";
 import { useProblemData } from "./hooks/useProblemData";
-import { calculateSimilarity } from "./simulate";
 import { useInitial } from "./hooks/useInitial";
+import {
+  colorsToKyoproFormat,
+  extractColors,
+} from "./color_extractor/color_extractor";
 
 const WIDTH = 400;
 const HEIGHT = 400;
@@ -52,13 +55,21 @@ function App() {
   return (
     <div style={{ display: "flex" }}>
       <div>
-        <textarea
-          style={{ width: `${WIDTH}px`, height: `${HEIGHT}px` }}
-          value={programToUse}
-          onChange={(e) => {
-            setProgram(e.target.value);
-          }}
-        />
+        <div>
+          <textarea
+            style={{ width: `${WIDTH}px`, height: `${HEIGHT}px` }}
+            value={programToUse}
+            onChange={(e) => {
+              setProgram(e.target.value);
+            }}
+          />
+        </div>
+        <div>
+          <textarea
+            style={{ width: `${WIDTH}px`, height: `${HEIGHT}px` }}
+            value={colorsToKyoproFormat(extractColors(moves))}
+          />
+        </div>
       </div>
       <div>
         <Viewer
