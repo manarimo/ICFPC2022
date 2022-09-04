@@ -1,20 +1,18 @@
 import commandLineArgs from "command-line-args";
-import {InitialBlock} from "../src/simulate";
-import {Image, loadInitialBlocks, loadProblem, moveToString} from "./util";
-import {Move, parseProgram} from "../../shared/parser";
+import {loadInitialBlocks, loadProblem, moveToString} from "./util";
 import * as fsPromises from 'fs/promises';
 import {FileHandle} from 'fs/promises';
 import {ChildProcessByStdio, spawn} from "child_process";
 import path from "path";
 import {Readable, Writable} from "stream";
+import {Input, Output} from "./metaprocessor";
+import {parseProgram} from "../src/parser";
 
 interface Options {
     problemId: string;
     batchName: string;
     command: string;
 }
-
-
 
 class ProcessRunner {
     constructor(private command: string, private outDir: string, private problemId: string) {
@@ -44,12 +42,15 @@ class ProcessRunner {
         resolve: (o: Output) => void,
         reject: (err: any) => void
     ) {
-        let outbuf = '';
         let emitted = false;
+
+        // Accumulate output to a buffer as the data come to stdout
+        let outbuf = '';
         proc.stdout.on('data', (buf) => {
             outbuf += buf.toString();
         });
 
+        // Have read everything from stdout; meaning all output is there. Resolve the promise with parsed output.
         proc.stdout.on('end', () => {
             if (!emitted) {
                 emitted = true;
@@ -58,6 +59,7 @@ class ProcessRunner {
             }
         });
 
+        // On execution failure, reject promise to abort execution
         proc.on('error', (err) => {
             if (!emitted) {
                 emitted = true;
@@ -68,6 +70,7 @@ class ProcessRunner {
             }
         });
 
+        // When a process exists, we don't need stderr anymore.
         proc.on('exit', () => {
             stderrFile.close();
         });

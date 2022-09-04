@@ -1,5 +1,5 @@
 import {InitialBlock} from "../../src/simulate";
-import {Move} from "../../../shared/parser";
+import {Move} from "../../src/parser";
 import {Image} from "../util";
 
 export class Input {
