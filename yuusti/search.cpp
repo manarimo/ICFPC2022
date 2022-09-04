@@ -416,38 +416,32 @@ priority_queue<state> paint(int x, vector<int>& cut_x, vector<int>& cut_y, prior
 
     priority_queue<state> next_queue;
 
-    fprintf(stderr, "state queue size=%d\n", state_queue.size());
+    fprintf(stderr, "x=%d/%d\n", x, cut_x.size() - 2);
+    fprintf(stderr, "qsize=%d\n", state_queue.size());
     while(!state_queue.empty()) {
         auto state = state_queue.top();
         state_queue.pop();
 
-        auto not_paint = state;
-        not_paint.score = similarity_cost(cut_x[x + 1], MAX_H, not_paint);
-        next_queue.push(not_paint);
+        // fprintf(stderr, "current cost: %d\n", state.cost);
+        // fprintf(stderr, "current score: %d\n", state.score);
 
-        fprintf(stderr, "x=%d\n", x);
-        fprintf(stderr, "not paint current cost: %d\n", not_paint.cost);
-        fprintf(stderr, "not paint current score: %d\n", not_paint.score);
-        fprintf(stderr, "total cost: %d\n\n", not_paint.cost + not_paint.score);
+        auto not_paint = state;
+        not_paint.score = similarity_cost(cut_x[x+1], MAX_H, not_paint);
+        next_queue.push(not_paint);
 
         paint(x, cut_x, cut_y, state);
         next_queue.push(state);
+    }
 
-        fprintf(stderr, "x=%d\n", x);
-        fprintf(stderr, "current cost: %d\n", state.cost);
-        fprintf(stderr, "current score: %d\n", state.score);
-        fprintf(stderr, "total cost: %d\n\n", state.cost + state.score);
-
-        while (next_queue.size() > 5) {
-            next_queue.pop();
-        }
+    while (next_queue.size() > 50) {
+        next_queue.pop();
     }
 
     return paint(x + 1, cut_x, cut_y, next_queue);
 }
 
 void auto_border(int w, int h, vector<int>& cut_x, vector<int>& cut_y) {
-    int min_distance = 10;
+    int min_distance = 5;
     int cut_count = 10000;
 
     vector<pair<int, double>> diff_x;
@@ -607,20 +601,18 @@ int main() {
 
     auto queue = paint(0, cut_x, cut_y, q);
 
-    if (!queue.empty()) {
-        while (queue.size() > 1) {
-            queue.pop();
+        while (!queue.empty()) {
+            auto state = queue.top(); queue.pop();
+
+            int similarity = round(similarity_cost(w, h, state));
+            fprintf(stderr, "manipulation cost: %d\n", state.cost);
+            fprintf(stderr, "similarity cost: %d\n", similarity);
+            fprintf(stderr, "total cost: %d\n\n", state.cost + similarity);
+
+            if (queue.empty()) {
+                state.print();
+            }
         }
-        auto state = queue.top(); queue.pop();
-
-        int similarity = round(similarity_cost(w, h, state));
-        fprintf(stderr, "manipulation cost: %d\n", state.cost);
-        fprintf(stderr, "similarity cost: %d\n", similarity);
-        fprintf(stderr, "similarity cost2: %d\n", state.score);
-        fprintf(stderr, "total cost: %d\n\n", state.cost + similarity);
-
-        state.print();
-    }
     
     return 0;
 }
