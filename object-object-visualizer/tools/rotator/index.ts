@@ -1,11 +1,10 @@
-import {Image} from "../util";
-import {InitialBlock} from "../../src/simulate";
-import {Move} from "../../src/parser";
-import {Input, Output, Processor} from "../metaprocessor";
+import { Image } from '../util';
+import { InitialBlock } from '../../src/simulate';
+import { Move } from '../../src/parser';
+import { Input, Output, Processor } from '../metaprocessor';
 
 export class Rotator implements Processor {
-    constructor(readonly rotate: number, readonly flip: boolean) {
-    }
+    constructor(readonly rotate: number, readonly flip: boolean) {}
 
     readonly rotate90 = (image: Image): Image => {
         const nImg: Image = {
@@ -30,7 +29,7 @@ export class Rotator implements Processor {
             }
         }
         return image;
-    }
+    };
 
     readonly flipImage = (image: Image): Image => {
         const nImg: Image = {
@@ -55,48 +54,48 @@ export class Rotator implements Processor {
             }
         }
         return image;
-    }
+    };
 
     readonly flipMoves = (moves: Move[], initialBlocks: InitialBlock[], image: Image) => {
-        const block_ids: {[key: string]: string} = {};
+        const block_ids: { [key: string]: string } = {};
         block_ids[initialBlocks[0].blockId] = initialBlocks[0].blockId;
         let global_counter = initialBlocks.length;
 
         const flipMove = (move: Move): Move => {
             switch (move.kind) {
-                case "lcut-move": {
+                case 'lcut-move': {
                     const original_id = move.blockId;
-                    const mapped_id = block_ids[original_id]
+                    const mapped_id = block_ids[original_id];
                     const isX = move.orientation == 'x' || move.orientation == 'X';
                     for (let sub_block = 0; sub_block < 2; sub_block++) {
                         if (isX) {
-                            block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block ^ 1}`
+                            block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block ^ 1}`;
                         } else {
                             block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block}`;
                         }
                     }
-                    return ({
+                    return {
                         kind: 'lcut-move',
                         blockId: mapped_id,
                         orientation: move.orientation,
-                        lineNumber: (isX) ? (image.width - move.lineNumber) : move.lineNumber,
-                    })
+                        lineNumber: isX ? image.width - move.lineNumber : move.lineNumber,
+                    };
                 }
-                case "pcut-move": {
+                case 'pcut-move': {
                     const original_id = move.blockId;
                     const mapped_id = block_ids[original_id];
                     for (let sub_block = 0; sub_block < 4; sub_block++) {
                         block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block ^ 1}`;
                     }
-                    const {x: px, y: py} = move;
-                    return ({
+                    const { x: px, y: py } = move;
+                    return {
                         blockId: mapped_id,
                         x: image.width - px,
                         y: py,
-                        kind: "pcut-move",
-                    })
+                        kind: 'pcut-move',
+                    };
                 }
-                case "merge-move": {
+                case 'merge-move': {
                     const original_id1 = move.blockId1;
                     const original_id2 = move.blockId2;
 
@@ -104,78 +103,78 @@ export class Rotator implements Processor {
                     const mapped_id2 = block_ids[original_id2];
 
                     const new_block_id = global_counter.toString();
-                    global_counter += 1
-                    block_ids[new_block_id] = new_block_id
+                    global_counter += 1;
+                    block_ids[new_block_id] = new_block_id;
 
                     return {
                         blockId1: mapped_id1,
                         blockId2: mapped_id2,
-                        kind: "merge-move" as const,
+                        kind: 'merge-move' as const,
                     };
                 }
-                case "color-move": {
-                    return ({
+                case 'color-move': {
+                    return {
                         kind: 'color-move',
                         blockId: block_ids[move.blockId],
                         color: move.color,
-                    })
+                    };
                 }
-                case "swap-move": {
-                    return ({
+                case 'swap-move': {
+                    return {
                         kind: 'swap-move',
                         blockId1: block_ids[move.blockId1],
                         blockId2: block_ids[move.blockId2],
-                    })
+                    };
                 }
-                case "comment-move": {
-                    return (move);
+                case 'comment-move': {
+                    return move;
                 }
             }
-        }
+        };
 
         return moves.map(flipMove);
-    }
+    };
 
     readonly rotateMoves = (moves: Move[], initialBlocks: InitialBlock[], image: Image) => {
-        const block_ids: {[key: string]: string} = {};
+        const block_ids: { [key: string]: string } = {};
         block_ids[initialBlocks[0].blockId] = initialBlocks[0].blockId;
         let global_counter = initialBlocks.length;
 
         const rotateMove = (move: Move): Move => {
             switch (move.kind) {
-                case "lcut-move": {
+                case 'lcut-move': {
                     const original_id = move.blockId;
-                    const mapped_id = block_ids[original_id]
+                    const mapped_id = block_ids[original_id];
                     const isX = move.orientation == 'x' || move.orientation == 'X';
                     for (let sub_block = 0; sub_block < 2; sub_block++) {
                         if (!isX) {
-                            block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block ^ 1}`
+                            block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block ^ 1}`;
                         } else {
                             block_ids[original_id + `.${sub_block}`] = mapped_id + `.${sub_block}`;
                         }
                     }
-                    return ({
+                    return {
                         kind: 'lcut-move',
                         blockId: mapped_id,
                         orientation: isX ? 'y' : 'x',
-                        lineNumber: (isX) ? move.lineNumber: (image.height - move.lineNumber),
-                    })
+                        lineNumber: isX ? move.lineNumber : image.height - move.lineNumber,
+                    };
                 }
-                case "pcut-move": {
+                case 'pcut-move': {
                     const original_id = move.blockId;
                     const mapped_id = block_ids[original_id];
                     for (let sub_block = 0; sub_block < 4; sub_block++) {
                         block_ids[original_id + `.${sub_block}`] = mapped_id + `.${(sub_block + 1) % 4}`;
                     }
-                    const {x: px, y: py} = move;
-                    return ({
+                    const { x: px, y: py } = move;
+                    return {
                         blockId: mapped_id,
                         x: image.height - py,
                         y: px,
-                        kind: "pcut-move",
-                    })
+                        kind: 'pcut-move',
+                    };
                 }
-                case "merge-move": {
+                case 'merge-move': {
                     const original_id1 = move.blockId1;
                     const original_id2 = move.blockId2;
 
@@ -183,37 +182,37 @@ export class Rotator implements Processor {
                     const mapped_id2 = block_ids[original_id2];
 
                     const new_block_id = global_counter.toString();
-                    global_counter += 1
-                    block_ids[new_block_id] = new_block_id
+                    global_counter += 1;
+                    block_ids[new_block_id] = new_block_id;
 
                     return {
                         blockId1: mapped_id1,
                         blockId2: mapped_id2,
-                        kind: "merge-move" as const,
+                        kind: 'merge-move' as const,
                     };
                 }
-                case "color-move": {
-                    return ({
+                case 'color-move': {
+                    return {
                         kind: 'color-move',
                         blockId: block_ids[move.blockId],
                         color: move.color,
-                    })
+                    };
                 }
-                case "swap-move": {
-                    return ({
+                case 'swap-move': {
+                    return {
                         kind: 'swap-move',
                         blockId1: block_ids[move.blockId1],
                         blockId2: block_ids[move.blockId2],
-                    })
+                    };
                 }
-                case "comment-move": {
-                    return (move);
+                case 'comment-move': {
+                    return move;
                 }
             }
-        }
+        };
 
         return moves.map(rotateMove);
-    }
+    };
 
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
         if (input.initialBlocks.length !== 1) {
@@ -229,10 +228,9 @@ export class Rotator implements Processor {
         }
 
         const output = await next({
-            ...input, image: nextImage
+            ...input,
+            image: nextImage,
         });
-
-
 
         let newMoves = [...output.moves];
 
@@ -244,5 +242,5 @@ export class Rotator implements Processor {
         }
 
         return new Output(newMoves);
-    }
+    };
 }
