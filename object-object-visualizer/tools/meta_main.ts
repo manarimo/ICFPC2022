@@ -153,7 +153,7 @@ const options: Options = commandLineArgs([
     { name: 'problemId', type: String },
     { name: 'batchName', type: String },
     { name: 'command', type: String },
-    { name: 'rotate', type: String },
-    { name: 'flip', type: String },
+    { name: 'rotate', type: Number },
+    { name: 'flip', type: Boolean },
 ]) as Options;
 main(options);
