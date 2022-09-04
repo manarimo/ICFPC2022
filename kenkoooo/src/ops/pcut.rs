@@ -14,7 +14,7 @@ impl Display for PointCut {
 }
 
 impl State {
-    pub fn apply_pcut(&self, m: PointCut) -> Self {
+    pub(super) fn apply_pcut(&self, m: PointCut) -> Self {
         let mut new_state = self.clone();
         let block = new_state.pop_block(&m.label);
         let (x, y) = (m.x, m.y);

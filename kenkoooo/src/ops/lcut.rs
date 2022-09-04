@@ -29,7 +29,7 @@ impl Display for Orientation {
 }
 
 impl State {
-    pub fn apply_lcut(&self, m: LineCut) -> Self {
+    pub(super) fn apply_lcut(&self, m: LineCut) -> Self {
         let mut new_state = self.clone();
         let block = new_state.pop_block(&m.label);
         new_state.add_cost(7, &block);

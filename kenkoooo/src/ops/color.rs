@@ -14,7 +14,7 @@ impl Display for Color {
 }
 
 impl State {
-    pub fn apply_color(&self, color: Color) -> Self {
+    pub(super) fn apply_color(&self, color: Color) -> Self {
         let mut new_state = self.clone();
         let block = new_state.get_block(&color.label).clone();
         for x in block.x1..block.x2 {

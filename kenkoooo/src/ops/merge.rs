@@ -14,7 +14,7 @@ impl Display for Merge {
 }
 
 impl State {
-    pub fn apply_merge(&self, m: Merge) -> Self {
+    pub(super) fn apply_merge(&self, m: Merge) -> Self {
         let mut new_state = self.clone();
         let block1 = new_state.pop_block(&m.label1);
         let block2 = new_state.pop_block(&m.label2);
