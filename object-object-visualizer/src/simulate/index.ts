@@ -302,7 +302,7 @@ const applyMergeMove = (move: MergeMove, state: State) => {
   return { kind: "state" as const, state: nextState };
 };
 
-type BaseCostVersion = 'v1' | 'v2';
+type BaseCostVersion = "v1" | "v2";
 export type State = {
   blocks: Map<string, Block>;
   width: number;
@@ -362,7 +362,7 @@ export const createNewState = (
     a: new Uint8Array(width * height).fill(255),
     globalCounter: initialBlocks.length - 1,
     cost: 0,
-    baseCostVersion: initialImage ? 'v2' : 'v1',
+    baseCostVersion: initialImage ? "v2" : "v1",
   };
   if (initialImage) {
     for (let x = 0; x < initialImage.width; x++) {
@@ -453,10 +453,10 @@ const setColorInPlace = (
 const baseCost = (move: Move, baseCostVersion: BaseCostVersion) => {
   switch (move.kind) {
     case "lcut-move": {
-      return baseCostVersion == 'v2' ? 2 : 7;
+      return baseCostVersion == "v2" ? 2 : 7;
     }
     case "pcut-move": {
-      return baseCostVersion == 'v2' ? 3 : 10;
+      return baseCostVersion == "v2" ? 3 : 10;
     }
     case "color-move": {
       return 5;
@@ -480,7 +480,7 @@ const baseCost = (move: Move, baseCostVersion: BaseCostVersion) => {
 const calculateCost = (
   move: Move,
   blockSize: number,
-  state: { width: number; height: number, baseCostVersion: BaseCostVersion },
+  state: { width: number; height: number; baseCostVersion: BaseCostVersion }
 ) => {
   const base = baseCost(move, state.baseCostVersion);
   const canvasSize = state.width * state.height;
