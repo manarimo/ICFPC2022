@@ -6,3 +6,6 @@
 cargo run --release --bin color-free-lunch -- <problem id> <出力 isl>
 ```
 
+# 切るところを摂動させるやつ
+```sh
+cargo run --release --bin cut-free-dinner -- <problem id> <出力 isl> <出力先ディレクトリ>
