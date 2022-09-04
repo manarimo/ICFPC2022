@@ -82,7 +82,7 @@ export async function loadMoves(solutionFile: string): Promise<Move[]> {
 export async function loadInitialBlocks(initialBlocksFile: string): Promise<InitialBlock[]> {
     if (!fs.existsSync(initialBlocksFile)) {
         // No initial blocks - initial canvas is the only initial block.
-        return [{ blockId: "0", bottomLeft: [0, 0], topRight: [400, 400], color: [255, 255, 255, 255]}];
+        return [{ blockId: '0', bottomLeft: [0, 0], topRight: [400, 400], color: [255, 255, 255, 255] }];
     }
     const initialBlockBuffer = await fsPromises.readFile(initialBlocksFile);
     return JSON.parse(initialBlockBuffer.toString()).blocks as InitialBlock[];
@@ -151,6 +151,8 @@ export function moveToString(move: Move): string {
             return `swap [${move.blockId1}] [${move.blockId2}]`;
         case 'merge-move':
             return `merge [${move.blockId1}] [${move.blockId2}]`;
+        case 'comment-move':
+            return `# ${move.comment}`;
     }
     throw new Error(`Unsupported move: ${move}`);
 }

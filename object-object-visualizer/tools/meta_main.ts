@@ -1,12 +1,13 @@
-import commandLineArgs from "command-line-args";
-import {loadInitialBlocks, loadProblem, moveToString} from "./util";
+import commandLineArgs from 'command-line-args';
+import { loadInitialBlocks, loadProblem, moveToString } from './util';
 import * as fsPromises from 'fs/promises';
-import {FileHandle} from 'fs/promises';
-import {ChildProcessByStdio, spawn} from "child_process";
-import path from "path";
-import {Readable, Writable} from "stream";
-import {Input, Output} from "./metaprocessor";
-import {parseProgram} from "../src/parser";
+import { FileHandle } from 'fs/promises';
+import { ChildProcessByStdio, spawn } from 'child_process';
+import path from 'path';
+import { Readable, Writable } from 'stream';
+import { Input, Output, Processor } from './metaprocessor';
+import { parseProgram } from '../src/parser';
+import { CopyrightPlugin } from './plugin/copyright_plugin';
 
 interface Options {
     problemId: string;
@@ -15,8 +16,7 @@ interface Options {
 }
 
 class ProcessRunner {
-    constructor(private command: string, private outDir: string, private problemId: string) {
-    }
+    constructor(private command: string, private outDir: string, private problemId: string) {}
 
     async run(input: Input): Promise<Output> {
         const stderrFile = await fsPromises.open(`${this.outDir}/${this.problemId}_stderr.txt`, 'w');
@@ -40,7 +40,7 @@ class ProcessRunner {
         stderrFile: FileHandle,
         proc: ChildProcessByStdio<Writable, Readable, null>,
         resolve: (o: Output) => void,
-        reject: (err: any) => void
+        reject: (err: any) => void,
     ) {
         let emitted = false;
 
@@ -84,7 +84,7 @@ class ProcessRunner {
                 }
                 proc.stdin.write(String(input.image.r[px]));
                 if (px % input.image.width == input.image.width - 1) {
-                    proc.stdin.write("\n");
+                    proc.stdin.write('\n');
                 }
             }
         }
@@ -99,18 +99,26 @@ class ProcessRunner {
     }
 }
 
+function buildPipeline(options: Options, processRunner: ProcessRunner): (input: Input) => Promise<Output> {
+    const copyrightPlugin = new CopyrightPlugin();
+    return (input: Input) => copyrightPlugin.run(input, (i) => processRunner.run(i));
+}
+
 async function main(options: Options) {
     const outDir = `../../output/${options.batchName}`;
     await fsPromises.mkdir(outDir, { recursive: true });
 
+    // Build pipeline
+    const processRunner = new ProcessRunner(options.command, outDir, options.problemId);
+    const pipeline = buildPipeline(options, processRunner);
+
     // Load input from files
     const problemImage = await loadProblem(`../../problem/original/${options.problemId}.png`);
     const initialBlocks = await loadInitialBlocks(`../../problem/original/${options.problemId}.initial.json`);
-    const input = new Input(problemImage, initialBlocks) ;
+    const input = new Input(problemImage, initialBlocks);
 
     // Run process
-    const processRunner = new ProcessRunner(options.command, outDir, options.problemId);
-    const output = await processRunner.run(input);
+    const output = await pipeline(input);
 
     // Write out moves to the file
     const code = output.moves.map(moveToString);

@@ -1,6 +1,6 @@
-import {InitialBlock} from "../../src/simulate";
-import {Move} from "../../src/parser";
-import {Image} from "../util";
+import { InitialBlock } from '../../src/simulate';
+import { Move } from '../../src/parser';
+import { Image } from '../util';
 
 export class Input {
     constructor(readonly image: Image, readonly initialBlocks: InitialBlock[]) {}
@@ -11,5 +11,5 @@ export class Output {
 }
 
 export interface Processor {
-    run(input: Input, next: (input: Input) => Promise<Output>): Promise<Output>
+    run(input: Input, next: (input: Input) => Promise<Output>): Promise<Output>;
 }
