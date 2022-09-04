@@ -22,7 +22,7 @@ pub struct State {
     blocks: BTreeMap<Label, Block>,
     pub cost: i64,
     canvas: Block,
-    pub global_counter: u32,
+    pub(crate) global_counter: u32,
 }
 
 impl State {

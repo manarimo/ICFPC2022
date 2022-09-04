@@ -35,13 +35,17 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
         let g: u8 = sc.read();
         let b: u8 = sc.read();
         let a: u8 = sc.read();
-        state.push_block(Label(vec![id]), Block { x1, y1, x2, y2 });
+
+        let label = Label(vec![id]);
+
+        state.push_block(label.clone(), Block { x1, y1, x2, y2 });
         let color_move = Move::Color(Color {
             color: RGBA([r, g, b, a]),
-            label: Label(vec![id]),
+            label,
         });
         state.apply(&color_move);
+        state.global_counter = state.global_counter.max(id);
     }
-
+    state.cost = 0;
     (Picture(rgba), state)
 }
