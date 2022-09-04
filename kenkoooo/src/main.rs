@@ -6,8 +6,7 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();
 
-    let picture = read_input(&args[1]);
-    let state = State::new(picture.width(), picture.height());
+    let (picture, state) = read_input(&args[1]);
     let mut heap = BinaryHeap::new();
     heap.push(Reverse(Sortable {
         score: state.calc_score(&picture),
