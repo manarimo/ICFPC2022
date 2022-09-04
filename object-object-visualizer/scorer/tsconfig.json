@@ -101,5 +101,5 @@
         "skipLibCheck": true /* Skip type checking all .d.ts files. */
     },
     "exclude": ["./dist"],
-    "include": ["../scorer/**/*", "../src/parser/index.ts", "../src/simulate/index.ts", "../src/error/index.ts"]
+    "include": ["../scorer/**/*", "../src/parser/index.ts", "../src/simulate/index.ts", "../src/error/index.ts", "../src/parser/index.ts"]
 }
