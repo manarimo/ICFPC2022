@@ -1,4 +1,5 @@
 # (C) 2022 team manarimo. All rights reserved
+color [0] [255, 255, 255, 255]
 # rotator: {"rotate":0,"flip":false}
 color [0] [64, 70, 59, 255]
 cut [0] [y] [38]

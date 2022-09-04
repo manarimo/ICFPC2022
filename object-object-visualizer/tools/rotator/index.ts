@@ -225,6 +225,7 @@ export class Rotator implements Processor {
         let bestScore = 1e9;
         let bestRotation: RotationSpec | undefined = undefined;
 
+        let logs: Move[] = [];
         for (let spec of this.rotations) {
             console.log(`rotator: running ${JSON.stringify(spec)}`);
 
@@ -236,9 +237,11 @@ export class Rotator implements Processor {
                 bestMoves = output.moves;
                 bestRotation = spec;
             }
+            logs.push({ kind: 'comment-move', comment: `rotator: ${score} pts (${JSON.stringify(spec)})` });
         }
 
-        bestMoves.unshift({ kind: 'comment-move', comment: `rotator: ${JSON.stringify(bestRotation)}` });
+        bestMoves.unshift({ kind: 'comment-move', comment: `rotator: best ${JSON.stringify(bestRotation)}` });
+        bestMoves.unshift(...logs);
         return new Output(bestMoves);
     };
 
