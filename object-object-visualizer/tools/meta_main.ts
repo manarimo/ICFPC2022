@@ -8,11 +8,16 @@ import { Readable, Writable } from 'stream';
 import { Input, Output, Processor } from './metaprocessor';
 import { parseProgram } from '../src/parser';
 import { CopyrightPlugin } from './plugin/copyright_plugin';
+import { Rotator } from './rotator';
 
 interface Options {
     problemId: string;
     batchName: string;
     command: string;
+
+    // Rotator plugin
+    rotate?: number;
+    flip?: boolean;
 }
 
 class ProcessRunner {
@@ -99,9 +104,28 @@ class ProcessRunner {
     }
 }
 
+function wrap(sink: (input: Input) => Promise<Output>, processor: Processor): (input: Input) => Promise<Output> {
+    return (input: Input) => processor.run(input, sink);
+}
+
 function buildPipeline(options: Options, processRunner: ProcessRunner): (input: Input) => Promise<Output> {
-    const copyrightPlugin = new CopyrightPlugin();
-    return (input: Input) => copyrightPlugin.run(input, (i) => processRunner.run(i));
+    // ***** Plugins are applied in the reversed order as appeared in the code *****
+
+    // Sink
+    let pipeline = (input: Input) => processRunner.run(input);
+
+    // Add rotator plugin
+    if (options.rotate || options.flip) {
+        const rotateAngle = options.rotate || 0;
+        const flip = options.flip == true;
+        const rotatorPlugin = new Rotator(rotateAngle, flip);
+        pipeline = wrap(pipeline, rotatorPlugin);
+    }
+
+    // Add copyright plugin
+    pipeline = wrap(pipeline, new CopyrightPlugin());
+
+    return pipeline;
 }
 
 async function main(options: Options) {
@@ -129,5 +153,7 @@ const options: Options = commandLineArgs([
     { name: 'problemId', type: String },
     { name: 'batchName', type: String },
     { name: 'command', type: String },
+    { name: 'rotate', type: String },
+    { name: 'flip', type: String },
 ]) as Options;
 main(options);
