@@ -1,5 +1,14 @@
 import * as fsPromises from 'fs/promises';
-import { calculateScore, Image, loadInitialBlocks, loadMoves, loadProblem, Solution, topNSolutions } from './util';
+import {
+    calculateScore,
+    Image,
+    loadInitialBlocks,
+    loadMoves,
+    loadProblem,
+    moveToString,
+    Solution,
+    topNSolutions
+} from './util';
 import { applySingleMove, createNewState, InitialBlock } from '../src/simulate';
 import { Move } from '../src/parser';
 
@@ -62,20 +71,7 @@ async function main() {
         console.log(`Best move of ${best.spec.problemId}: ${best.spec.batchName} at ${best.turn}`);
 
         const bestMoves = best.moves.slice(0, best.turn + 1);
-        const code = bestMoves.map((move) => {
-            switch (move.kind) {
-                case 'lcut-move':
-                    return `cut [${move.blockId}] [${move.orientation}] [${move.lineNumber}]`;
-                case 'pcut-move':
-                    return `cut [${move.blockId}] [${move.x}, ${move.y}]`;
-                case 'color-move':
-                    return `color [${move.blockId}] [${move.color.r}, ${move.color.g}, ${move.color.b}, ${move.color.a}]`;
-                case 'swap-move':
-                    return `swap [${move.blockId1}] [${move.blockId2}]`;
-                case 'merge-move':
-                    return `merge [${move.blockId1}] [${move.blockId2}]`;
-            }
-        });
+        const code = bestMoves.map(moveToString);
         code.unshift(`# Based on ${best.spec.batchName}`);
         await fsPromises.writeFile(`${outDir}/${best.spec.problemId}.isl`, code.join('\n'));
     }
