@@ -20,7 +20,7 @@ export class TurnPicker implements Processor {
                 bestScore = newScore;
             }
         });
-        const finalMoves = output.moves.slice(0, bestTurn);
+        const finalMoves = output.moves.slice(0, bestTurn + 1);
         return new Output(finalMoves);
     };
 }
