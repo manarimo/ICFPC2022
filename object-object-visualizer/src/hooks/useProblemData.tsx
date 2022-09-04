@@ -11,6 +11,15 @@ export const useProblemData = (problemId: string | undefined) => {
   );
 };
 
+export const useInitialImage = (problemId: string | undefined) => {
+  return useSWR(
+    problemId && problemId in ["36", "37", "38", "39", "40"]
+      ? `http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/problem/original_initial/${problemId}.png`
+      : null,
+    (url) => fetchProblem(url)
+  );
+};
+
 const fetchProblem = async (url: string) => {
   const arrayBuffer = await fetch(url).then((response) => {
     return response.arrayBuffer();

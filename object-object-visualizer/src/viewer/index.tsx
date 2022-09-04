@@ -20,6 +20,7 @@ interface Props {
   width: number;
   height: number;
   initialBlocks?: InitialBlock[];
+  initialImage?: Image;
 }
 
 const unzoom = (v: number, zoom: number) => Math.floor(v / zoom);
@@ -79,11 +80,12 @@ export const Viewer = ({
   width,
   problemImage,
   initialBlocks,
+  initialImage,
 }: Props) => {
   const [turn, setTurn] = useState(0);
   const [isHeatmap, setisHeatmap] = useState(false);
   const result = useMemo(() => {
-    return calculate(moves, width, height, initialBlocks);
+    return calculate(moves, width, height, initialBlocks, initialImage);
   }, [width, height, moves]);
   useEffect(() => {
     setTurn(result.states.length - 1);
@@ -170,9 +172,10 @@ const calculate = (
   moves: Move[],
   width: number,
   height: number,
-  initialBlocks?: InitialBlock[]
+  initialBlocks?: InitialBlock[],
+  initialImage?: Image
 ) => {
-  let state = createNewState(width, height, initialBlocks);
+  let state = createNewState(width, height, initialBlocks, initialImage);
   const states = [state];
   for (const move of moves) {
     const result = applySingleMove(move, state);

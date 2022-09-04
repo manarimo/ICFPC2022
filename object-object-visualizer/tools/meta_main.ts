@@ -1,7 +1,8 @@
 import commandLineArgs from 'command-line-args';
-import { loadInitialBlocks, loadProblem, moveToString } from './util';
+import { loadInitialBlocks, loadProblem, moveToString, Image, createImageFromBlocks } from './util';
 import * as fsPromises from 'fs/promises';
 import { FileHandle } from 'fs/promises';
+import * as fs from 'fs';
 import { ChildProcessByStdio, spawn } from 'child_process';
 import path from 'path';
 import { Readable, Writable } from 'stream';
@@ -93,18 +94,23 @@ class ProcessRunner {
         });
 
         // Write out input in the kyopro format
-        proc.stdin.write(`${input.image.width} ${input.image.height}\n`);
-        for (let buf of [input.image.r, input.image.g, input.image.b, input.image.a]) {
-            for (let px = 0; px < input.image.width * input.image.height; px++) {
-                if (px % input.image.width > 0) {
-                    proc.stdin.write(' ');
-                }
-                proc.stdin.write(String(buf[px]));
-                if (px % input.image.width == input.image.width - 1) {
-                    proc.stdin.write('\n');
+        function writeImage(image: Image) {
+            for (let buf of [image.r, image.g, image.b, image.a]) {
+                for (let px = 0; px < image.width * image.height; px++) {
+                    if (px % image.width > 0) {
+                        proc.stdin.write(' ');
+                    }
+                    proc.stdin.write(String(buf[px]));
+                    if (px % image.width == image.width - 1) {
+                        proc.stdin.write('\n');
+                    }
                 }
             }
         }
+
+        proc.stdin.write(`${input.image.width} ${input.image.height}\n`);
+        writeImage(input.image);
+
         proc.stdin.write(`${input.initialBlocks.length}\n`);
         for (let block of input.initialBlocks) {
             proc.stdin.write(`${block.blockId}\n`);
@@ -112,6 +118,23 @@ class ProcessRunner {
             proc.stdin.write(`${block.topRight.join(' ')}\n`);
             proc.stdin.write(`${block.color.join(' ')}\n`);
         }
+
+        let currentGlobalCounter = input.initialBlocks.map((block) => parseInt(block.blockId.split('.')[0])).reduce((x, y) => Math.max(x, y), 0);
+        proc.stdin.write(`${currentGlobalCounter}\n`);
+        let initialImage: Image;
+        if (input.initialImage !== null) {
+            // v2 cost
+            proc.stdin.write(`2 3 5 3 1\n`);
+            // initialize the canvas with initialImage
+            initialImage = input.initialImage;
+        } else {
+            // v1 cost
+            proc.stdin.write(`7 10 5 3 1\n`);
+            // initialize the canvas with blocks
+            initialImage = createImageFromBlocks(input.initialBlocks);
+        }
+        writeImage(initialImage);
+
         proc.stdin.end();
     }
 }
@@ -162,7 +185,9 @@ async function main(options: Options) {
     // Load input from files
     const problemImage = await loadProblem(`../../problem/original/${options.problemId}.png`);
     const initialBlocks = await loadInitialBlocks(`../../problem/original/${options.problemId}.initial.json`);
-    const input = new Input(problemImage, initialBlocks);
+    const initialImagePath = `../../problem/original_initial/${options.problemId}.png`;
+    const initialProblemImage = fs.existsSync(initialImagePath) ? await loadProblem(initialImagePath) : null;
+    const input = new Input(problemImage, initialBlocks, initialProblemImage);
 
     // Run process
     const output = await pipeline(input);

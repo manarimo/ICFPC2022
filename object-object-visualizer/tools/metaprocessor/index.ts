@@ -3,7 +3,7 @@ import { Move } from '../../src/parser';
 import { Image } from '../util';
 
 export class Input {
-    constructor(readonly image: Image, readonly initialBlocks: InitialBlock[]) {}
+    constructor(readonly image: Image, readonly initialBlocks: InitialBlock[], readonly initialImage: Image | null) {}
 }
 
 export class Output {

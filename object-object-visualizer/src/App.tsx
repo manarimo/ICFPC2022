@@ -6,7 +6,7 @@ import { ProblemViewer } from "./problem-viewer";
 import { useParams } from "react-router-dom";
 import useSWR, { BareFetcher } from "swr";
 import { manarimoFetch } from "./fetch";
-import { useProblemData } from "./hooks/useProblemData";
+import { useInitialImage, useProblemData } from "./hooks/useProblemData";
 import { useInitial } from "./hooks/useInitial";
 import {
   colorsToKyoproFormat,
@@ -43,6 +43,7 @@ function App() {
   const [program, setProgram] = useLocalStorage("ProgramEditor", "");
   const problem = useProblemData(problemId);
   const initial = useInitial(problemId);
+  const initialImage = useInitialImage(problemId);
 
   useEffect(() => {
     if (data !== undefined) {
@@ -78,6 +79,7 @@ function App() {
           width={WIDTH}
           height={HEIGHT}
           initialBlocks={initial.data?.blocks}
+          initialImage={initialImage.data}
         ></Viewer>
       </div>
       <div>

@@ -88,6 +88,35 @@ export async function loadInitialBlocks(initialBlocksFile: string): Promise<Init
     return JSON.parse(initialBlockBuffer.toString()).blocks as InitialBlock[];
 }
 
+export function createImageFromBlocks(blocks: InitialBlock[]): Image {
+    let width = blocks.map((block) => block.topRight[1]).reduce((x, y) => Math.max(x, y), 0);
+    let height = blocks.map((block) => block.topRight[0]).reduce((x, y) => Math.max(x, y), 0);
+
+    const image: Image = {
+        r: new Uint8Array(width * height),
+        g: new Uint8Array(width * height),
+        b: new Uint8Array(width * height),
+        a: new Uint8Array(width * height),
+        width,
+        height,
+    };
+    for (const block of blocks) {
+        for (let x = block.bottomLeft[1]; x < block.topRight[1]; x++) {
+            for (let y = block.bottomLeft[0]; y < block.topRight[0]; y++) {
+                const pngX = x;
+                const pngY = height - 1 - y;
+                const index = pngY * width + pngX;
+                image.r[index] = block.color[0];
+                image.g[index] = block.color[1];
+                image.b[index] = block.color[2];
+                image.a[index] = block.color[3];
+            }
+        }
+    }
+
+    return image;
+}
+
 export function runSolution(image: Image, solution: Move[], initialBlocks?: InitialBlock[]): State {
     let state = createNewState(image.width, image.height, initialBlocks);
     solution.forEach((move, i) => {

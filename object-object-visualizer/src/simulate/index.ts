@@ -325,7 +325,8 @@ export type InitialBlock = {
 export const createNewState = (
   width: number,
   height: number,
-  blocks?: InitialBlock[]
+  blocks?: InitialBlock[],
+  initialImage?: Image
 ): State => {
   const initialBlocks: InitialBlock[] = blocks ?? [
     {
@@ -359,17 +360,32 @@ export const createNewState = (
     globalCounter: initialBlocks.length - 1,
     cost: 0,
   };
-  initialBlocks.forEach((block) => {
-    for (let x = block.bottomLeft[0]; x < block.topRight[0]; x++) {
-      for (let y = block.bottomLeft[1]; y < block.topRight[1]; y++) {
-        const position = y * width + x;
-        state.r[position] = block.color[0];
-        state.g[position] = block.color[1];
-        state.b[position] = block.color[2];
-        state.a[position] = block.color[3];
+  if (initialImage) {
+    for (let x = 0; x < initialImage.width; x++) {
+      for (let y = 0; y < initialImage.height; y++) {
+        const probX = x;
+        const probY = initialImage.height - 1 - y;
+        const position = probY * width + probX;
+        state.r[position] = initialImage.r[position];
+        state.g[position] = initialImage.g[position];
+        state.b[position] = initialImage.b[position];
+        state.a[position] = initialImage.a[position];
       }
     }
-  });
+  } else {
+    initialBlocks.forEach((block) => {
+      for (let x = block.bottomLeft[0]; x < block.topRight[0]; x++) {
+        for (let y = block.bottomLeft[1]; y < block.topRight[1]; y++) {
+          const position = y * width + x;
+          state.r[position] = block.color[0];
+          state.g[position] = block.color[1];
+          state.b[position] = block.color[2];
+          state.a[position] = block.color[3];
+        }
+      }
+    });
+  }
+
   return state;
 };
 

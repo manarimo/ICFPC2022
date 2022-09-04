@@ -251,14 +251,18 @@ export class Rotator implements Processor {
         }
 
         let nextImage: Image = input.image;
+        let nextInitialImage = input.initialImage;
         if (flip) {
             nextImage = this.flipImage(nextImage);
         }
         for (let i = 0; i < rotate % 4; i++) {
             nextImage = this.rotate90(nextImage);
+            if (nextInitialImage !== null) {
+                nextInitialImage = this.rotate90(nextInitialImage);
+            }
         }
 
-        const output = await next(new Input(nextImage, input.initialBlocks));
+        const output = await next(new Input(nextImage, input.initialBlocks, nextInitialImage));
 
         let newMoves = [...output.moves];
 
