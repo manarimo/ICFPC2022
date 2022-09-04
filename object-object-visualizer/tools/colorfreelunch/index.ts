@@ -6,11 +6,11 @@ import { applySingleMove, calculatePixelSimilarity, createNewState, State } from
 const calcSinglePixelDistance = (problem: Image, color: Color, { r, c }: Place): number => {
     const px = (problem.height - r - 1) * problem.width + c;
 
-    const rDiff = Math.pow(problem.r[px] - color.r, 2);
-    const gDiff = Math.pow(problem.g[px] - color.g, 2);
-    const bDiff = Math.pow(problem.b[px] - color.b, 2);
-    const aDiff = Math.pow(problem.a[px] - color.a, 2);
-    return Math.sqrt(rDiff + gDiff + bDiff + aDiff);
+    const rDiff = problem.r[px] - color.r;
+    const gDiff = problem.g[px] - color.g;
+    const bDiff = problem.b[px] - color.b;
+    const aDiff = problem.a[px] - color.a;
+    return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff + aDiff * aDiff);
 };
 
 const calcSimilarityOfPlaces = (problem: Image, color: Color, places: Place[]) => {
@@ -41,6 +41,12 @@ const optimizeColor = (problem: Image, places: Place[]) => {
         aMax = Math.max(aMax, problem.a[r * problem.height + c]);
     });
 
+    const problemSize = (rMax - rMin + 1) * (gMax - gMin + 1) * (bMax - bMin + 1) * (aMax - aMin + 1) * places.length;
+    if (problemSize > 100000000) {
+        // console.warn(`problem space: `, { rMin, rMax, gMin, gMax, bMin, bMax, aMin, aMax }, { places: places.length });
+        return;
+    }
+
     let curSimilarity = -1;
     let curMinColor = { r: 0, g: 0, b: 0, a: 0 };
     for (let r = rMin; r <= rMax; r++) {
@@ -57,6 +63,38 @@ const optimizeColor = (problem: Image, places: Place[]) => {
         }
     }
     return curMinColor;
+};
+
+const optimizeColor2 = (problem: Image, places: Place[], initialColor: Color) => {
+    const toArray = (color: Color) => [color.r, color.g, color.b, color.a];
+    const fromArray = (color: number[]) => ({ r: color[0], g: color[1], b: color[1], a: color[1] });
+
+    let curSimilarity = calcSimilarityOfPlaces(problem, initialColor, places);
+    let curMinColor = toArray(initialColor);
+    while (true) {
+        let finished = true;
+        Array.from(Array(4)).forEach((_, channel) => {
+            [-1, 1].forEach((d) => {
+                while (0 <= curMinColor[channel] + d && curMinColor[channel] + d <= 255) {
+                    curMinColor[channel] += d;
+                    const similarity = calcSimilarityOfPlaces(problem, fromArray(curMinColor), places);
+                    if (similarity < curSimilarity) {
+                        finished = false;
+                        curSimilarity = similarity;
+                        console.log(`${curSimilarity} -> ${similarity}`);
+                    } else {
+                        curMinColor[channel] -= d;
+                        break;
+                    }
+                }
+            });
+        });
+
+        if (finished) {
+            break;
+        }
+    }
+    return fromArray(curMinColor);
 };
 
 const optimize = (problem: Image, moves: Move[], initialState: State): Move[] | undefined => {
@@ -108,6 +146,10 @@ const optimize = (problem: Image, moves: Move[], initialState: State): Move[] | 
         }
 
         const newColor = optimizeColor(problem, places);
+        if (!newColor) {
+            continue;
+        }
+        // const newColor = optimizeColor2(problem, places, move.color);
         newMoves[moveId] = { ...move, color: newColor };
     }
 
@@ -171,8 +213,10 @@ const main = async () => {
 
         const solution = solutions[0];
         const moves = await loadMoves(`../../output/${solution.batchName}/${problemId}.isl`);
+        console.log(`optimizing ${solution.batchName}/${problemId} ...`);
         const newMoves = optimize(problem, moves, initialState);
         if (!newMoves) {
+            console.error(`failed to optimize ${solution.batchName}/${problemId}`);
             continue;
         }
 
@@ -180,6 +224,8 @@ const main = async () => {
         const after = calcScore(problem, newMoves, initialState);
         if (before > after) {
             console.log(`${before} -> ${after} in ${solution.batchName}/${problemId}`);
+        } else {
+            console.log('no change');
         }
     }
 };
