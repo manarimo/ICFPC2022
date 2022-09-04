@@ -319,7 +319,8 @@ export type InitialBlock = {
   blockId: string;
   bottomLeft: [number, number];
   topRight: [number, number];
-  color: [number, number, number, number];
+  color?: [number, number, number, number];
+  pngBottomLeftPoint?: [number, number];
 };
 
 export const createNewState = (
@@ -378,10 +379,11 @@ export const createNewState = (
       for (let x = block.bottomLeft[0]; x < block.topRight[0]; x++) {
         for (let y = block.bottomLeft[1]; y < block.topRight[1]; y++) {
           const position = y * width + x;
-          state.r[position] = block.color[0];
-          state.g[position] = block.color[1];
-          state.b[position] = block.color[2];
-          state.a[position] = block.color[3];
+          const color = block.color ?? [0, 0, 0, 255];
+          state.r[position] = color[0];
+          state.g[position] = color[1];
+          state.b[position] = color[2];
+          state.a[position] = color[3];
         }
       }
     });

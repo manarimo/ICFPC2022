@@ -110,6 +110,9 @@ export function createImageFromBlocks(blocks: InitialBlock[]): Image {
                 const pngX = x;
                 const pngY = height - 1 - y;
                 const index = pngY * width + pngX;
+                if (!block.color) {
+                    throw new Error('block must have color to create image from it.');
+                }
                 image.r[index] = block.color[0];
                 image.g[index] = block.color[1];
                 image.b[index] = block.color[2];

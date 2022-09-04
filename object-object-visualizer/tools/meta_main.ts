@@ -116,7 +116,7 @@ class ProcessRunner {
             proc.stdin.write(`${block.blockId}\n`);
             proc.stdin.write(`${block.bottomLeft.join(' ')}\n`);
             proc.stdin.write(`${block.topRight.join(' ')}\n`);
-            proc.stdin.write(`${block.color.join(' ')}\n`);
+            proc.stdin.write(`${(block.color ?? [0, 0, 0, 255]).join(' ')}\n`); // this field is deprecated.
         }
 
         let currentGlobalCounter = input.initialBlocks.map((block) => parseInt(block.blockId.split('.')[0])).reduce((x, y) => Math.max(x, y), 0);
