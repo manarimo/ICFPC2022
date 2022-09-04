@@ -6,12 +6,13 @@
 #include <set>
 #include <algorithm>
 #include <random>
+#include <map>
 
 using namespace std;
 
 const int MAX_H = 400;
 const int MAX_W = 400;
-const int MAX_COLOR = 30;
+const int MAX_COLOR = 50;
 const int LIMIT_X = 100;
 const int LIMIT_Y = 400;
 const double INF = 1e9;
@@ -90,7 +91,7 @@ void input() {
     }
 }
 
-vector<color> create_color_pallet() {
+vector<color> create_color_pallet(int max_color) {
     set<color> color_set;
     for (int x = 0; x < h; x++) {
         for (int y = 0; y < w; y++) {
@@ -105,14 +106,14 @@ vector<color> create_color_pallet() {
     vector<int> cluster(n);
     
     for (int i = 0; i < n; i++) {
-        cluster[i] = i % MAX_COLOR;
+        cluster[i] = i % max_color;
     }
     
     vector<int> prev = cluster;
     vector<color> rep;
     while (true) {
-        vector<color> sum(MAX_COLOR, color(0, 0, 0, 0));
-        vector<int> cnt(MAX_COLOR);
+        vector<color> sum(max_color, color(0, 0, 0, 0));
+        vector<int> cnt(max_color);
         for (int i = 0; i < n; i++) {
             int cid = cluster[i];
             sum[cid].r += colors[i].r;
@@ -122,8 +123,8 @@ vector<color> create_color_pallet() {
             cnt[cid]++;
         }
         
-        rep = vector<color>(MAX_COLOR);
-        for (int i = 0; i < MAX_COLOR; i++) {
+        rep = vector<color>(max_color);
+        for (int i = 0; i < max_color; i++) {
             if (cnt[i] > 0) {
                 rep[i] = color(round(1.0 * sum[i].r / cnt[i]), round(1.0 * sum[i].g / cnt[i]), round(1.0 * sum[i].b / cnt[i]), round(1.0 * sum[i].a / cnt[i]));
             }
@@ -132,7 +133,7 @@ vector<color> create_color_pallet() {
         for (int i = 0; i < n; i++) {
             int max_cid = 0;
             double max_d = 1e10;
-            for (int cid = 0; cid < MAX_COLOR; cid++) {
+            for (int cid = 0; cid < max_color; cid++) {
                 double d = sqrt((rep[cid].r - colors[i].r) * (rep[cid].r - colors[i].r)
                 + (rep[cid].g - colors[i].g) * (rep[cid].g - colors[i].g)
                 + (rep[cid].b - colors[i].b) * (rep[cid].b - colors[i].b)
@@ -410,10 +411,53 @@ int output(int& id, int x1, int x2) {
     }
 }
 
+color get_color(int x, int y) {
+    return color(p[y][x][0], p[y][x][1], p[y][x][2], p[y][x][3]);
+}
+
+vector<color> additional_color(const vector<color>& pallet, int to_add) {
+    set<color> current_pallet(pallet.begin(), pallet.end());
+
+    map<color, int> color_map;
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            color_map[get_color(x, y)]++;
+        }
+    }
+
+    vector<pair<int, color>> v;
+    for (auto &e: color_map) {
+        v.emplace_back(e.second, e.first);
+    }
+
+    sort(v.rbegin(), v.rend());
+
+    vector<color> additional_color;
+    int rem = to_add;
+    for (auto &e : v) {
+        color &c = e.second;
+        if (current_pallet.find(c) != current_pallet.end()) continue;
+        if (e.first < 100) break;
+        
+        if (rem-- > 0) {
+            additional_color.push_back(c);
+        }
+    }
+
+    return additional_color;
+}
+
 int main() {
     input();
     
-    colors = create_color_pallet();
+    int additional_pallet_size = 20;
+
+    int pallet_size = MAX_COLOR - additional_pallet_size;
+    colors = create_color_pallet(pallet_size);
+
+    for (auto c : additional_color(colors, additional_pallet_size)) {
+        colors.push_back(c);
+    }
     
     preprocess();
     
