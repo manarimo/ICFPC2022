@@ -21,12 +21,12 @@ fn calc_similarity(result: &Picture, target: &Picture) -> i64 {
     diff.to_normalized_similarity()
 }
 
-pub fn range_raw_similarity(result: &Picture, target: &Picture, block: &Block) -> f64 {
+pub fn range_raw_similarity(p1: &Picture, p2: &Picture, block: &Block) -> f64 {
     let mut diff = 0.0;
     for y in block.y1..block.y2 {
         for x in block.x1..block.x2 {
-            let p1 = result.0[y][x];
-            let p2 = target.0[target.height() - 1 - y][x];
+            let p1 = p1.0[y][x];
+            let p2 = p2.0[y][x];
             diff += p1.diff(&p2);
         }
     }

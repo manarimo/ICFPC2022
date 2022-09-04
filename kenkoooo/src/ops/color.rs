@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::types::{Label, State, RGBA};
 
+#[derive(Clone)]
 pub struct Color {
     pub label: Label,
     pub color: RGBA,

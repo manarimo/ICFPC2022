@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::types::{Label, State};
 
+#[derive(Clone)]
 pub struct Swap {
     pub label1: Label,
     pub label2: Label,
