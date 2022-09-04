@@ -1,8 +1,16 @@
+use std::fmt::Display;
+
 use crate::types::{Label, State};
 
 pub struct Swap {
     pub label1: Label,
     pub label2: Label,
+}
+
+impl Display for Swap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "swap[{}][{}]", self.label1, self.label2)
+    }
 }
 
 impl State {

@@ -1,9 +1,9 @@
 use std::{fs::read_to_string, path::Path};
 
-use crate::{scanner::IO, types::Picture};
 use crate::ops::color::Color;
 use crate::ops::Move;
-use crate::types::{Block, Label, RGBA, State};
+use crate::types::{Block, Label, State, RGBA};
+use crate::{scanner::IO, types::Picture};
 
 pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
     let input = read_to_string(path).unwrap();
@@ -35,8 +35,11 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
         let g: u8 = sc.read();
         let b: u8 = sc.read();
         let a: u8 = sc.read();
-        state.push_block(Label(vec![id]), Block{x1, y1, x2, y2});
-        let color_move = Move::Color(Color{ color: RGBA([r, g, b, a]), label: Label(vec![id])});
+        state.push_block(Label(vec![id]), Block { x1, y1, x2, y2 });
+        let color_move = Move::Color(Color {
+            color: RGBA([r, g, b, a]),
+            label: Label(vec![id]),
+        });
         state.apply(color_move);
     }
 

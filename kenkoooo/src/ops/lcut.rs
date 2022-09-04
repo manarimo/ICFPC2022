@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::types::{Label, State};
 
 pub struct LineCut {
@@ -6,9 +8,24 @@ pub struct LineCut {
     pub pos: usize,
 }
 
+impl Display for LineCut {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "cut[{}][{}][{}]", self.label, self.orientation, self.pos)
+    }
+}
+
 pub enum Orientation {
     X,
     Y,
+}
+
+impl Display for Orientation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Orientation::X => write!(f, "x"),
+            Orientation::Y => write!(f, "y"),
+        }
+    }
 }
 
 impl State {

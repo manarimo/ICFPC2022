@@ -1,3 +1,5 @@
+use std::{fs::read_to_string, path::Path};
+
 use crate::{
     ops::{
         color::Color,
@@ -10,31 +12,43 @@ use crate::{
     types::{Label, RGBA},
 };
 
-pub fn parse(code: &str) -> Vec<Move> {
+pub fn read_solution<P: AsRef<Path>>(path: P) -> Vec<Move> {
+    let code = read_to_string(path).unwrap();
+    let moves = parse_code(&code);
+    moves.into_iter().collect()
+}
+
+fn parse_code(code: &str) -> Vec<Move> {
     let mut moves = vec![];
     for line in code.split("\n") {
-        let line = line.replace(" ", "").to_lowercase();
-        if line.starts_with("#") {
-            continue;
+        if let Some(mv) = parse_single_code(line) {
+            moves.push(mv);
         }
-        if line.is_empty() {
-            continue;
-        }
-
-        let mv = if line.starts_with("cut") {
-            parse_cut_move(&line)
-        } else if line.starts_with("color") {
-            Move::Color(parse_color_move(&line))
-        } else if line.starts_with("swap") {
-            Move::Swap(parse_swap_move(&line))
-        } else if line.starts_with("merge") {
-            Move::Merge(parse_merge_move(&line))
-        } else {
-            unreachable!()
-        };
-        moves.push(mv);
     }
     moves
+}
+
+pub fn parse_single_code(line: &str) -> Option<Move> {
+    let line = line.trim().replace(" ", "").to_lowercase();
+    if line.starts_with("#") {
+        return None;
+    }
+    if line.is_empty() {
+        return None;
+    }
+
+    let mv = if line.starts_with("cut") {
+        parse_cut_move(&line)
+    } else if line.starts_with("color") {
+        Move::Color(parse_color_move(&line))
+    } else if line.starts_with("swap") {
+        Move::Swap(parse_swap_move(&line))
+    } else if line.starts_with("merge") {
+        Move::Merge(parse_merge_move(&line))
+    } else {
+        unreachable!()
+    };
+    Some(mv)
 }
 
 fn parse_cut_move(mut remain: &str) -> Move {
@@ -51,7 +65,7 @@ fn parse_cut_move(mut remain: &str) -> Move {
             Move::LineCut(LineCut {
                 label,
                 orientation,
-                pos: usize::from(line_number),
+                pos: line_number,
             })
         }
         None => {
@@ -80,9 +94,9 @@ fn parse_swap_move(mut remain: &str) -> Swap {
     Swap { label1, label2 }
 }
 
-fn parse_line_number(remain: &str) -> (u8, &str) {
+fn parse_line_number(remain: &str) -> (usize, &str) {
     let (label, remain) = parse_bracket(remain);
-    (label[0] as u8, remain)
+    (label[0] as usize, remain)
 }
 
 fn parse_label(line: &str) -> (Label, &str) {
@@ -141,11 +155,11 @@ fn parse_color(line: &str) -> (RGBA, &str) {
 
 #[cfg(test)]
 mod tests {
-    use super::parse;
+    use super::parse_code;
 
     #[test]
     fn test_parser() {
-        parse(
+        parse_code(
             r#"color [0] [255, 255, 255, 255]
         cut [0] [x] [8]
         color [0.1] [255, 255, 255, 255]

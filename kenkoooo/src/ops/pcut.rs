@@ -1,9 +1,16 @@
+use std::fmt::Display;
+
 use crate::types::{Label, State};
 
 pub struct PointCut {
     pub label: Label,
     pub x: usize,
     pub y: usize,
+}
+impl Display for PointCut {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "cut[{}][{},{}]", self.label, self.x, self.y)
+    }
 }
 
 impl State {

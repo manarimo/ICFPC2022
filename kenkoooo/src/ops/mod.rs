@@ -4,6 +4,8 @@ pub mod merge;
 pub mod pcut;
 pub mod swap;
 
+use std::fmt::Display;
+
 use crate::types::State;
 
 use self::{color::Color, lcut::LineCut, merge::Merge, pcut::PointCut, swap::Swap};
@@ -14,6 +16,28 @@ pub enum Move {
     Color(Color),
     Swap(Swap),
     Merge(Merge),
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Move::LineCut(m) => {
+                write!(f, "{}", m)
+            }
+            Move::PointCut(m) => {
+                write!(f, "{}", m)
+            }
+            Move::Color(m) => {
+                write!(f, "{}", m)
+            }
+            Move::Swap(m) => {
+                write!(f, "{}", m)
+            }
+            Move::Merge(m) => {
+                write!(f, "{}", m)
+            }
+        }
+    }
 }
 
 impl State {

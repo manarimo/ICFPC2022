@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt::Display};
 
 #[derive(Clone)]
 pub struct Picture(pub Vec<Vec<RGBA>>);
@@ -20,7 +20,7 @@ impl Picture {
 pub struct State {
     pub picture: Picture,
     blocks: BTreeMap<Label, Block>,
-    cost: i64,
+    pub cost: i64,
     canvas: Block,
     pub global_counter: u32,
 }
@@ -64,12 +64,14 @@ impl State {
         self.blocks.get(label).unwrap()
     }
 
-    pub fn add_cost(&mut self, base_score: i64, block: &Block) {
-        let base = base_score * self.canvas.size();
+    pub fn add_cost(&mut self, base_cost: i64, block: &Block) {
+        let base = base_cost * self.canvas.size();
         let block_size = block.size();
-        let x = base / block_size;
-        let r = base % block_size;
-        self.cost += if r * 2 >= base { x + 1 } else { x };
+
+        self.cost += base / block_size;
+        if (base % block_size) * 2 >= block_size {
+            self.cost += 1;
+        }
     }
 }
 
@@ -97,6 +99,12 @@ impl Block {
 #[derive(Clone, Copy)]
 pub struct RGBA(pub [u8; 4]);
 
+impl Display for RGBA {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{},{},{},{}", self.0[0], self.0[1], self.0[2], self.0[3])
+    }
+}
+
 impl RGBA {
     pub fn diff(&self, rhs: &Self) -> f64 {
         let mut sum = 0;
@@ -111,6 +119,18 @@ impl RGBA {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Label(pub Vec<u32>);
+
+impl Display for Label {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, p) in self.0.iter().enumerate() {
+            if i > 0 {
+                write!(f, ".")?;
+            }
+            write!(f, "{}", p)?;
+        }
+        Ok(())
+    }
+}
 
 impl Label {
     pub fn push(&mut self, suffix: u32) {

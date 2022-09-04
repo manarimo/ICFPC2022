@@ -1,8 +1,16 @@
+use std::fmt::Display;
+
 use crate::types::{Block, Label, State};
 
 pub struct Merge {
     pub label1: Label,
     pub label2: Label,
+}
+
+impl Display for Merge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "merge[{}][{}]", self.label1, self.label2)
+    }
 }
 
 impl State {
