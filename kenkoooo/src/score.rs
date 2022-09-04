@@ -1,6 +1,4 @@
-use std::ops::Range;
-
-use crate::types::{Picture, State};
+use crate::types::{Block, Picture, State};
 
 impl State {
     pub fn calc_score(&self, target: &Picture) -> i64 {
@@ -10,23 +8,37 @@ impl State {
 }
 
 fn calc_similarity(result: &Picture, target: &Picture) -> i64 {
-    let diff = range_raw_similarity(result, target, 0..result.width(), 0..target.height());
-    ((diff * 0.005).round() + 0.1) as i64
+    let diff = range_raw_similarity(
+        result,
+        target,
+        &Block {
+            x1: 0,
+            x2: target.width(),
+            y1: 0,
+            y2: target.height(),
+        },
+    );
+    diff.to_normalized_similarity()
 }
 
-pub fn range_raw_similarity(
-    result: &Picture,
-    target: &Picture,
-    x: Range<usize>,
-    y: Range<usize>,
-) -> f64 {
+pub fn range_raw_similarity(result: &Picture, target: &Picture, block: &Block) -> f64 {
     let mut diff = 0.0;
-    for y in y {
-        for x in x.clone() {
+    for y in block.y1..block.y2 {
+        for x in block.x1..block.x2 {
             let p1 = result.0[y][x];
             let p2 = target.0[target.height() - 1 - y][x];
             diff += p1.diff(&p2);
         }
     }
     diff
+}
+
+pub trait RawSimilarity {
+    fn to_normalized_similarity(self) -> i64;
+}
+
+impl RawSimilarity for f64 {
+    fn to_normalized_similarity(self) -> i64 {
+        ((self * 0.005).round() + 0.1) as i64
+    }
 }

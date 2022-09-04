@@ -14,7 +14,7 @@ impl Display for PointCut {
 }
 
 impl State {
-    pub(super) fn apply_pcut(&self, m: PointCut) -> Self {
+    pub(super) fn apply_pcut(&self, m: &PointCut) -> Self {
         let mut new_state = self.clone();
         let block = new_state.pop_block(&m.label);
         let (x, y) = (m.x, m.y);
@@ -49,7 +49,7 @@ impl State {
         top_left.x2 = x;
         top_left.y1 = y;
 
-        let mut top_left_label = m.label;
+        let mut top_left_label = m.label.clone();
         top_left_label.push(2);
         new_state.push_block(top_left_label, top_left);
 

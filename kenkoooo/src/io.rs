@@ -40,7 +40,7 @@ pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
             color: RGBA([r, g, b, a]),
             label: Label(vec![id]),
         });
-        state.apply(color_move);
+        state.apply(&color_move);
     }
 
     (Picture(rgba), state)

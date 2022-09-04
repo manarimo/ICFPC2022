@@ -17,7 +17,7 @@ fn main() {
 fn calc_score(solution: Vec<Move>, pic: &Picture, initial: State) -> i64 {
     let mut state = initial;
     for mv in solution {
-        state = state.apply(mv);
+        state = state.apply(&mv);
     }
     state.calc_score(pic)
 }

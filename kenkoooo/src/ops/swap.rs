@@ -14,7 +14,7 @@ impl Display for Swap {
 }
 
 impl State {
-    pub(super) fn apply_swap(&self, m: Swap) -> Self {
+    pub(super) fn apply_swap(&self, m: &Swap) -> Self {
         let mut new_state = self.clone();
         let block1 = self.get_block(&m.label1);
         let block2 = self.get_block(&m.label2);

@@ -41,7 +41,7 @@ impl Display for Move {
 }
 
 impl State {
-    pub fn apply(&self, m: Move) -> Self {
+    pub fn apply(&self, m: &Move) -> Self {
         match m {
             Move::LineCut(x) => self.apply_lcut(x),
             Move::PointCut(x) => self.apply_pcut(x),
