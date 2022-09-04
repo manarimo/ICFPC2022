@@ -17,7 +17,7 @@ fn main() {
     let after = evaluate(&new_moves, &initial_state, &target);
     if before > after {
         eprintln!("{} -> {}", before, after);
-        for mv in moves {
+        for mv in new_moves {
             println!("{}", mv);
         }
     } else {
