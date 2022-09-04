@@ -9,7 +9,8 @@
         "score": "ts-node ./index.ts",
         "turn-picker": "ts-node turn_picker.ts",
         "merger": "ts-node merger/index.ts",
-        "send-best": "ts-node send_best.ts"
+        "send-best": "ts-node send_best.ts",
+        "meta": "ts-node metaprocessor.ts"
     },
     "author": "",
     "license": "ISC",
