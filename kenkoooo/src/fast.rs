@@ -2,26 +2,23 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use anyhow::{Context, Result};
 
-use crate::ops::{lcut::Orientation, Move};
+use crate::{
+    ops::{lcut::Orientation, Move},
+    types::Block,
+};
 
 const H: usize = 400;
 const W: usize = 400;
-struct FastState {
-    blocks: BTreeMap<Vec<u32>, Block>,
-    cost: usize,
-    global_counter: u32,
-}
 
 #[derive(Clone)]
-struct Block {
-    x1: usize,
-    x2: usize,
-    y1: usize,
-    y2: usize,
+pub struct FastState {
+    pub blocks: BTreeMap<Vec<u32>, Block>,
+    pub cost: usize,
+    pub global_counter: u32,
 }
 
 impl Block {
-    fn size(&self) -> usize {
+    fn usize(&self) -> usize {
         let dx = self.x2 - self.x1;
         let dy = self.y2 - self.y1;
         dx * dy
@@ -29,13 +26,13 @@ impl Block {
 }
 
 impl FastState {
-    pub fn apply_all(&mut self, moves: &[Move]) -> Result<()> {
+    pub fn apply_all(&mut self, moves: &[Move]) -> Result<Vec<Vec<[u8; 4]>>> {
         let mut colors = vec![];
         for (i, mv) in moves.iter().enumerate() {
             match mv {
                 Move::LineCut(mv) => {
                     let block = self.blocks.remove(&mv.label.0).context("")?;
-                    self.cost += round(7 * H * W, block.size());
+                    self.cost += round(7 * H * W, block.usize());
                     let Block { x1, x2, y1, y2 } = block;
                     match mv.orientation {
                         Orientation::X => {
@@ -68,7 +65,7 @@ impl FastState {
                 }
                 Move::PointCut(mv) => {
                     let block = self.blocks.remove(&mv.label.0).context("")?;
-                    self.cost += round(7 * H * W, block.size());
+                    self.cost += round(7 * H * W, block.usize());
                     let Block { x1, x2, y1, y2 } = block;
                     let (x, y) = (mv.x, mv.y);
 
@@ -120,14 +117,14 @@ impl FastState {
                 }
                 Move::Color(mv) => {
                     let block = self.blocks.get(&mv.label.0).context("")?;
-                    self.cost += round(5 * H * W, block.size());
+                    self.cost += round(5 * H * W, block.usize());
                     colors.push((i, block.clone()));
                 }
                 Move::Swap(_) => todo!(),
                 Move::Merge(mv) => {
                     let block1 = self.blocks.remove(&mv.label1.0).context("")?;
                     let block2 = self.blocks.remove(&mv.label2.0).context("")?;
-                    self.cost += round(1 * H * W, block1.size().max(block2.size()));
+                    self.cost += round(1 * H * W, block1.usize().max(block2.usize()));
 
                     let x1 = block1.x1.min(block2.x1);
                     let y1 = block1.y1.min(block2.y1);
@@ -135,6 +132,7 @@ impl FastState {
                     let y2 = block1.y2.max(block2.y2);
 
                     let label = vec![self.global_counter];
+                    self.global_counter += 1;
                     self.blocks.insert(label, Block { x1, x2, y1, y2 });
                 }
             }
@@ -182,7 +180,7 @@ impl FastState {
             }
         }
 
-        Ok(())
+        Ok(map)
     }
 }
 
