@@ -68,7 +68,7 @@ export class Merger implements Processor {
             }
         };
 
-        const overriddenMoves = output.moves.map(overrideMove);
+        const overriddenMoves = [...moves, ...output.moves.map(overrideMove)];
         return new Output(overriddenMoves);
     };
 }
