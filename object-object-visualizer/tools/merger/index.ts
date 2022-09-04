@@ -14,7 +14,7 @@ export class Merger implements Processor {
         const output = await next({
             image: input.image,
             initialBlocks: [{
-                blockId: finalId,
+                blockId: '0',
                 bottomLeft: [0, 0],
                 topRight: [400, 400],
                 color: [255, 255, 255, 255],

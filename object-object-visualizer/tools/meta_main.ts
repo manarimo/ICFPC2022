@@ -10,6 +10,7 @@ import { parseProgram } from '../src/parser';
 import { CopyrightPlugin } from './plugin/copyright_plugin';
 import { Rotator } from './rotator';
 import {TurnPicker} from "./plugin/turn_picker";
+import {Merger} from "./merger";
 
 interface Options {
     problemId: string;
@@ -125,6 +126,9 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
         const rotatorPlugin = new Rotator(rotateAngle, flip);
         pipeline = wrap(pipeline, rotatorPlugin);
     }
+
+    // Add merger plugin
+    pipeline = wrap(pipeline, new Merger());
 
     // Add copyright plugin
     pipeline = wrap(pipeline, new CopyrightPlugin());
