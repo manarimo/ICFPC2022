@@ -82,7 +82,26 @@ class ProcessRunner {
             stderrFile.close();
         });
 
-        proc.stdin.write('hoge');
+        // Write out input in the kyopro format
+        proc.stdin.write(`${input.image.width} ${input.image.height}\n`);
+        for (let buf of [input.image.r, input.image.g, input.image.b, input.image.a]) {
+            for (let px = 0; px < input.image.width * input.image.height; px++) {
+                if (px > 0) {
+                    proc.stdin.write(' ');
+                }
+                proc.stdin.write(String(input.image.r[px]));
+                if (px % input.image.width == input.image.width - 1) {
+                    proc.stdin.write("\n");
+                }
+            }
+        }
+        proc.stdin.write(`${input.initialBlocks.length}\n`);
+        for (let block of input.initialBlocks) {
+            proc.stdin.write(`${block.blockId}\n`);
+            proc.stdin.write(`${block.bottomLeft.join(' ')}\n`);
+            proc.stdin.write(`${block.topRight.join(' ')}\n`);
+            proc.stdin.write(`${block.color.join(' ')}\n`);
+        }
         proc.stdin.end();
     }
 }
