@@ -42,13 +42,16 @@ int cut_cost[MAX_H + 1][MAX_W + 1];
 int pcut_cost[MAX_H + 1][MAX_W + 1];
 int color_cost[MAX_H + 1][MAX_W + 1];
 int merge_cost[MAX_H + 1][MAX_W + 1];
+int cut_merge_cost[MAX_H][MAX_W + 1][2];
+bool pcut_cheap[MAX_H][MAX_W][2];
 double sq[255 * 255 * 4 + 1];
-double* similarity_sum[MAX_H + 1][MAX_W + 1];
+double* similarity_sum[MAX_W][MAX_H + 1];
 vector<color> colors;
 double dpx[MAX_H + 1];
 double* dpy[2][MAX_H][MAX_H + 1];
 int parentx[MAX_H + 1];
 short parenty[2][MAX_H][MAX_H + 1][MAX_W + 1][2];
+double worst_score[MAX_COLOR][MAX_W + 1];
 
 double diff(int x, int y, const color& c) {
     int dr = p[x][y][0] - c.r;
@@ -67,8 +70,8 @@ double diff_current(int x1, int x, int y) {
     return sq[sum];
 }
 
-double get_similarity(int x1, int y1, int x2, int y2, int c) {
-    return similarity_sum[x2][y2][c] - similarity_sum[x2][y1][c] - similarity_sum[x1][y2][c] + similarity_sum[x1][y1][c];
+double get_similarity(int x1, int x2, int y, int c) {
+    return similarity_sum[y][x2][c] - similarity_sum[y][x1][c];
 }
 
 void input() {
@@ -100,10 +103,10 @@ void preprocess() {
             }
         }
     }
-    for (int x = 0; x <= h; x++) {
-        for (int y = 0; y <= w; y++) {
-            similarity_sum[x][y] = (double*)malloc(sizeof(double) * MAX_COLOR);
-            for (int c = 0; c < colors.size(); c++) similarity_sum[x][y][c] = 0;
+    for (int y = 0; y < w; y++) {
+        for (int x = 0; x <= h; x++) {
+            similarity_sum[y][x] = (double*)malloc(sizeof(double) * MAX_COLOR);
+            for (int c = 0; c < colors.size(); c++) similarity_sum[y][x][c] = 0;
         }
     }
     
@@ -120,15 +123,43 @@ void preprocess() {
         }
     }
     
+    for (int x = 0; x < h; x++) {
+        for (int y = 1; y < w; y++) {
+            for (int i = 0; i < 2; i++) {
+                int cost_cut = 0;
+                if (i == 0 && x > 0) {
+                    cost_cut += cut_cost[h][w];
+                    cost_cut += merge_cost[max(x, h - x)][w];
+                }
+                cost_cut += cut_cost[h - x][w];
+                cost_cut += merge_cost[h - x][max(y, w - y)];
+                if (x == 0) {
+                    pcut_cheap[x][y][i] = false;
+                    cut_merge_cost[x][y][i] = cost_cut;
+                    continue;
+                }
+                int cost_pcut = 0;
+                cost_pcut += pcut_cost[h][w];
+                cost_pcut += merge_cost[x][max(y, w - y)];
+                cost_pcut += merge_cost[h - x][max(y, w - y)];
+                cost_pcut += merge_cost[max(x, h - x)][w];
+                if (cost_pcut < cost_cut) {
+                    pcut_cheap[x][y][i] = true;
+                    cut_merge_cost[x][y][i] = cost_pcut;
+                } else {
+                    pcut_cheap[x][y][i] = false;
+                    cut_merge_cost[x][y][i] = cost_cut;
+                }
+            }
+        }
+    }
+    
     for (int i = 0; i <= 255 * 255 * 4; i++) sq[i] = sqrt(i) * 0.005;
     
-    for (int x = 0; x < h; x++) {
-        for (int y = 0; y < w; y++) {
+    for (int y = 0; y < w; y++) {
+        for (int x = 0; x < h; x++) {
             for (int c = 0; c < colors.size(); c++) {
-                similarity_sum[x + 1][y + 1][c] += similarity_sum[x + 1][y][c];
-                similarity_sum[x + 1][y + 1][c] += similarity_sum[x][y + 1][c];
-                similarity_sum[x + 1][y + 1][c] -= similarity_sum[x][y][c];
-                similarity_sum[x + 1][y + 1][c] += diff(x, y, colors[c]);
+                similarity_sum[y][x + 1][c] = similarity_sum[y][x][c] + diff(x, y, colors[c]);
             }
         }
     }
@@ -138,31 +169,30 @@ double calc_y(int x1, int x2) {
     double sum1 = 0;
     for (int y = 1; y <= w; y++) {
         for (int x = x1; x < x2; x++) sum1 += diff_current(x1, x, y - 1);
-        dpy[0][x1][x2][y] = sum1;
-        if (x1 > 0 && y < w) {
-            int cost1 = cut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + cut_cost[h - x1][w] + merge_cost[h - x1][max(y, w - y)];
-            int cost2 = pcut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + merge_cost[x1][max(y, w - y)] + merge_cost[h - x1][max(y, w - y)];
-            dpy[0][x1][x2][y] += min(cost1, cost2);
-        } else if (y < w) {
-            dpy[0][x1][x2][y] += cut_cost[h][w] + merge_cost[h][max(y, w - y)];
-        }
+        dpy[0][x1][x2][y] = sum1 + cut_merge_cost[x1][y][0];
         parenty[0][x1][x2][y][0] = -1;
+    }
+    
+    for (int c = 0; c < colors.size(); c++) {
+        worst_score[c][w] = dpy[0][x1][x2][w];
+        for (int y = w - 1; y >= 0; y--) {
+            worst_score[c][y] = worst_score[c][y + 1] - get_similarity(x1, x2, y, c);
+            worst_score[c][y] = max(worst_score[c][y], dpy[0][x1][x2][y] - cut_merge_cost[x1][y][1]);
+        }
     }
     
     dpy[0][x1][x2][0] = 0;
     if (x1 > 0) dpy[0][x1][x2][0] += cut_cost[h][w] + merge_cost[max(x1, h - x1)][w];
     parenty[0][x1][x2][0][0] = -1;
     for (int y = 0; y < w; y++) {
-        for (int dy = 1; dy <= LIMIT_Y && y + dy <= w; dy++) {
-            int cost = color_cost[h - x1][w - y];
-            if (y + dy < w) {
-                cost += cut_cost[h - x1][w];
-                cost += merge_cost[h - x1][max(y + dy, w - y - dy)];
-            }
-            for (int c = 0; c < colors.size(); c++) {
-                double similarity = get_similarity(x1, y, x2, y + dy, c);
-                if (dpy[0][x1][x2][y] + cost + similarity < dpy[0][x1][x2][y + dy]) {
-                    dpy[0][x1][x2][y + dy] = dpy[0][x1][x2][y] + cost + similarity;
+        for (int c = 0; c < colors.size(); c++) {
+            double score = dpy[0][x1][x2][y] + color_cost[h - x1][w - y];
+            for (int dy = 1; dy <= LIMIT_Y && y + dy <= w; dy++) {
+                score += get_similarity(x1, x2, y + dy - 1, c);
+                if (score >= worst_score[c][y + dy]) break;
+                int cost = cut_merge_cost[x1][y + dy][1];
+                if (score + cost < dpy[0][x1][x2][y + dy]) {
+                    dpy[0][x1][x2][y + dy] = score + cost;
                     parenty[0][x1][x2][y + dy][0] = y;
                     parenty[0][x1][x2][y + dy][1] = c;
                 }
@@ -173,31 +203,30 @@ double calc_y(int x1, int x2) {
     double sum2 = 0;
     for (int y = w - 1; y >= 0; y--) {
         for (int x = x1; x < x2; x++) sum2 += diff_current(x1, x, y);
-        dpy[1][x1][x2][y] = sum2;
-        if (x1 > 0 && y > 0) {
-            int cost1 = cut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + cut_cost[h - x1][w] + merge_cost[h - x1][max(y, w - y)];
-            int cost2 = pcut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + merge_cost[x1][max(y, w - y)] + merge_cost[h - x1][max(y, w - y)];
-            dpy[1][x1][x2][y] += min(cost1, cost2);
-        } else if (y > 0) {
-            dpy[1][x1][x2][y] += cut_cost[h][w] + merge_cost[h][max(y, w - y)];
-        }
+        dpy[1][x1][x2][y] = sum2 + cut_merge_cost[x1][y][0];
         parenty[1][x1][x2][y][0] = -1;
+    }
+    
+    for (int c = 0; c < colors.size(); c++) {
+        worst_score[c][0] = dpy[1][x1][x2][0];
+        for (int y = 1; y <= w; y++) {
+            worst_score[c][y] = worst_score[c][y - 1] - get_similarity(x1, x2, y - 1, c);
+            worst_score[c][y] = max(worst_score[c][y], dpy[1][x1][x2][y] - cut_merge_cost[x1][y][1]);
+        }
     }
     
     dpy[1][x1][x2][w] = 0;
     if (x1 > 0) dpy[1][x1][x2][w] += cut_cost[h][w] + merge_cost[max(x1, h - x1)][w];
     parenty[1][x1][x2][w][0] = -1;
     for (int y = w; y > 0; y--) {
-        for (int dy = 1; dy <= LIMIT_Y && y - dy >= 0; dy++) {
-            int cost = color_cost[h - x1][y];
-            if (y - dy > 0) {
-                cost += cut_cost[h - x1][w];
-                cost += merge_cost[h - x1][max(y - dy, w - y + dy)];
-            }
-            for (int c = 0; c < colors.size(); c++) {
-                double similarity = get_similarity(x1, y - dy, x2, y, c);
-                if (dpy[1][x1][x2][y] + cost + similarity < dpy[1][x1][x2][y - dy]) {
-                    dpy[1][x1][x2][y - dy] = dpy[1][x1][x2][y] + cost + similarity;
+        for (int c = 0; c < colors.size(); c++) {
+            double score = dpy[1][x1][x2][y] + color_cost[h - x1][y];
+            for (int dy = 1; dy <= LIMIT_Y && y - dy >= 0; dy++) {
+                score += get_similarity(x1, x2, y - dy, c);
+                if (score >= worst_score[c][y - dy]) break;
+                int cost = cut_merge_cost[x1][y - dy][1];
+                if (score + cost < dpy[1][x1][x2][y - dy]) {
+                    dpy[1][x1][x2][y - dy] = score + cost;
                     parenty[1][x1][x2][y - dy][0] = y;
                     parenty[1][x1][x2][y - dy][1] = c;
                 }
@@ -271,64 +300,65 @@ int output(int& id, int x1, int x2) {
         
         int cnt = 0;
         bool pcut = false;
-        string start_id = to_string(id), end_id = start_id;
+        string left_id = to_string(id), right_id = left_id;
         if (x1 > 0) {
             int y = paints[0].first;
-            if (y > 0) {
-                int cost1 = cut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + cut_cost[h - x1][w] + merge_cost[h - x1][max(y, w - y)];
-                int cost2 = pcut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + merge_cost[x1][max(y, w - y)] + merge_cost[h - x1][max(y, w - y)];
-                if (cost2 < cost1) {
-                    pcut = true;
-                    cost += pcut_cost[h][w];
-                    printf("cut [%d] [%d, %d]\n", id, x1, y);
-                    start_id += ".2";
-                    end_id = start_id;
-                }
-            }
-            if (!pcut) {
+            if (y > 0 && pcut_cheap[x1][y][0]) {
+                pcut = true;
+                cost += pcut_cost[h][w];
+                printf("cut [%d] [%d, %d]\n", id, x1, y);
+                right_id += ".2";
+                cost += merge_cost[x1][max(y, w - y)];
+                printf("merge [%d.0] [%d.3]\n", id, id);
+                cnt++;
+                left_id = to_string(id + cnt);
+            } else {
                 cost += cut_cost[h][w];
                 printf("cut [%d] [x] [%d]\n", id, x1);
-                start_id += ".1";
-                end_id = start_id;
+                left_id += ".0";
+                right_id += ".1";
             }
         }
         for (int i = 0; i < paints.size(); i++) {
             int y = paints[i].first;
             int c = paints[i].second;
-            string target_id = end_id;
-            if (!(i == 0 && pcut) && y > 0) {
-                cost += cut_cost[h - x1][w];
-                printf("cut [%s] [y] [%d]\n", end_id.c_str(), y);
-                target_id += ".1";
+            string target_id = right_id, cut_id = "";
+            if (pcut) {
+                pcut = false;
+                cut_id = to_string(id) + ".1";
+            } else if (y > 0) {
+                if (x1 > 0 && pcut_cheap[x1][y][1]) {
+                    cost += merge_cost[max(x1, h - x1)][w];
+                    printf("merge [%s] [%s]\n", left_id.c_str(), right_id.c_str());
+                    cnt++;
+                    cost += pcut_cost[h][w];
+                    printf("cut [%d] [%d, %d]\n", id + cnt, x1, y);
+                    target_id = to_string(id + cnt) + ".2";
+                    cut_id = to_string(id + cnt) + ".1";
+                    cost += merge_cost[x1][max(y, w - y)];
+                    printf("merge [%d.0] [%d.3]\n", id + cnt, id + cnt);
+                    cnt++;
+                    left_id = to_string(id + cnt);
+                } else {
+                    cost += cut_cost[h - x1][w];
+                    printf("cut [%s] [y] [%d]\n", right_id.c_str(), y);
+                    cut_id = target_id + ".0";
+                    target_id += ".1";
+                }
             }
             cost += color_cost[h - x1][w - y];
             printf("color [%s] [%d, %d, %d, %d]\n", target_id.c_str(), colors[c].r, colors[c].g, colors[c].b, colors[c].a);
-            if (i == 0 && pcut) {
+            if (cut_id != "") {
                 cost += merge_cost[h - x1][max(y, w - y)];
-                printf("merge [%d.1] [%d.2]\n", id, id);
+                printf("merge [%s] [%s]\n", target_id.c_str(), cut_id.c_str());
                 cnt++;
-                end_id = to_string(id + cnt);
-            } else if (y > 0) {
-                cost += merge_cost[h - x1][max(y, w - y)];
-                printf("merge [%s.0] [%s.1]\n", end_id.c_str(), end_id.c_str());
-                cnt++;
-                end_id = to_string(id + cnt);
+                right_id = to_string(id + cnt);
             }
         }
         if (x1 > 0) {
-            if (pcut) {
-                int y = paints[0].first;
-                cost += merge_cost[x1][max(y, w - y)];
-                printf("merge [%d.0] [%d.3]\n", id, id);
-                cnt++;
-                cost += merge_cost[max(x1, h - x1)][w];
-                printf("merge [%d] [%s]\n", id + cnt, end_id.c_str());
-                cnt++;
-            } else {
-                cost += merge_cost[max(x1, h - x1)][w];
-                printf("merge [%d.0] [%s]\n", id, end_id.c_str());
-                cnt++;
-            }
+            cost += merge_cost[max(x1, h - x1)][w];
+            printf("merge [%s] [%s]\n", left_id.c_str(), right_id.c_str());
+            cnt++;
         }
         id += cnt;
         return cost;
@@ -347,78 +377,69 @@ int output(int& id, int x1, int x2) {
         
         int cnt = 0;
         bool pcut = false;
-        string start_id = to_string(id), end_id = start_id;
+        string left_id = to_string(id), right_id = left_id;
         if (x1 > 0) {
             int y = paints[0].first;
-            if (y < w) {
-                int cost1 = cut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + cut_cost[h - x1][w] + merge_cost[h - x1][max(y, w - y)];
-                int cost2 = pcut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + merge_cost[x1][max(y, w - y)] + merge_cost[h - x1][max(y, w - y)];
-                if (cost2 < cost1) {
-                    pcut = true;
-                    cost += pcut_cost[h][w];
-                    printf("cut [%d] [%d, %d]\n", id, x1, y);
-                    start_id += ".1";
-                    end_id = start_id;
-                }
-            }
-            if (!pcut) {
+            if (y < w && pcut_cheap[x1][y][0]) {
+                pcut = true;
+                cost += pcut_cost[h][w];
+                printf("cut [%d] [%d, %d]\n", id, x1, y);
+                right_id += ".1";
+                cost += merge_cost[x1][max(y, w - y)];
+                printf("merge [%d.0] [%d.3]\n", id, id);
+                cnt++;
+                left_id = to_string(id + cnt);
+            } else {
                 cost += cut_cost[h][w];
                 printf("cut [%d] [x] [%d]\n", id, x1);
-                start_id += ".1";
-                end_id = start_id;
+                left_id += ".0";
+                right_id += ".1";
             }
         }
         for (int i = 0; i < paints.size(); i++) {
             int y = paints[i].first;
             int c = paints[i].second;
-            string target_id = end_id;
-            if (!(i == 0 && pcut) && y < w) {
-                cost += cut_cost[h - x1][w];
-                printf("cut [%s] [y] [%d]\n", end_id.c_str(), y);
-                target_id += ".0";
+            string target_id = right_id, cut_id = "";
+            if (pcut) {
+                pcut = false;
+                cut_id = to_string(id) + ".2";
+            } else if (y < w) {
+                if (x1 > 0 && pcut_cheap[x1][y][1]) {
+                    cost += merge_cost[max(x1, h - x1)][w];
+                    printf("merge [%s] [%s]\n", left_id.c_str(), right_id.c_str());
+                    cnt++;
+                    cost += pcut_cost[h][w];
+                    printf("cut [%d] [%d, %d]\n", id + cnt, x1, y);
+                    target_id = to_string(id + cnt) + ".1";
+                    cut_id = to_string(id + cnt) + ".2";
+                    cost += merge_cost[x1][max(y, w - y)];
+                    printf("merge [%d.0] [%d.3]\n", id + cnt, id + cnt);
+                    cnt++;
+                    left_id = to_string(id + cnt);
+                } else {
+                    cost += cut_cost[h - x1][w];
+                    printf("cut [%s] [y] [%d]\n", right_id.c_str(), y);
+                    cut_id = target_id + ".1";
+                    target_id += ".0";
+                }
             }
             cost += color_cost[h - x1][y];
             printf("color [%s] [%d, %d, %d, %d]\n", target_id.c_str(), colors[c].r, colors[c].g, colors[c].b, colors[c].a);
-            if (i == 0 && pcut) {
+            if (cut_id != "") {
                 cost += merge_cost[h - x1][max(y, w - y)];
-                printf("merge [%d.1] [%d.2]\n", id, id);
+                printf("merge [%s] [%s]\n", target_id.c_str(), cut_id.c_str());
                 cnt++;
-                end_id = to_string(id + cnt);
-            } else if (y < w) {
-                cost += merge_cost[h - x1][max(y, w - y)];
-                printf("merge [%s.0] [%s.1]\n", end_id.c_str(), end_id.c_str());
-                cnt++;
-                end_id = to_string(id + cnt);
+                right_id = to_string(id + cnt);
             }
         }
         if (x1 > 0) {
-            if (pcut) {
-                int y = paints[0].first;
-                cost += merge_cost[x1][max(y, w - y)];
-                printf("merge [%d.0] [%d.3]\n", id, id);
-                cnt++;
-                cost += merge_cost[max(x1, h - x1)][w];
-                printf("merge [%d] [%s]\n", id + cnt, end_id.c_str());
-                cnt++;
-            } else {
-                cost += merge_cost[max(x1, h - x1)][w];
-                printf("merge [%d.0] [%s]\n", id, end_id.c_str());
-                cnt++;
-            }
+            cost += merge_cost[max(x1, h - x1)][w];
+            printf("merge [%s] [%s]\n", left_id.c_str(), right_id.c_str());
+            cnt++;
         }
         id += cnt;
         return cost;
     }
-}
-
-double remain(int x1) {
-    double sum = 0;
-    for (int x = x1; x < h; x++) {
-        for (int y = 0; y < w; y++) {
-            sum += diff_current(x1, x, y);
-        }
-    }
-    return sum;
 }
 
 int main() {

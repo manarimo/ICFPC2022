@@ -21,10 +21,10 @@ impl Picture {
 #[derive(Clone)]
 pub struct State {
     pub picture: Picture,
-    blocks: BTreeMap<Label, Block>,
+    pub blocks: BTreeMap<Label, Block>,
     pub cost: i64,
     canvas: Block,
-    pub(crate) global_counter: u32,
+    pub global_counter: u32,
 }
 
 impl State {
