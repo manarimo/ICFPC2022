@@ -2,7 +2,7 @@ import { Image } from '../util';
 import { applySingleMove, createNewState, InitialBlock, State } from '../../src/simulate';
 import { Move } from '../../src/parser';
 
-export class Merger {
+export class MergerInner {
     readonly history: State[] = [];
     readonly moveHistory: Move[] = [];
     constructor(readonly problem: Image, readonly initialState: State, readonly blockIds: string[][], readonly X: number, readonly Y: number) {
@@ -24,7 +24,7 @@ export class Merger {
             blockIds[block.x1 / blockEdge][block.y1 / blockEdge] = key;
         }
 
-        return new Merger(problem, state, blockIds, X, Y);
+        return new MergerInner(problem, state, blockIds, X, Y);
     }
 
     readonly generateMoves = (): [Move[], string] => {

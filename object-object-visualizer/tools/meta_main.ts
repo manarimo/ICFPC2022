@@ -84,10 +84,10 @@ class ProcessRunner {
         proc.stdin.write(`${input.image.width} ${input.image.height}\n`);
         for (let buf of [input.image.r, input.image.g, input.image.b, input.image.a]) {
             for (let px = 0; px < input.image.width * input.image.height; px++) {
-                if (px > 0) {
+                if (px % input.image.width > 0) {
                     proc.stdin.write(' ');
                 }
-                proc.stdin.write(String(input.image.r[px]));
+                proc.stdin.write(String(buf[px]));
                 if (px % input.image.width == input.image.width - 1) {
                     proc.stdin.write('\n');
                 }

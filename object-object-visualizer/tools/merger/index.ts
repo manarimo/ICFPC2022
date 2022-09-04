@@ -1,19 +1,69 @@
-import commandLineArgs from 'command-line-args';
-import { loadInitialBlocks, loadProblem, moveToString, SolutionSpec } from '../util';
-import { Merger } from './merger';
+import { MergerInner } from './merger';
+import { Move } from '../../src/parser';
+import {Input, Output, Processor} from "../metaprocessor";
 
-interface Options {
-    problemId: string;
+export class Merger implements Processor {
+    readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
+        const merger = MergerInner.create(input.image, input.initialBlocks);
+        const [moves, finalId] = merger.generateMoves();
+        moves.push({
+            color: {r: 255, g: 255, b: 255, a: 255},
+            blockId: finalId,
+            kind: "color-move" as const,
+        });
+        const output = await next({
+            image: input.image,
+            initialBlocks: [{
+                blockId: finalId,
+                bottomLeft: [0, 0],
+                topRight: [400, 400],
+                color: [255, 255, 255, 255],
+            },],
+        });
+
+        const overrideId = (id: string) => {
+            const ids = id.split(".");
+            ids[0] = (parseInt(ids[0]) + parseInt(finalId)).toString();
+            return ids.join(".");
+        }
+
+        const overrideMove = (move: Move) => {
+            switch (move.kind) {
+                case "comment-move":
+                    return move;
+                case "pcut-move": {
+                    return ({
+                        ...move, blockId: overrideId(move.blockId),
+                    })
+                }
+                case "lcut-move": {
+                    return ({
+                        ...move, blockId: overrideId(move.blockId),
+                    })
+                }
+                case "color-move": {
+                    return ({
+                        ...move, blockId: overrideId(move.blockId),
+                    })
+                }
+                case "swap-move": {
+                    return ({
+                        ...move,
+                        blockId1: overrideId(move.blockId1),
+                        blockId2: overrideId(move.blockId2),
+                    })
+                }
+                case "merge-move": {
+                    return ({
+                        ...move,
+                        blockId1: overrideId(move.blockId1),
+                        blockId2: overrideId(move.blockId2),
+                    })
+                }
+            }
+        }
+
+        const overriddenMoves = output.moves.map(overrideMove);
+        return new Output(overriddenMoves);
+    }
 }
-
-async function main(options: Options) {
-    const spec = new SolutionSpec('dummy', options.problemId);
-    const problem = await loadProblem(spec.problemImagePath());
-    const initialBlocks = await loadInitialBlocks(spec.initialBlocksPath());
-    const merger = Merger.create(problem, initialBlocks);
-    const [moves, finalId] = merger.generateMoves();
-    console.log(moves.map(moveToString).join('\n'));
-}
-
-const options: Options = commandLineArgs([{ name: 'problemId', alias: 'p', type: String }]) as Options;
-main(options);
