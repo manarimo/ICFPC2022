@@ -7,7 +7,7 @@ export class TurnPicker implements Processor {
         const output = await next(input);
         let bestTurn: number = 0;
         let bestScore = 1e9;
-        let state = createNewState(input.image.width, input.image.height, input.initialBlocks, input.initialImage);
+        let state = createNewState(input.image.width, input.image.height, input.initialBlocks, input.initialImage ?? undefined);
         output.moves.forEach((move, i) => {
             const res = applySingleMove(move, state);
             if (res.kind == 'error') {

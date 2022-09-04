@@ -94,6 +94,10 @@ class ProcessRunner {
         });
 
         // Write out input in the kyopro format
+        proc.stdin.on('error', e => {
+            console.warn("io error during kyopro format generation", e);
+        })
+
         function writeImage(image: Image) {
             for (let buf of [image.r, image.g, image.b, image.a]) {
                 for (let px = 0; px < image.width * image.height; px++) {
