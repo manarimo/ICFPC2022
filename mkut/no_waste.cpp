@@ -477,8 +477,8 @@ int main() {
     // vector<int> cut_y = {0, 13, 42, 76, 87, 98, 109, 120, 131, 142, 152, 162, 172, 182, 192, 202, 212, 222, 232, 242, 252, 262, 272, 282, 292, 302, 312, 322, 332, 342, 400};
 
     // #21
-    // vector<int> cut_x = {0, 8, 42, 48, 93, 100, 144, 151, 247, 254, 311, 319, 375, 383, 400};
-    // vector<int> cut_y = {0, 8, 14, 19, 24, 47, 53, 95, 103, 147, 154, 249, 257, 350, 358, 400};
+    vector<int> cut_x = {0, 4, 8, 41, 48, 93, 100, 144, 151, 246, 254, 311, 318, 375, 383, 400};
+    vector<int> cut_y = {0, 8, 14, 19, 24, 47, 53, 95, 103, 147, 154, 249, 256, 350, 358, 400};
 
     // #23
     // vector<int> cut_x = {0, 42, 126, 160, 196, 205, 208, 223, 227, 305, 358, 400};
@@ -511,8 +511,8 @@ int main() {
     fprintf(stderr, "\n");
     */
 
-    vector<int> cut_x, cut_y;
-    auto_border(w, h, cut_x, cut_y);
+    //vector<int> cut_x, cut_y;
+    //auto_border(w, h, cut_x, cut_y);
 
     int cost = paint(0, cut_x, cut_y, block("", 0, 0, 0, 0), block("0", MAX_W, MAX_H, 0, 0), id);
     int similarity = round(similarity_cost(w, h));
