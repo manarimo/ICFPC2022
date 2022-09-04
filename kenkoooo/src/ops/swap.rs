@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::types::{Label, State};
 
 pub struct Swap {
@@ -5,8 +7,14 @@ pub struct Swap {
     pub label2: Label,
 }
 
+impl Display for Swap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "swap[{}][{}]", self.label1, self.label2)
+    }
+}
+
 impl State {
-    pub fn apply_swap(&self, m: Swap) -> Self {
+    pub(super) fn apply_swap(&self, m: &Swap) -> Self {
         let mut new_state = self.clone();
         let block1 = self.get_block(&m.label1);
         let block2 = self.get_block(&m.label2);

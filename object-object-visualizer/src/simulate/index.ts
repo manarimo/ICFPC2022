@@ -65,6 +65,12 @@ export const applySingleMove = (
     case "swap-move": {
       return applySwapMove(move, state);
     }
+    case "comment-move": {
+      return {
+        kind: "state",
+        state,
+      };
+    }
     default: {
       const nv: never = move;
       throw new Error(`unimplemented move: ${nv}`);
@@ -438,6 +444,9 @@ const baseCost = (move: Move) => {
     }
     case "merge-move": {
       return 1;
+    }
+    case "comment-move": {
+      return 0;
     }
     default: {
       const nv: never = move;

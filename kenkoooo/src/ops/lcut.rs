@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::types::{Label, State};
 
 pub struct LineCut {
@@ -6,13 +8,28 @@ pub struct LineCut {
     pub pos: usize,
 }
 
+impl Display for LineCut {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "cut[{}][{}][{}]", self.label, self.orientation, self.pos)
+    }
+}
+
 pub enum Orientation {
     X,
     Y,
 }
 
+impl Display for Orientation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Orientation::X => write!(f, "x"),
+            Orientation::Y => write!(f, "y"),
+        }
+    }
+}
+
 impl State {
-    pub fn apply_lcut(&self, m: LineCut) -> Self {
+    pub(super) fn apply_lcut(&self, m: &LineCut) -> Self {
         let mut new_state = self.clone();
         let block = new_state.pop_block(&m.label);
         new_state.add_cost(7, &block);
@@ -27,7 +44,7 @@ impl State {
                 right.x1 = m.pos;
 
                 let mut left_label = m.label.clone();
-                let mut right_label = m.label;
+                let mut right_label = m.label.clone();
                 left_label.push(0);
                 right_label.push(1);
 
@@ -46,7 +63,7 @@ impl State {
                 bottom.y2 = m.pos;
 
                 let mut top_label = m.label.clone();
-                let mut bottom_label = m.label;
+                let mut bottom_label = m.label.clone();
                 top_label.push(1);
                 bottom_label.push(0);
 
