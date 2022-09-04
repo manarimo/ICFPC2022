@@ -137,3 +137,18 @@ export async function* topNSolutions(topN: number): AsyncGenerator<Solution> {
 export function calculateScore(problem: Image, state: State): number {
     return state.cost + calculateSimilarity(problem, state);
 }
+
+export function moveToString(move: Move): string {
+    switch (move.kind) {
+        case 'lcut-move':
+            return `cut [${move.blockId}] [${move.orientation}] [${move.lineNumber}]`;
+        case 'pcut-move':
+            return `cut [${move.blockId}] [${move.x}, ${move.y}]`;
+        case 'color-move':
+            return `color [${move.blockId}] [${move.color.r}, ${move.color.g}, ${move.color.b}, ${move.color.a}]`;
+        case 'swap-move':
+            return `swap [${move.blockId1}] [${move.blockId2}]`;
+        case 'merge-move':
+            return `merge [${move.blockId1}] [${move.blockId2}]`;
+    }
+}

@@ -61,12 +61,24 @@ async function writeSolutionImage(state: State, destFile: string): Promise<void>
     });
 }
 
-async function main(options: Options) {
-    let solutionsByProblem: Record<string, Solution[]> = {};
-    if (fs.existsSync(`../../output/ranking.json`)) {
-        solutionsByProblem = JSON.parse(fs.readFileSync('../../output/ranking.json').toString());
-    }
+async function doScoring(spec: SolutionSpec) {
+    console.log(`../../output/${spec.batchName}/${spec.problemId}`);
 
+    // Calculate score of the solution
+    const problem = await loadProblem(spec.problemImagePath());
+    const moves = await loadMoves(spec.solutionPath());
+    const initialBlocks = await loadInitialBlocks(spec.initialBlocksPath());
+    const lastState = await run(problem, moves, initialBlocks);
+    const score = calculateScore(problem, lastState);
+
+    // Write out the score to spec JSON
+    await fsPromises.writeFile(spec.scoreJsonPath(), JSON.stringify({ score: score }));
+
+    // Write out the last state image
+    await writeSolutionImage(lastState, spec.solutionImagePath());
+}
+
+async function main(options: Options) {
     let solutionSpecsIter: AsyncIterable<SolutionSpec>;
     if (options.only === undefined) {
         solutionSpecsIter = allSolutions();
@@ -85,29 +97,10 @@ async function main(options: Options) {
             continue;
         }
 
-        console.log(`../../output/${spec.batchName}/${spec.problemId}`);
-
-        // Calculate score of the solution
-        const problem = await loadProblem(spec.problemImagePath());
-        const moves = await loadMoves(spec.solutionPath());
-        const initialBlocks = await loadInitialBlocks(spec.initialBlocksPath());
-        const lastState = await run(problem, moves, initialBlocks);
-        const score = calculateScore(problem, lastState);
-
-        // Write out the score to spec JSON
-        await fsPromises.writeFile(spec.scoreJsonPath(), JSON.stringify({ score: score }));
-
-        // Write out the last state image
-        await writeSolutionImage(lastState, spec.solutionImagePath());
-
-        // Record solution in the buffer
-        const solution = new Solution(spec.batchName, spec.problemId, score);
-        if (spec.problemId in solutionsByProblem) {
-            if (solutionsByProblem[spec.problemId].every((s) => s.batchName != solution.batchName)) {
-                solutionsByProblem[spec.problemId].push(solution);
-            }
-        } else {
-            solutionsByProblem[spec.problemId] = [solution];
+        try {
+            await doScoring(spec);
+        } catch (e) {
+            console.error(`Failed to scoring ${spec.batchName}/${spec.problemId}`, e);
         }
     }
 
