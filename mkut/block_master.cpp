@@ -325,115 +325,32 @@ struct solver {
             fprintf(stderr, "similarity cost: %d\n", similarity);
             fprintf(stderr, "total cost: %d\n", cost + similarity);
         } else {
-            vector<vector<color>> new_target(G.cut_x.size(), vector<color>(G.cut_y.size()));
-            set<color> colors;
-            for (int xid = 0; xid + 1 < G.cut_x.size(); xid++) {
-                for (int yid = 0; yid + 1 < G.cut_y.size(); yid++) {
-                    block node = G.B[xid][yid];
-                    color c = fast_get_color(node.left, node.bottom, node.left + node.width, node.bottom + node.height);
-                    new_target[xid][yid] = c;
-                    colors.insert(c);
+            block root("", -1, -1, -1, -1);
+            block cur("", -1, -1, -1, -1);
+            for (auto bc : P.initial_blocks) {
+                if (bc.first.bottom == 0) {
+                    if (root.id != "") {
+                        root = merge_block(root, cur);
+                    } else {
+                        root = cur;
+                    }
+                    cur = block("", -1, -1, -1, -1);
                 }
-            }
-
-            double grid_size = G.B[0][0].size();
-            double expected_cost_table[21][21] = {};
-            for (int shorter = 0; shorter <= 20; shorter++) {
-                for (int longer = shorter; longer <= 20; longer++) {
-                    double expected_cost = 0;
-                    for (int i = 0; i < longer - 1; i++) {
-                        expected_cost += round(CANVAS_SIZE / grid_size / (i+1) * 1);
-                    }
-                    expected_cost *= shorter;
-                    for (int i = 0; i < shorter - 1; i++) {
-                        expected_cost += round(CANVAS_SIZE / grid_size / longer / (i+1) * 1);
-                    }
-                    expected_cost += round(CANVAS_SIZE / grid_size / longer / shorter * 5);
-                    expected_cost_table[shorter][longer] = expected_cost;
-                }
-            }
-
-            vector<vector<bool>> painted(G.cut_x.size(), vector<bool>(G.cut_y.size()));
-            while(true) {
-                double max_revenue = 0;
-                int max_xid_from, max_xid_to, max_yid_from, max_yid_to;
-                color max_c;
-                for (int xid_from = 0; xid_from < G.cut_x.size(); xid_from++) {
-                    for (int xid_to = xid_from + 1; xid_to - xid_from <= 1000 && xid_to < G.cut_x.size(); xid_to++) {
-                        for (int yid_from = 0; yid_from < G.cut_y.size(); yid_from++) {
-                            for (int yid_to = yid_from + 1; yid_to - yid_from <= 1000 && yid_to < G.cut_y.size(); yid_to++) {
-                                bool ng = false;
-                                for (int i = xid_from; i < xid_to; i++) {
-                                    if (painted[i][yid_to - 1]) {
-                                        ng = true;
-                                        break;
-                                    }
-                                }
-                                if (ng) break;
-                                int shorter = min(xid_to - xid_from, yid_to - yid_from);
-                                int longer = max(xid_to - xid_from, yid_to - yid_from);
-                                color c = fast_get_color(G.cut_x[xid_from], G.cut_y[yid_from], G.cut_x[xid_to], G.cut_y[yid_to]);
-                                double expected_cost = expected_cost_table[shorter][longer];
-                                double expected_gain = similarity_cost(G.cut_x[xid_from], G.cut_y[yid_from], G.cut_x[xid_to], G.cut_y[yid_to])
-                                    - similarity_cost(G.cut_x[xid_from], G.cut_y[yid_from], G.cut_x[xid_to], G.cut_y[yid_to], c);
-                                double revenue_efficiency = expected_gain - expected_cost;
-                                if (revenue_efficiency > max_revenue) {
-                                    max_revenue = revenue_efficiency;
-                                    max_xid_from = xid_from;
-                                    max_xid_to = xid_to;
-                                    max_yid_from = yid_from;
-                                    max_yid_to = yid_to;
-                                    max_c = c;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (max_revenue == 0) break;
-
-                // merge and color
-                bool x_first = max_xid_to - max_xid_from > max_yid_to - max_yid_from;
-                block main1;
-                if (x_first) {
-                    for (int yid = max_yid_from; yid < max_yid_to; yid++) {
-                        block main2 = G.B[max_xid_from][yid];
-                        for (int xid = max_xid_from + 1; xid < max_xid_to; xid++) {
-                            main2 = merge_block(main2, G.B[xid][yid]);
-                        }
-                        if (yid != max_yid_from) {
-                            main1 = merge_block(main1, main2);
-                        } else {
-                            main1 = main2;
-                        }
-                    }
+                if (cur.id == "") {
+                    cur = bc.first;
                 } else {
-                    for (int xid = max_xid_from; xid < max_xid_to; xid++) {
-                        block main2 = G.B[xid][max_yid_from];
-                        for (int yid = max_yid_from + 1; yid < max_yid_to; yid++) {
-                            main2 = merge_block(main2, G.B[xid][yid]);
-                        }
-                        if (xid != max_xid_from) {
-                            main1 = merge_block(main1, main2);
-                        } else {
-                            main1 = main2;
-                        }
-                    }
+                    cur = merge_block(cur, bc.first);
                 }
-                for (int xid = max_xid_from; xid < max_xid_to; xid++) {
-                    for (int yid = max_yid_from; yid < max_yid_to; yid++) {
-                        painted[xid][yid] = true;
-                    }
-                }
-
-                paint_block(main1, max_c);
-                // cerr << "(" << max_xid_from << "," << max_yid_from << ") (" << max_xid_to << "," << max_yid_to << ") :" << max_c << endl;
-                int similarity = similarity_cost();
-
-                fprintf(stderr, "manipulation cost: %d\n", cost);
-                fprintf(stderr, "similarity cost: %d\n", similarity);
-                fprintf(stderr, "total cost: %d\n", cost + similarity);
             }
-
+            if (root.id != "") {
+                root = merge_block(root, cur);
+            } else {
+                root = cur;
+            }
+            
+            for (int xid = 0; xid + 1 < S.cut_x.size(); xid++) {
+                root = paint_column(xid, root);
+            }
             int similarity = similarity_cost();
 
             fprintf(stderr, "manipulation cost: %d\n", cost);

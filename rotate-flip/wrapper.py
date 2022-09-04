@@ -38,7 +38,7 @@ if __name__ == '__main__':
                 for input_path in args.input_dir.iterdir():
                     with input_path.open() as input_file:
                         problem_id = input_path.name.replace(".txt", "")
-                        if problem_id.startswith("ex") or int(problem_id) <= 25:
+                        if problem_id.startswith("ex"):
                             continue
                         output_path = output_dir / f"{problem_id}.isl"
                         print(output_path)
