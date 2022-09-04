@@ -42,14 +42,16 @@ int cut_cost[MAX_H + 1][MAX_W + 1];
 int pcut_cost[MAX_H + 1][MAX_W + 1];
 int color_cost[MAX_H + 1][MAX_W + 1];
 int merge_cost[MAX_H + 1][MAX_W + 1];
+int cut_merge_cost[MAX_H][MAX_W + 1][2];
 bool pcut_cheap[MAX_H][MAX_W][2];
 double sq[255 * 255 * 4 + 1];
-double* similarity_sum[MAX_H + 1][MAX_W + 1];
+double* similarity_sum[MAX_W][MAX_H + 1];
 vector<color> colors;
 double dpx[MAX_H + 1];
 double* dpy[2][MAX_H][MAX_H + 1];
 int parentx[MAX_H + 1];
 short parenty[2][MAX_H][MAX_H + 1][MAX_W + 1][2];
+double worst_score[MAX_COLOR][MAX_W + 1];
 
 double diff(int x, int y, const color& c) {
     int dr = p[x][y][0] - c.r;
@@ -68,22 +70,8 @@ double diff_current(int x1, int x, int y) {
     return sq[sum];
 }
 
-double get_similarity(int x1, int y1, int x2, int y2, int c) {
-    return similarity_sum[x2][y2][c] - similarity_sum[x2][y1][c] - similarity_sum[x1][y2][c] + similarity_sum[x1][y1][c];
-}
-
-bool is_pcut_cheap(int x, int y, bool cut_x) {
-    int cost_cut = 0;
-    if (!cut_x) {
-        cost_cut += cut_cost[h][w];
-        cost_cut += merge_cost[max(x, h - x)][w];
-    }
-    cost_cut += cut_cost[h - x][w];
-    int cost_pcut = 0;
-    if (cut_x) cost_pcut += merge_cost[max(x, h - x)][w];
-    cost_pcut += pcut_cost[h][w];
-    cost_pcut += merge_cost[x][max(y, w - y)];
-    return cost_pcut < cost_cut;
+double get_similarity(int x1, int x2, int y, int c) {
+    return similarity_sum[y][x2][c] - similarity_sum[y][x1][c];
 }
 
 void input() {
@@ -115,10 +103,10 @@ void preprocess() {
             }
         }
     }
-    for (int x = 0; x <= h; x++) {
-        for (int y = 0; y <= w; y++) {
-            similarity_sum[x][y] = (double*)malloc(sizeof(double) * MAX_COLOR);
-            for (int c = 0; c < colors.size(); c++) similarity_sum[x][y][c] = 0;
+    for (int y = 0; y < w; y++) {
+        for (int x = 0; x <= h; x++) {
+            similarity_sum[y][x] = (double*)malloc(sizeof(double) * MAX_COLOR);
+            for (int c = 0; c < colors.size(); c++) similarity_sum[y][x][c] = 0;
         }
     }
     
@@ -135,22 +123,43 @@ void preprocess() {
         }
     }
     
-    for (int x = 1; x < h; x++) {
+    for (int x = 0; x < h; x++) {
         for (int y = 1; y < w; y++) {
-            pcut_cheap[x][y][0] = is_pcut_cheap(x, y, false);
-            pcut_cheap[x][y][1] = is_pcut_cheap(x, y, true);
+            for (int i = 0; i < 2; i++) {
+                int cost_cut = 0;
+                if (i == 0 && x > 0) {
+                    cost_cut += cut_cost[h][w];
+                    cost_cut += merge_cost[max(x, h - x)][w];
+                }
+                cost_cut += cut_cost[h - x][w];
+                cost_cut += merge_cost[h - x][max(y, w - y)];
+                if (x == 0) {
+                    pcut_cheap[x][y][i] = false;
+                    cut_merge_cost[x][y][i] = cost_cut;
+                    continue;
+                }
+                int cost_pcut = 0;
+                cost_pcut += pcut_cost[h][w];
+                cost_pcut += merge_cost[x][max(y, w - y)];
+                cost_pcut += merge_cost[h - x][max(y, w - y)];
+                cost_pcut += merge_cost[max(x, h - x)][w];
+                if (cost_pcut < cost_cut) {
+                    pcut_cheap[x][y][i] = true;
+                    cut_merge_cost[x][y][i] = cost_pcut;
+                } else {
+                    pcut_cheap[x][y][i] = false;
+                    cut_merge_cost[x][y][i] = cost_cut;
+                }
+            }
         }
     }
     
     for (int i = 0; i <= 255 * 255 * 4; i++) sq[i] = sqrt(i) * 0.005;
     
-    for (int x = 0; x < h; x++) {
-        for (int y = 0; y < w; y++) {
+    for (int y = 0; y < w; y++) {
+        for (int x = 0; x < h; x++) {
             for (int c = 0; c < colors.size(); c++) {
-                similarity_sum[x + 1][y + 1][c] += similarity_sum[x + 1][y][c];
-                similarity_sum[x + 1][y + 1][c] += similarity_sum[x][y + 1][c];
-                similarity_sum[x + 1][y + 1][c] -= similarity_sum[x][y][c];
-                similarity_sum[x + 1][y + 1][c] += diff(x, y, colors[c]);
+                similarity_sum[y][x + 1][c] = similarity_sum[y][x][c] + diff(x, y, colors[c]);
             }
         }
     }
@@ -160,36 +169,30 @@ double calc_y(int x1, int x2) {
     double sum1 = 0;
     for (int y = 1; y <= w; y++) {
         for (int x = x1; x < x2; x++) sum1 += diff_current(x1, x, y - 1);
-        dpy[0][x1][x2][y] = sum1;
-        if (x1 > 0 && y < w) {
-            if (pcut_cheap[x1][y][0]) {
-                dpy[0][x1][x2][y] += pcut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + merge_cost[x1][max(y, w - y)] + merge_cost[h - x1][max(y, w - y)];
-            } else {
-                dpy[0][x1][x2][y] += cut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + cut_cost[h - x1][w] + merge_cost[h - x1][max(y, w - y)];
-            }
-        } else if (y < w) {
-            dpy[0][x1][x2][y] += cut_cost[h][w] + merge_cost[h][max(y, w - y)];
-        }
+        dpy[0][x1][x2][y] = sum1 + cut_merge_cost[x1][y][0];
         parenty[0][x1][x2][y][0] = -1;
+    }
+    
+    for (int c = 0; c < colors.size(); c++) {
+        worst_score[c][w] = dpy[0][x1][x2][w];
+        for (int y = w - 1; y >= 0; y--) {
+            worst_score[c][y] = worst_score[c][y + 1] - get_similarity(x1, x2, y, c);
+            worst_score[c][y] = max(worst_score[c][y], dpy[0][x1][x2][y] - cut_merge_cost[x1][y][1]);
+        }
     }
     
     dpy[0][x1][x2][0] = 0;
     if (x1 > 0) dpy[0][x1][x2][0] += cut_cost[h][w] + merge_cost[max(x1, h - x1)][w];
     parenty[0][x1][x2][0][0] = -1;
     for (int y = 0; y < w; y++) {
-        for (int dy = 1; dy <= LIMIT_Y && y + dy <= w; dy++) {
-            int cost = color_cost[h - x1][w - y];
-            if (y + dy < w) {
-                if (x1 > 0 && pcut_cheap[x1][y + dy][1]) {
-                    cost += merge_cost[max(x1, h - x1)][w] + pcut_cost[h][w] + merge_cost[x1][max(y + dy, w - y - dy)] + merge_cost[h - x1][max(y + dy, w - y - dy)];
-                } else {
-                    cost += cut_cost[h - x1][w] + merge_cost[h - x1][max(y + dy, w - y - dy)];
-                }
-            }
-            for (int c = 0; c < colors.size(); c++) {
-                double similarity = get_similarity(x1, y, x2, y + dy, c);
-                if (dpy[0][x1][x2][y] + cost + similarity < dpy[0][x1][x2][y + dy]) {
-                    dpy[0][x1][x2][y + dy] = dpy[0][x1][x2][y] + cost + similarity;
+        for (int c = 0; c < colors.size(); c++) {
+            double score = dpy[0][x1][x2][y] + color_cost[h - x1][w - y];
+            for (int dy = 1; dy <= LIMIT_Y && y + dy <= w; dy++) {
+                score += get_similarity(x1, x2, y + dy - 1, c);
+                if (score >= worst_score[c][y + dy]) break;
+                int cost = cut_merge_cost[x1][y + dy][1];
+                if (score + cost < dpy[0][x1][x2][y + dy]) {
+                    dpy[0][x1][x2][y + dy] = score + cost;
                     parenty[0][x1][x2][y + dy][0] = y;
                     parenty[0][x1][x2][y + dy][1] = c;
                 }
@@ -200,36 +203,30 @@ double calc_y(int x1, int x2) {
     double sum2 = 0;
     for (int y = w - 1; y >= 0; y--) {
         for (int x = x1; x < x2; x++) sum2 += diff_current(x1, x, y);
-        dpy[1][x1][x2][y] = sum2;
-        if (x1 > 0 && y > 0) {
-            if (pcut_cheap[x1][y][0]) {
-                dpy[1][x1][x2][y] += pcut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + merge_cost[x1][max(y, w - y)] + merge_cost[h - x1][max(y, w - y)];
-            } else {
-                dpy[1][x1][x2][y] += cut_cost[h][w] + merge_cost[max(x1, h - x1)][w] + cut_cost[h - x1][w] + merge_cost[h - x1][max(y, w - y)];
-            }
-        } else if (y > 0) {
-            dpy[1][x1][x2][y] += cut_cost[h][w] + merge_cost[h][max(y, w - y)];
-        }
+        dpy[1][x1][x2][y] = sum2 + cut_merge_cost[x1][y][0];
         parenty[1][x1][x2][y][0] = -1;
+    }
+    
+    for (int c = 0; c < colors.size(); c++) {
+        worst_score[c][0] = dpy[1][x1][x2][0];
+        for (int y = 1; y <= w; y++) {
+            worst_score[c][y] = worst_score[c][y - 1] - get_similarity(x1, x2, y - 1, c);
+            worst_score[c][y] = max(worst_score[c][y], dpy[1][x1][x2][y] - cut_merge_cost[x1][y][1]);
+        }
     }
     
     dpy[1][x1][x2][w] = 0;
     if (x1 > 0) dpy[1][x1][x2][w] += cut_cost[h][w] + merge_cost[max(x1, h - x1)][w];
     parenty[1][x1][x2][w][0] = -1;
     for (int y = w; y > 0; y--) {
-        for (int dy = 1; dy <= LIMIT_Y && y - dy >= 0; dy++) {
-            int cost = color_cost[h - x1][y];
-            if (y - dy > 0) {
-                if (x1 > 0 && pcut_cheap[x1][y - dy][1]) {
-                    cost += merge_cost[max(x1, h - x1)][w] + pcut_cost[h][w] + merge_cost[x1][max(y - dy, w - y + dy)] + merge_cost[h - x1][max(y - dy, w - y + dy)];
-                } else {
-                    cost += cut_cost[h - x1][w] + merge_cost[h - x1][max(y - dy, w - y + dy)];
-                }
-            }
-            for (int c = 0; c < colors.size(); c++) {
-                double similarity = get_similarity(x1, y - dy, x2, y, c);
-                if (dpy[1][x1][x2][y] + cost + similarity < dpy[1][x1][x2][y - dy]) {
-                    dpy[1][x1][x2][y - dy] = dpy[1][x1][x2][y] + cost + similarity;
+        for (int c = 0; c < colors.size(); c++) {
+            double score = dpy[1][x1][x2][y] + color_cost[h - x1][y];
+            for (int dy = 1; dy <= LIMIT_Y && y - dy >= 0; dy++) {
+                score += get_similarity(x1, x2, y - dy, c);
+                if (score >= worst_score[c][y - dy]) break;
+                int cost = cut_merge_cost[x1][y - dy][1];
+                if (score + cost < dpy[1][x1][x2][y - dy]) {
+                    dpy[1][x1][x2][y - dy] = score + cost;
                     parenty[1][x1][x2][y - dy][0] = y;
                     parenty[1][x1][x2][y - dy][1] = c;
                 }
