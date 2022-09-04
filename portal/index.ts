@@ -3,7 +3,7 @@ import express from 'express';
 import { S3 } from 'aws-sdk';
 import { GetObjectOutput, ListObjectsV2Request } from 'aws-sdk/clients/s3';
 import cors from 'cors';
-import fetch from 'node-fetch';
+// import fetch from 'node-fetch';
 
 const BUCKET = 'icfpc2022-manarimo';
 
