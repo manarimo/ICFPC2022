@@ -1,75 +1,92 @@
 use std::fs::File;
-use std::{fs::read_to_string, path::Path};
+use std::path::Path;
 
-use crate::ops::color::Color;
-use crate::ops::Move;
+use anyhow::{anyhow, Result};
+use image::GenericImageView;
+use serde::Deserialize;
+
+use crate::types::Picture;
 use crate::types::{Block, Label, State, RGBA};
-use crate::{scanner::IO, types::Picture};
 
-pub fn read_input<P: AsRef<Path>>(path: P) -> (Picture, State) {
-    let input = read_to_string(path).unwrap();
-    let mut sc = IO::new(input.as_bytes(), Vec::<u8>::new());
-
-    let w: usize = sc.read();
-    let h: usize = sc.read();
-
-    let mut rgba = vec![vec![crate::types::RGBA([255; 4]); w]; h];
-    for color in 0..4 {
-        // 使いやすいように上下反転させておく
-        for i in (0..h).rev() {
-            for j in 0..w {
-                rgba[i][j].0[color] = sc.read();
-            }
-        }
-    }
-    let target = Picture(rgba);
-
+pub fn read_input(problem_id: &str) -> Result<(Picture, State)> {
+    let (w, h, target) = read_picture(format!("../problem/original/{problem_id}.png"))?;
     let mut state = State::new(w, h);
-    state.pop_block(&Label(vec![0]));
+    if let Ok(initial) = File::open(format!("../problem/original/{problem_id}.initial.json")) {
+        let initial: InitialState = serde_json::from_reader(initial)?;
+        for block in initial.blocks {
+            let label = block
+                .block_id
+                .split(".")
+                .map(|id| id.parse::<u32>().unwrap())
+                .collect::<Vec<_>>();
+            state.push_block(
+                Label(label),
+                Block {
+                    x1: block.bottom_left[0],
+                    x2: block.top_right[0],
+                    y1: block.bottom_left[1],
+                    y2: block.top_right[1],
+                },
+            );
 
-    let blocks: usize = sc.read();
-    for _i in 0..blocks {
-        let id: u32 = sc.read();
-        let x1: usize = sc.read();
-        let y1: usize = sc.read();
-        let x2: usize = sc.read();
-        let y2: usize = sc.read();
-        let r: u8 = sc.read();
-        let g: u8 = sc.read();
-        let b: u8 = sc.read();
-        let a: u8 = sc.read();
+            let initial_picture = read_picture(format!(
+                "../problem/original_initial/{problem_id}.initial.png"
+            ));
+            for x in block.bottom_left[0]..block.top_right[0] {
+                for y in block.bottom_left[1]..block.top_right[1] {
+                    match (&block.png_bottom_left_point, &block.color) {
+                        (Some([xx, yy]), None) => {
+                            let (_, _, pic) = initial_picture
+                                .as_ref()
+                                .map_err(|e| anyhow!("initial picture: {:?}", e))?;
+                            let dx = x - block.bottom_left[0];
+                            let dy = y - block.bottom_left[1];
 
-        let label = Label(vec![id]);
+                            state.picture.0[y][x] = RGBA(pic.0[dy + yy][dx + xx].0);
+                        }
+                        (None, Some(color)) => {
+                            state.picture.0[y][x] = RGBA(color.clone());
+                        }
+                        _ => return Err(anyhow!("invalid initial state")),
+                    }
+                }
+            }
 
-        state.push_block(label.clone(), Block { x1, y1, x2, y2 });
-        let color_move = Move::Color(Color {
-            color: RGBA([r, g, b, a]),
-            label,
-        });
-        state.apply(&color_move);
-        state.global_counter = state.global_counter.max(id);
+            state.global_counter += 1;
+        }
+        state.global_counter = state.global_counter.max(1) - 1;
     }
-    state.cost = 0;
-    (target, state)
+
+    Ok((target, state))
 }
 
-// pub fn read_input2(problem_id: &str) -> anyhow::Result<(Picture, State)> {
-//     let png = File::open(format!("../problem/original/${problem_id}.png"))?;
-//     let decoder = png::Decoder::new(png);
-//     let mut reader = decoder.read_info()?;
-//     let mut reader = decoder.read_info()?;
-//     let mut img_data = vec![0; reader.output_buffer_size()];
-//     let info = reader.next_frame(&mut img_data)?;
+fn read_picture<P: AsRef<Path>>(path: P) -> Result<(usize, usize, Picture)> {
+    let img = image::open(path)?;
+    let w = img.width() as usize;
+    let h = img.height() as usize;
 
-//     let w = info.width as usize;
-//     let h = info.height as usize;
+    let mut rgba = vec![vec![RGBA([255; 4]); w]; h];
+    for pixel in img.pixels() {
+        let (x, y, p) = pixel;
+        // 使いやすさ重視で上下反転させる
+        rgba[h - 1 - y as usize][x as usize] = RGBA(p.0);
+    }
+    Ok((w, h, Picture(rgba)))
+}
 
-//     let mut rgba = vec![vec![crate::types::RGBA([255; 4]); w]; h];
-//     for i in 0..h {
-//         for j in 0..w {
-//             for c in 0..4 {
-//                 rgba[i][j][c]=img_data[]
-//             }
-//         }
-//     }
-// }
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct InitialState {
+    width: usize,
+    height: usize,
+    blocks: Vec<InitialStateBlock>,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct InitialStateBlock {
+    block_id: String,
+    bottom_left: [usize; 2],
+    top_right: [usize; 2],
+    color: Option<[u8; 4]>,
+    png_bottom_left_point: Option<[usize; 2]>,
+}

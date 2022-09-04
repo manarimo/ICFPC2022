@@ -1,3 +1,4 @@
+use anyhow::Result;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
@@ -9,7 +10,7 @@ pub fn optimize_color_free_lunch(
     target: &Picture,
     initial_state: &State,
     moves: &[Move],
-) -> Vec<Move> {
+) -> Result<Vec<Move>> {
     let mut index_map = vec![vec![None; target.width()]; target.height()];
     let mut state = initial_state.clone();
     for (i, mv) in moves.iter().enumerate() {
@@ -21,7 +22,7 @@ pub fn optimize_color_free_lunch(
                 }
             }
         }
-        state = state.apply(mv);
+        state = state.apply(mv)?;
     }
 
     let mut move_to_map = vec![vec![]; moves.len()];
@@ -60,7 +61,7 @@ pub fn optimize_color_free_lunch(
         eprintln!("{} of {}", i + 1, all);
     }
 
-    moves
+    Ok(moves
         .iter()
         .enumerate()
         .map(|(i, mv)| match (result[i], mv) {
@@ -71,7 +72,7 @@ pub fn optimize_color_free_lunch(
             }
             _ => mv.clone(),
         })
-        .collect()
+        .collect())
 }
 
 fn _old_optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
