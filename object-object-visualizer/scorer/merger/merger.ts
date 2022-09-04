@@ -1,6 +1,6 @@
-import {Image} from "../util";
-import {applySingleMove, createNewState, InitialBlock, State} from "../../src/simulate";
-import {Move} from "../../src/parser";
+import { Image } from '../util';
+import { applySingleMove, createNewState, InitialBlock, State } from '../../src/simulate';
+import { Move } from '../../src/parser';
 
 export class Merger {
     readonly history: State[] = [];
@@ -41,14 +41,14 @@ export class Merger {
             finalId = this.merge(finalId, stickIds[x]);
         }
         return [[...this.moveHistory], finalId];
-    }
+    };
 
     readonly merge = (blockId1: string, blockId2: string) => {
         const tail = this.history[this.history.length - 1];
         const move = {
             blockId1,
             blockId2,
-            kind: "merge-move" as const,
+            kind: 'merge-move' as const,
         };
         const result = applySingleMove(move, tail);
         if (result.kind === 'error') {
@@ -59,5 +59,5 @@ export class Merger {
             this.moveHistory.push(move);
             return newId;
         }
-    }
+    };
 }

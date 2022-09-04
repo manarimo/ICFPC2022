@@ -1,14 +1,5 @@
 import * as fsPromises from 'fs/promises';
-import {
-    calculateScore,
-    Image,
-    loadInitialBlocks,
-    loadMoves,
-    loadProblem,
-    moveToString,
-    Solution,
-    topNSolutions
-} from './util';
+import { calculateScore, Image, loadInitialBlocks, loadMoves, loadProblem, moveToString, Solution, topNSolutions } from './util';
 import { applySingleMove, createNewState, InitialBlock } from '../src/simulate';
 import { Move } from '../src/parser';
 
