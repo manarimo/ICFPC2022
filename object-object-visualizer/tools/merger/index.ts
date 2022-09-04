@@ -4,6 +4,11 @@ import { Input, Output, Processor } from '../metaprocessor';
 
 export class Merger implements Processor {
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
+        if (input.initialBlocks.length == 1) {
+            // The "initial block" must be a whole canvas. Just skip doing anything special.
+            return next(input);
+        }
+
         const merger = MergerInner.create(input.image, input.initialBlocks, input.initialImage ?? undefined);
         const [moves, finalId] = merger.generateMoves();
         moves.push({
