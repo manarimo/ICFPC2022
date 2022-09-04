@@ -96,7 +96,7 @@ impl Block {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct RGBA(pub [u8; 4]);
 
 impl Display for RGBA {
@@ -138,7 +138,7 @@ impl Label {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Point {
     pub x: usize,
     pub y: usize,

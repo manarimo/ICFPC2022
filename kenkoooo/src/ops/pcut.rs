@@ -50,7 +50,7 @@ impl State {
         top_left.y1 = y;
 
         let mut top_left_label = m.label.clone();
-        top_left_label.push(2);
+        top_left_label.push(3);
         new_state.push_block(top_left_label, top_left);
 
         new_state.add_cost(10, &block);
