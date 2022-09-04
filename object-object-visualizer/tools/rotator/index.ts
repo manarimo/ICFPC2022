@@ -27,10 +27,11 @@ export class Rotator implements Processor {
 
                 const newIdx = x + y * image.height;
                 const originalIdx = cx + cy * image.height;
-                nImg.r[newIdx] = image.r[originalIdx];
-                nImg.g[newIdx] = image.g[originalIdx];
-                nImg.b[newIdx] = image.b[originalIdx];
-                nImg.a[newIdx] = image.a[originalIdx];
+                nImg.r[originalIdx] = image.r[newIdx];
+                nImg.g[originalIdx] = image.g[newIdx];
+                nImg.b[originalIdx] = image.b[newIdx];
+                nImg.a[originalIdx] = image.a[newIdx];
+                // なんかここ逆にしたら動いた
             }
         }
         return nImg;
