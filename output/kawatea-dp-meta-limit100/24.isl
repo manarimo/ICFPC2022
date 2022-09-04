@@ -1,6 +1,10 @@
 # (C) 2022 team manarimo. All rights reserved
 color [0] [255, 255, 255, 255]
-# rotator: {"rotate":1,"flip":false}
+# rotator: 15828 pts ({"rotate":0,"flip":false})
+# rotator: 15323 pts ({"rotate":0,"flip":true})
+# rotator: 13924 pts ({"rotate":1,"flip":false})
+# rotator: 13924 pts ({"rotate":1,"flip":true})
+# rotator: best {"rotate":1,"flip":false}
 color [0] [108, 96, 78, 255]
 cut [0] [x] [364]
 color [0.0] [123, 113, 97, 255]
@@ -277,3 +281,4 @@ merge [90.0] [92]
 cut [93] [y] [374]
 color [93.1] [78, 70, 58, 255]
 cut [93.1] [x] [323]
+color [93.1.0] [127, 109, 80, 255]
