@@ -86,6 +86,19 @@ void input() {
     int n;
     scanf("%d", &n);
     for (int i = 0; i < n; i++) scanf("%*d %*d %*d %*d %*d %*d %*d %*d %*d");
+
+    scanf("%*d"); // global counter
+    scanf("%*d %*d %*d %*d %*d"); // costs
+
+    // initial image
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                scanf("%*d");
+            }
+        }
+    }
+
     int c;
     scanf("%d", &c);
     for (int i = 0; i < c; i++) {
