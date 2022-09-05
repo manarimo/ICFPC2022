@@ -27,6 +27,7 @@ export class Merger implements Processor {
                 },
             ],
             initialImage: input.initialImage,
+            palette: input.palette,
         });
 
         const overrideId = (id: string) => {
