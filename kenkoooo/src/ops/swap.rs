@@ -17,8 +17,8 @@ impl Display for Swap {
 impl State {
     pub(super) fn apply_swap(&self, m: &Swap) -> Self {
         let mut new_state = self.clone();
-        let block1 = self.get_block(&m.label1);
-        let block2 = self.get_block(&m.label2);
+        let block1 = new_state.pop_block(&m.label1).unwrap();
+        let block2 = new_state.pop_block(&m.label2).unwrap();
 
         assert_eq!(block1.rect(), block2.rect());
 
@@ -34,7 +34,10 @@ impl State {
             }
         }
 
-        new_state.add_cost(3, block1);
+        new_state.push_block(m.label1.clone(), block2);
+        new_state.push_block(m.label2.clone(), block1);
+
+        new_state.add_cost(3, &block1);
         new_state
     }
 }

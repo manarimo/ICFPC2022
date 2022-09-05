@@ -1,5 +1,5 @@
-# (C) 2022 team manarimo. All rights reserved
-# shifter: split in 4 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # shifter: split in 4 ways
 cut [0] [y] [36]
 color [0.1] [206, 225, 244, 255]
 merge [0.1] [0.0]
@@ -661,5 +661,5 @@ cut [260] [x] [100]
 cut [260.1] [x] [200]
 cut [260.1.1] [x] [300]
 swap [260.1.1.1] [260.1.1.0]
-swap [260.1.1.0] [260.1.0]
-swap [260.1.0] [260.0]
+swap [260.1.1.1] [260.1.0]
+swap [260.1.1.1] [260.0]

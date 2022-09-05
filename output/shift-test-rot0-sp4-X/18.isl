@@ -1,6 +1,6 @@
-# (C) 2022 team manarimo. All rights reserved
-# freelunch: 35555 -> 33728
-# shifter (X): split in 4 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # freelunch: 35555 -> 33728
+# # shifter (X): split in 4 ways
 color [0] [110, 98, 53, 255]
 cut [0] [y] [361]
 color [0.0] [152, 126, 64, 255]
@@ -308,5 +308,5 @@ cut [118] [X] [100]
 cut [118.1] [X] [200]
 cut [118.1.1] [X] [300]
 swap [118.1.1.1] [118.1.1.0]
-swap [118.1.1.0] [118.1.0]
-swap [118.1.0] [118.0]
+swap [118.1.1.1] [118.1.0]
+swap [118.1.1.1] [118.0]
