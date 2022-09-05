@@ -24,7 +24,7 @@ rules = []
 patterns2.each do |pat|
   pat.rotates.each do |r|
     pat.splits.each do |s|
-      pat_name = "rot#{r}-sp#{s}"
+      pat_name = "rot#{r}-sp#{s}-#{pat.axis}"
       rule = "prob#{pat.probId}-#{pat_name}"
       command_name = if pat.probId == 38 || pat.probId == 39
                        '../../kawatea/dp2'
@@ -33,7 +33,7 @@ patterns2.each do |pat|
                      end
 
       puts "#{rule}:"
-      puts "\tnpm run meta -- --problemId #{pat.probId} --batchName shift-test-#{pat_name} --command '#{command_name}' --rotate #{r} --split #{s}"
+      puts "\tnpm run meta -- --problemId #{pat.probId} --batchName shift-test-#{pat_name} --command '#{command_name}' --rotate #{r} --split #{s} --splitAxis #{pat.axis}"
       puts ""
       rules << rule
     end
