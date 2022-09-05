@@ -43,6 +43,87 @@ export class MergerInner {
         return [[...this.moveHistory], finalId];
     };
 
+    readonly generateMoves2 = (): [Move[], string] => {
+        // support only n * n structure
+        if (this.X !== this.Y) {
+            throw new Error(`not supported`);
+        }
+
+        // 10 -> 4, 16 -> 5, 20 -> 6
+        const kmap = [];
+        kmap[10] = 4;
+        kmap[16] = 5;
+        kmap[20] = 6;
+
+        const k = kmap[this.X];
+        if (k === undefined) {
+            throw new Error(`not supported`);
+        }
+
+        // create stick to k
+        const varStickIds: string[] = [];
+        for (let x = 0; x < k; ++x) {
+            let lineId = this.blockIds[x][0];
+            for (let y = 1; y < this.Y; y++) {
+                lineId = this.merge(lineId, this.blockIds[x][y]);                
+            }
+            varStickIds.push(lineId);
+        }
+
+        // merge sticks
+        let rectId = varStickIds[0];
+        for (let x = 1; x < k; x++) {
+            rectId = this.merge(rectId, varStickIds[x]);
+        }
+
+        // cut horizontally
+        const horStickIds: string[] = [];
+        for (let y = 1; y < this.Y; y++) {
+            let horizontalId;
+            [horizontalId, rectId] = this.ycut(rectId, this.initialState.height / this.Y * y);
+            horStickIds.push(horizontalId);
+        }
+        horStickIds.push(rectId);
+
+        // merge horizontal sticks
+        const lineIds: string[] = [];
+        for (let y = 0; y < this.Y; y++) {
+            let lineId = horStickIds[y];
+            for (let x = k + 1; x < this.X; x++) {
+                lineId = this.merge(lineId, this.blockIds[x][y]);
+            }
+            lineIds.push(lineId);
+        }
+
+        // merge all
+        let finalId = lineIds[0];
+        for (let y = 1; y < this.Y; y++) {
+            finalId = this.merge(finalId, lineIds[y]);
+        }
+
+        return [[...this.moveHistory], finalId];
+        
+    };
+
+    readonly ycut = (blockId: string, y: number) => {
+        const tail = this.history[this.history.length - 1];
+        const move: Move = {
+            blockId,
+            orientation: 'y',
+            lineNumber: y,
+            kind: 'lcut-move' as const,
+        };
+        const result = applySingleMove(move, tail);
+        if (result.kind === 'error') {
+            throw new Error(`failed to merge`);
+        } else {
+            this.history.push(result.state);
+            this.moveHistory.push(move);
+        }
+
+        return [blockId + ".0", blockId + ".1"];
+    };
+
     readonly merge = (blockId1: string, blockId2: string) => {
         const tail = this.history[this.history.length - 1];
         const move = {
