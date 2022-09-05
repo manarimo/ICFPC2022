@@ -3,6 +3,40 @@ import { Move } from '../../src/parser';
 import { Input, Output, Processor } from '../metaprocessor';
 
 export class Merger implements Processor {
+    readonly filterOut0255 = (moves: Move[]) => {
+        const newMoves: Move[] = [];
+        for (let i = 0; i < moves.length; i++) {
+            const currentMove = moves[i];
+            if (currentMove.kind === "color-move") {
+                if (currentMove.blockId === "0" && currentMove.color.r === 0
+                    && currentMove.color.g === 0  && currentMove.color.b === 0
+                    && currentMove.color.a === 0
+                ) {
+                    continue;
+                }
+            }
+            newMoves.push(currentMove);
+        }
+        return newMoves;
+    }
+
+    readonly filterOutDuplicatedColorForSameBlock = (moves: Move[]) => {
+        const newMoves: Move[] = [];
+        L: for (let i = 0; i < moves.length; i++) {
+            const currentMove = moves[i];
+            if (currentMove.kind === "color-move") {
+                for (let j = i + 1; j < moves.length; j++) {
+                    const futureMove = moves[j];
+                    if (futureMove.kind === "color-move" && futureMove.blockId === currentMove.blockId) {
+                        continue L;
+                    }
+                }
+            }
+            newMoves.push(currentMove);
+        }
+        return newMoves;
+    }
+
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
         if (input.initialBlocks.length == 1) {
             // The "initial block" must be a whole canvas. Just skip doing anything special.
@@ -75,7 +109,8 @@ export class Merger implements Processor {
             }
         };
 
-        const overriddenMoves = [...moves, ...output.moves.map(overrideMove)];
-        return new Output(overriddenMoves);
+        const no0255 = this.filterOut0255(output.moves);
+        const overriddenMoves = [...moves, ...no0255.map(overrideMove)];
+        return new Output(this.filterOutDuplicatedColorForSameBlock(overriddenMoves));
     };
 }
