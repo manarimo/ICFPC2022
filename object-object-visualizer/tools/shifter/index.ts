@@ -20,7 +20,7 @@ export class Shifter implements Processor {
     }
 
     private shiftImage(image: Image): Image {
-        const shiftPx = Math.round(image.width / this.split);
+        const shiftPx = Math.floor(image.width / this.split);
         const nImg: Image = {
             r: new Uint8Array(image.width * image.height),
             g: new Uint8Array(image.width * image.height),
@@ -50,7 +50,7 @@ export class Shifter implements Processor {
         const blockIds = [];
         const moves: Move[] = [];
 
-        const shiftPx = input.image.width / this.split;
+        const shiftPx = Math.floor(input.image.width / this.split);
 
         // Split the image into columns
         let currentBlock = `${globalCounter}`;
