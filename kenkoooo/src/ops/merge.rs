@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 use crate::types::{Block, Label, State};
 
@@ -27,7 +27,11 @@ impl State {
         let x2 = block1.x2.max(block2.x2);
         let y2 = block1.y2.max(block2.y2);
         let label = new_state.new_label();
-        new_state.push_block(label, Block { x1, x2, y1, y2 });
+        let block = Block { x1, x2, y1, y2 };
+        if block.size() != block1.size() + block2.size() {
+            return Err(anyhow!("can not merge"));
+        }
+        new_state.push_block(label, block);
 
         if block1.size() > block2.size() {
             new_state.add_cost(1, &block1);

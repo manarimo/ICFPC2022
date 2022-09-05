@@ -133,8 +133,12 @@ impl FastState {
                     let y2 = block1.y2.max(block2.y2);
 
                     let label = vec![self.global_counter];
+                    let block = Block { x1, x2, y1, y2 };
+                    if block.size() != block1.size() + block2.size() {
+                        return Err(anyhow!("can not merge"));
+                    }
                     self.global_counter += 1;
-                    self.blocks.insert(label, Block { x1, x2, y1, y2 });
+                    self.blocks.insert(label, block);
                 }
             }
         }
