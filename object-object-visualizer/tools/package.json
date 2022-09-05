@@ -11,7 +11,8 @@
         "merger": "ts-node merger/index.ts",
         "send-best": "ts-node send_best.ts",
         "meta": "ts-node meta_main.ts",
-        "shifter-fixer": "ts-node shifter_fixer.ts"
+        "shifter-fixer": "ts-node shifter_fixer.ts",
+        "merger-solver": "ts-node merger_solver.ts",
     },
     "author": "",
     "license": "ISC",
