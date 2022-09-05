@@ -26,6 +26,31 @@ export class FreelunchPlugin implements Processor {
                         lastTouchIndexes[x][y] = moveIndex;
                     }
                 }
+            } else if (move.kind === "swap-move") {
+                const nLastTouchIndexes = new Array(input.image.width);
+                for (let x = 0; x < input.image.width; x++) {
+                    nLastTouchIndexes[x] = new Array(input.image.height).fill(-1);
+                    for (let y = 0; y < input.image.height; y++) {
+                        nLastTouchIndexes[x][y] = lastTouchIndexes[x][y];
+                    }
+                }
+
+                const block1 = state.blocks.get(move.blockId1);
+                if (!block1) {
+                    throw Error(`no block id ${move.blockId1} found`);
+                }
+                const block2 = state.blocks.get(move.blockId2);
+                if (!block2) {
+                    throw Error(`no block id ${move.blockId2} found`);
+                }
+
+                for (let x = 0; x < (block1.x2 - block1.x1); x++) {
+                    for (let y = 0; y < (block1.y2 - block1.y1); y++) {
+                        nLastTouchIndexes[block1.x1 + x][block1.y1 + y] = lastTouchIndexes[block2.x1 + x][block2.y1 + y];
+                        nLastTouchIndexes[block2.x1 + x][block2.y1 + y] = lastTouchIndexes[block1.x1 + x][block1.y1 + y];
+                    }
+                }
+                lastTouchIndexes = nLastTouchIndexes;
             }
             const result = applySingleMove(move, state);
             if (result.kind === "error") {
