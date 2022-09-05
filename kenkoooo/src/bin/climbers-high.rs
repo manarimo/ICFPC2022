@@ -61,9 +61,9 @@ fn optimize_single_solution(
             .collect(),
     };
     let mut same_count = 0;
-    const LIMIT: usize = 10;
+    const LIMIT: usize = 5;
     while same_count < LIMIT {
-        let new_moves = optimize_color_free_lunch(&target, &state, &moves)?;
+        let new_moves = optimize_color_free_lunch(&target, &state, &moves, false)?;
         let new_moves = climbing(&initial_state, new_moves, &target);
         let next_point = evaluate(&new_moves, &state, &target)?;
         if cur_point > next_point {
@@ -87,7 +87,7 @@ fn optimize_single_solution(
 }
 
 fn climbing(initial_state: &FastState, moves: Vec<Move>, target: &Picture) -> Vec<Move> {
-    const TIME_SEC: f64 = 20.;
+    const TIME_SEC: f64 = 10.;
     let candidate_move_ids = (0..moves.len())
         .filter(|&i| matches!(&moves[i], Move::LineCut(_) | Move::PointCut(_)))
         .collect::<Vec<_>>();
