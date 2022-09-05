@@ -95,8 +95,22 @@ export class FreelunchPlugin implements Processor {
             const colorVectors = points
                 .map((point) => (input.image.height - 1 - point.y) * input.image.width + point.x)
                 .map((px) => [input.image.r[px], input.image.g[px], input.image.b[px], input.image.a[px]]);
-            const optimalColorVector = geometricMedian(colorVectors).map(round);
+            const median = geometricMedian(colorVectors).map(round);
 
+            const range = 5;
+            let best: [number, number[]] = [distanceSum(colorVectors, initialColorVector), initialColorVector];
+            for (let r = Math.max(median[0] - range, 0); r <= Math.min(median[0] + range, 255); r++) {
+                for (let g = Math.max(median[1] - range, 0); g <= Math.min(median[1] + range, 255); g++) {
+                    for (let b = Math.max(median[2] - range, 0); b <= Math.min(median[2] + range, 255); b++) {
+                        const candidateVector = [r, g, b, 255];
+                        const candidate: [number, number[]] = [distanceSum(colorVectors, candidateVector), candidateVector];
+                        if (candidate < best) {
+                            best = candidate;
+                        }    
+                    }
+                }    
+            }
+            const optimalColorVector = best[1];
             if (distanceSum(colorVectors, initialColorVector) > distanceSum(colorVectors, optimalColorVector)) {
                 moves[moveIndex] = {
                     ...move,
