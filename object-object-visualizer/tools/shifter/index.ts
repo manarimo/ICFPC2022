@@ -11,7 +11,11 @@ export class Shifter implements Processor {
 
         const finalState = runSolution(input.image, output.moves, input.initialBlocks, input.initialImage ?? undefined);
 
-        const moves = [...output.moves, ...this.shiftMoves(finalState.globalCounter, input)];
+        const moves: Move[] = [
+            { kind: 'comment-move', comment: `shifter: split in ${this.split} ways` },
+            ...output.moves,
+            ...this.shiftMoves(finalState.globalCounter, input)
+        ];
         return new Output(moves);
     }
 
