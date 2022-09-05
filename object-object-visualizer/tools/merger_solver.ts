@@ -45,7 +45,7 @@ async function main() {
         const moves = await loadMoves(`../../output/${solution.batchName}/${solution.problemId}.isl`);
         const output = await merger.run(input, async () => new Output(moves));
 
-        moves.unshift({ kind: 'comment-move', comment: `merger-solver: based on ${solution.batchName}/${solution.problemId}` });
+        output.moves.unshift({ kind: 'comment-move', comment: `merger-solver: based on ${solution.batchName}/${solution.problemId}` });
         const code = output.moves.map(moveToString).join("\n");
         await fsPromises.writeFile(`../../output/merger-combined/${mergerProblemId}.isl`, code);
     }
