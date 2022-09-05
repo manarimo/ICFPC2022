@@ -50,6 +50,7 @@ export class FreelunchPlugin implements Processor {
                         nLastTouchIndexes[block2.x1 + x][block2.y1 + y] = lastTouchIndexes[block1.x1 + x][block1.y1 + y];
                     }
                 }
+                lastTouchIndexes = nLastTouchIndexes;
             }
             const result = applySingleMove(move, state);
             if (result.kind === "error") {
