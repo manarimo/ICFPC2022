@@ -15,9 +15,11 @@ rules = []
 pattern.each do |pat|
   pat.rotates.each do |r|
     pat.splits.each do |s|
-      rule = "prob#{pat.probId}-rot#{r}-sp#{s}"
+      pat_name = "rot#{r}-sp#{s}"
+      rule = "prob#{pat.probId}-#{pat_name}"
+
       puts "#{rule}:"
-      puts "\tnpm run meta -- --problemId #{pat.probId} --batchName shift-test-$@ --command '../../kawatea/a.out' --rotate #{r} --split #{s}"
+      puts "\tnpm run meta -- --problemId #{pat.probId} --batchName shift-test-#{pat_name} --command '../../kawatea/a.out' --rotate #{r} --split #{s}"
       puts ""
       rules << rule
     end
