@@ -7,10 +7,13 @@ export class Merger implements Processor {
         const newMoves: Move[] = [];
         for (let i = 0; i < moves.length; i++) {
             const currentMove = moves[i];
-            if (currentMove.kind === "color-move") {
-                if (currentMove.blockId === "0" && currentMove.color.r === 0
-                    && currentMove.color.g === 0  && currentMove.color.b === 0
-                    && currentMove.color.a === 0
+            if (currentMove.kind === 'color-move') {
+                if (
+                    currentMove.blockId === '0' &&
+                    currentMove.color.r === 0 &&
+                    currentMove.color.g === 0 &&
+                    currentMove.color.b === 0 &&
+                    currentMove.color.a === 0
                 ) {
                     continue;
                 }
@@ -18,16 +21,16 @@ export class Merger implements Processor {
             newMoves.push(currentMove);
         }
         return newMoves;
-    }
+    };
 
     readonly filterOutDuplicatedColorForSameBlock = (moves: Move[]) => {
         const newMoves: Move[] = [];
         L: for (let i = 0; i < moves.length; i++) {
             const currentMove = moves[i];
-            if (currentMove.kind === "color-move") {
+            if (currentMove.kind === 'color-move') {
                 for (let j = i + 1; j < moves.length; j++) {
                     const futureMove = moves[j];
-                    if (futureMove.kind === "color-move" && futureMove.blockId === currentMove.blockId) {
+                    if (futureMove.kind === 'color-move' && futureMove.blockId === currentMove.blockId) {
                         continue L;
                     }
                 }
@@ -35,7 +38,7 @@ export class Merger implements Processor {
             newMoves.push(currentMove);
         }
         return newMoves;
-    }
+    };
 
     readonly run = async (input: Input, next: (input: Input) => Promise<Output>) => {
         if (input.initialBlocks.length == 1) {
@@ -44,7 +47,7 @@ export class Merger implements Processor {
         }
 
         const merger = MergerInner.create(input.image, input.initialBlocks, input.initialImage ?? undefined);
-        const [moves, finalId] = merger.generateMoves();
+        const [moves, finalId] = merger.generateMoves2();
         moves.push({
             color: { r: 255, g: 255, b: 255, a: 255 },
             blockId: finalId,

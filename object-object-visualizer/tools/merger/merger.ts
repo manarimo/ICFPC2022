@@ -65,7 +65,7 @@ export class MergerInner {
         for (let x = 0; x < k; ++x) {
             let lineId = this.blockIds[x][0];
             for (let y = 1; y < this.Y; y++) {
-                lineId = this.merge(lineId, this.blockIds[x][y]);                
+                lineId = this.merge(lineId, this.blockIds[x][y]);
             }
             varStickIds.push(lineId);
         }
@@ -80,7 +80,7 @@ export class MergerInner {
         const horStickIds: string[] = [];
         for (let y = 1; y < this.Y; y++) {
             let horizontalId;
-            [horizontalId, rectId] = this.ycut(rectId, this.initialState.height / this.Y * y);
+            [horizontalId, rectId] = this.ycut(rectId, (this.initialState.height / this.Y) * y);
             horStickIds.push(horizontalId);
         }
         horStickIds.push(rectId);
@@ -89,7 +89,7 @@ export class MergerInner {
         const lineIds: string[] = [];
         for (let y = 0; y < this.Y; y++) {
             let lineId = horStickIds[y];
-            for (let x = k + 1; x < this.X; x++) {
+            for (let x = k; x < this.X; x++) {
                 lineId = this.merge(lineId, this.blockIds[x][y]);
             }
             lineIds.push(lineId);
@@ -102,7 +102,6 @@ export class MergerInner {
         }
 
         return [[...this.moveHistory], finalId];
-        
     };
 
     readonly ycut = (blockId: string, y: number) => {
@@ -121,7 +120,7 @@ export class MergerInner {
             this.moveHistory.push(move);
         }
 
-        return [blockId + ".0", blockId + ".1"];
+        return [blockId + '.0', blockId + '.1'];
     };
 
     readonly merge = (blockId1: string, blockId2: string) => {
