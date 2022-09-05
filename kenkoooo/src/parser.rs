@@ -32,7 +32,7 @@ fn parse_code(code: &str) -> Vec<Move> {
 pub fn parse_single_code(line: &str) -> Option<Move> {
     let line = line.trim().replace(" ", "").to_lowercase();
     if line.starts_with("#") {
-        return Some(Move::Comment(Comment {comment: line}));
+        return Some(Move::Comment(Comment {comment: (&line[1..]).to_string()}));
     }
     if line.is_empty() {
         return None;
