@@ -25,13 +25,14 @@ fn main() -> Result<()> {
         let (target, initial_state) = read_input(&problem_id)?;
         if let Some(s) = solutions.into_iter().min_by_key(|s| s.score) {
             let moves = read_solution(format!("../output/{}/{}.isl", s.batch_name, problem_id))?;
-            starting_points.push((target, initial_state, moves, problem_id));
+            starting_points.push((s.score, target, initial_state, moves, problem_id));
         }
     }
 
+    starting_points.sort_by_key(|s| -s.0);
     starting_points
         .into_par_iter()
-        .for_each(|(target, state, moves, problem_id)| {
+        .for_each(|(_, target, state, moves, problem_id)| {
             if let Err(e) = optimize_single_solution(&state, moves, &target, output, &problem_id) {
                 eprintln!("{:?}", e);
             }
@@ -47,6 +48,7 @@ fn optimize_single_solution(
     output: &str,
     problem_id: &str,
 ) -> Result<Vec<Move>> {
+    eprintln!("optimizing {problem_id}");
     let mut cur_point = evaluate(&moves, &state, &target)?;
     let initial_state = FastState {
         global_counter: state.global_counter + 1,
