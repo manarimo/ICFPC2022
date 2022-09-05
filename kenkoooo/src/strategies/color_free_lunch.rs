@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
@@ -19,6 +19,27 @@ pub fn optimize_color_free_lunch(
             for y in block.y1..block.y2 {
                 for x in block.x1..block.x2 {
                     index_map[y][x] = Some(i);
+                }
+            }
+        } else if let Move::Swap(mv) = mv {
+            let maybe_block1 = state.blocks.get(&mv.label1);
+            match maybe_block1 {
+                None => return Err(anyhow!("{} block does not exist", mv.label1)),
+                Some(block1) => {
+                    let maybe_block2 = state.blocks.get(&mv.label2);
+                    match maybe_block2 {
+                        None => return Err(anyhow!("{} block does not exist", mv.label2)),
+                        Some(block2) => {
+                            let mut n_index_map = index_map.clone();
+                            for y in 0..(block1.y2 - block1.y1) {
+                                for x in 0..(block1.x2 - block1.x1) {
+                                    n_index_map[block1.y1 + y][block1.x1 + x] = index_map[block2.y1 + y][block2.x1 + x];
+                                    n_index_map[block2.y1 + y][block2.x1 + x] = index_map[block1.y1 + y][block1.x1 + x];
+                                }
+                            }
+                            index_map = n_index_map;
+                        }
+                    }
                 }
             }
         }
@@ -44,21 +65,23 @@ pub fn optimize_color_free_lunch(
         let color = state.picture.0[places[0].y][places[0].x];
 
         for place in places {
-            assert_eq!(
-                state.picture.0[place.y][place.x], color,
-                "{} {}",
-                place.y, place.x
-            );
+            if state.picture.0[place.y][place.x] != color {
+                return Err(anyhow!("invalid {} {}", place.y, place.x));
+            }
         }
     }
 
     let mut result = vec![None; moves.len()];
-    let all = move_to_places.len();
-    for (i, (move_id, points)) in move_to_places.into_iter().enumerate() {
-        let color = state.picture.0[points[0].y][points[0].x];
-        let new_color = optimize(&target, color, &points);
+    let colors = move_to_places
+        .into_par_iter()
+        .map(|(move_id, points)| {
+            let color = state.picture.0[points[0].y][points[0].x];
+            let new_color = optimize(&target, color, &points);
+            (move_id, new_color)
+        })
+        .collect::<Vec<_>>();
+    for (move_id, new_color) in colors {
         result[move_id] = Some(new_color);
-        eprintln!("{} of {}", i + 1, all);
     }
 
     Ok(moves
@@ -103,7 +126,52 @@ fn _old_optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGB
     }
     cur_color
 }
+
+fn distance(v: &[f64; 4], w: &[f64; 4]) -> f64 {
+    let mut sum = 0.;
+    for d in 0..4 {
+        sum += (v[d] - w[d]).powi(2);
+    }
+    sum.powf(0.5)
+}
+
+fn f64v(u: &[u8; 4]) -> [f64; 4] {
+    [u[0] as f64, u[1] as f64, u[2] as f64, u[3] as f64]
+}
+
+fn round(f: f64) -> u8 {
+    if f <= 0. {
+        0
+    } else if f >= 255. {
+        255
+    } else {
+        f.round() as u8
+    }
+}
+
 fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
+    let mut current: [f64; 4] = f64v(&initial_color.0);
+    for _ in 0..20 {
+        let mut next: [f64; 4] = [0., 0., 0., 0.];
+        let mut coef = 0.;
+        for point in points {
+            let color_vec = f64v(&target.0[point.y][point.x].0);
+            let dist = distance(&color_vec, &current);
+            if dist == 0. {
+                break;
+            }
+            coef += 1. / dist;
+        }
+        for point in points {
+            let color_vec = f64v(&target.0[point.y][point.x].0);
+            let dist = distance(&color_vec, &current);
+            for d in 0..4 {
+                next[d] += color_vec[d] / dist / coef;
+            }
+        }
+        current = next;
+    }
+
     let mut min_max = [(255, 0), (255, 0), (255, 0), (255, 0)];
     for i in 0..4 {
         for point in points {
@@ -112,42 +180,20 @@ fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
         }
     }
 
+    let color = RGBA([
+        round(current[0]),
+        round(current[1]),
+        round(current[2]),
+        round(current[3]),
+    ]);
+
     let init_similarity = point_raw_similarity(target, &initial_color, points);
-    let cur_color = initial_color;
-    let cur_similarity = init_similarity;
-    let (similarity, color) = (min_max[0].0..=min_max[0].1)
-        .into_par_iter()
-        .map(|r| {
-            let mut cur_color = cur_color;
-            let mut cur_similarity = cur_similarity;
-            for g in min_max[1].0..=min_max[1].1 {
-                for b in min_max[2].0..=min_max[2].1 {
-                    for a in min_max[3].0..=min_max[3].1 {
-                        let next_color = RGBA([r, g, b, a]);
-                        let next_similarity = point_raw_similarity(target, &next_color, points);
-                        if cur_similarity > next_similarity {
-                            cur_color = next_color;
-                            cur_similarity = next_similarity;
-                        }
-                    }
-                }
-            }
-            (cur_similarity, cur_color)
-        })
-        .reduce(
-            || (cur_similarity, cur_color),
-            |cur, next| {
-                if cur.0 > next.0 {
-                    next
-                } else {
-                    cur
-                }
-            },
-        );
+    let similarity = point_raw_similarity(target, &color, points);
     if init_similarity > similarity {
-        eprintln!("{} -> {}", init_similarity, similarity);
+        color
+    } else {
+        initial_color
     }
-    color
 }
 
 fn point_raw_similarity(target: &Picture, color: &RGBA, points: &[Point]) -> f64 {

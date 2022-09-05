@@ -13,6 +13,7 @@ import { RotationSpec, Rotator } from './rotator';
 import { TurnPicker } from './plugin/turn_picker';
 import { Merger } from './merger';
 import { Shifter } from './shifter';
+import { FreelunchPlugin } from './plugin/freelunch';
 
 interface Options {
     problemId: string;
@@ -102,7 +103,7 @@ class ProcessRunner {
 
         // Write out input in the kyopro format
         proc.stdin.on('error', (e) => {
-            console.warn('io error during kyopro format generation', e);
+            console.warn(`${this.problemId}: io error during kyopro format generation`, e);
         });
 
         function writeImage(image: Image) {
@@ -173,11 +174,14 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
         pipeline = wrap(pipeline, new Shifter(options.split));
     }
 
+    // Add freelunch plugin
+    pipeline = wrap(pipeline, new FreelunchPlugin());
+
     // Add rotator plugin
     if (options.rotate || options.flip) {
         const rotate = options.rotate || 0;
         const flip = options.flip == true;
-        const rotatorPlugin = (pipeline = wrap(pipeline, new Rotator([{ rotate, flip }])));
+        pipeline = wrap(pipeline, new Rotator([{ rotate, flip }]));
     } else if (options.rotator != undefined) {
         const preset = ROTATION_PRESET[options.rotator];
         if (preset === undefined) {
