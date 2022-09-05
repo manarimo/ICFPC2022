@@ -12,6 +12,7 @@ import { CopyrightPlugin } from './plugin/copyright_plugin';
 import { RotationSpec, Rotator } from './rotator';
 import { TurnPicker } from './plugin/turn_picker';
 import { Merger } from './merger';
+import { FreelunchPlugin } from './plugin/freelunch';
 
 interface Options {
     problemId: string;
@@ -158,6 +159,9 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
 
     // Add turn-picker plugin
     pipeline = wrap(pipeline, new TurnPicker());
+
+    // Add freelunch plugin
+    pipeline = wrap(pipeline, new FreelunchPlugin());
 
     // Add rotator plugin
     if (options.rotate || options.flip) {
