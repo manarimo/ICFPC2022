@@ -87,7 +87,7 @@ fn optimize_single_solution(
 }
 
 fn climbing(initial_state: &FastState, moves: Vec<Move>, target: &Picture) -> Vec<Move> {
-    const TIME_SEC: f64 = 10.;
+    const TIME_SEC: f64 = 30.;
     let candidate_move_ids = (0..moves.len())
         .filter(|&i| matches!(&moves[i], Move::LineCut(_) | Move::PointCut(_)))
         .collect::<Vec<_>>();
