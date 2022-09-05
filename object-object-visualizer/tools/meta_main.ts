@@ -1,5 +1,5 @@
 import commandLineArgs from 'command-line-args';
-import {loadInitialBlocks, loadProblem, moveToString, Image, createImageFromBlocks, loadPalette} from './util';
+import { loadInitialBlocks, loadProblem, moveToString, Image, createImageFromBlocks, loadPalette } from './util';
 import * as fsPromises from 'fs/promises';
 import { FileHandle } from 'fs/promises';
 import * as fs from 'fs';
@@ -12,11 +12,18 @@ import { CopyrightPlugin } from './plugin/copyright_plugin';
 import { RotationSpec, Rotator } from './rotator';
 import { TurnPicker } from './plugin/turn_picker';
 import { Merger } from './merger';
+import { Shifter } from './shifter';
 
 interface Options {
     problemId: string;
     batchName: string;
     command: string;
+
+    // Turn picker plugin
+    turnPicker?: boolean;
+
+    // Shifter plugin
+    split?: number;
 
     // Rotator plugin
     rotate?: number;
@@ -157,7 +164,14 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
     let pipeline = (input: Input) => processRunner.run(input);
 
     // Add turn-picker plugin
-    pipeline = wrap(pipeline, new TurnPicker());
+    if (options.turnPicker == true) {
+        pipeline = wrap(pipeline, new TurnPicker());
+    }
+
+    // Add shifter plugin
+    if (options.split !== undefined) {
+        pipeline = wrap(pipeline, new Shifter(options.split));
+    }
 
     // Add rotator plugin
     if (options.rotate || options.flip) {
@@ -211,6 +225,8 @@ const options: Options = commandLineArgs([
     { name: 'problemId', type: String },
     { name: 'batchName', type: String },
     { name: 'command', type: String },
+    { name: 'turnPicker', type: Boolean },
+    { name: 'split', type: Number },
     { name: 'rotate', type: Number },
     { name: 'flip', type: Boolean },
     { name: 'rotator', type: String },

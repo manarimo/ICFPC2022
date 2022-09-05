@@ -1,20 +1,13 @@
-import {InitialBlock} from '../../src/simulate';
-import {Move} from '../../src/parser';
-import {Image} from '../util';
+import { InitialBlock } from '../../src/simulate';
+import { Move } from '../../src/parser';
+import { Image } from '../util';
 
 export class Input {
-    constructor(
-        readonly image: Image,
-        readonly initialBlocks: InitialBlock[],
-        readonly initialImage: Image | null,
-        readonly palette: string,
-    ) {
-    }
+    constructor(readonly image: Image, readonly initialBlocks: InitialBlock[], readonly initialImage: Image | null, readonly palette: string) {}
 }
 
 export class Output {
-    constructor(readonly moves: Move[]) {
-    }
+    constructor(readonly moves: Move[]) {}
 }
 
 export interface Processor {
