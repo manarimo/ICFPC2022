@@ -67,7 +67,6 @@ export class FreelunchPlugin implements Processor {
                 .map(px => [input.image.r[px], input.image.g[px], input.image.b[px], input.image.a[px]]);
             const optimalColorVector = geometricMedian(colorVectors).map(round);
 
-            console.log(distanceSum(colorVectors, initialColorVector), distanceSum(colorVectors, optimalColorVector))
             if (distanceSum(colorVectors, initialColorVector) > distanceSum(colorVectors, optimalColorVector)) {
                 moves[moveIndex] = {
                     ...move,
