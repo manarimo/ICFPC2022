@@ -83,7 +83,7 @@ export const Solutions = () => {
               </td>
               <td>
                 <ul>
-                  {orderedSolutions.slice(20).map((solution, i) => (
+                  {orderedSolutions.slice(0, 20).map((solution, i) => (
                     <li
                       key={solution.batchName}
                       style={{ fontWeight: i === 0 ? "bold" : "normal" }}
