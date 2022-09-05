@@ -61,18 +61,18 @@ export class FreelunchPlugin implements Processor {
         let moves = [...output.moves];
         for (const [moveIndex, points] of coloringPoints.entries()) {
             const move = output.moves[moveIndex] as ColorMove;
+            const initialColorVector = [move.color.r, move.color.g, move.color.b, move.color.a];
             const colorVectors = points
                 .map(point => (input.image.height - 1 - point.y) * input.image.width + point.x)
                 .map(px => [input.image.r[px], input.image.g[px], input.image.b[px], input.image.a[px]]);
-            const optimalColorVector = geometricMedian(colorVectors);
+            const optimalColorVector = geometricMedian(colorVectors).map(round);
 
-            const newMoves = [...moves];
-            newMoves[moveIndex] = {
-                ...move,
-                color: {r: round(optimalColorVector[0]), g: round(optimalColorVector[1]), b: round(optimalColorVector[2]), a: round(optimalColorVector[3])},
-            }
-            if (evaluate(moves) > evaluate(newMoves)) {
-                moves = newMoves;
+            console.log(distanceSum(colorVectors, initialColorVector), distanceSum(colorVectors, optimalColorVector))
+            if (distanceSum(colorVectors, initialColorVector) > distanceSum(colorVectors, optimalColorVector)) {
+                moves[moveIndex] = {
+                    ...move,
+                    color: {r: optimalColorVector[0], g: optimalColorVector[1], b: optimalColorVector[2], a: optimalColorVector[3]},
+                }
             }
         }
 
@@ -88,7 +88,7 @@ function geometricMedian(points: number[][]): number[] {
         let coef = 0.;
         for (const point of points) {
             let dist = distance(point, v); 
-            if (dist == 0.) {
+            if (dist <= 1e-12) {
                 return v;
             }
             coef += 1. / dist;
@@ -104,10 +104,18 @@ function geometricMedian(points: number[][]): number[] {
     return v;
 }
 
+function distanceSum(points: number[][], origin: number[]): number {
+    let sum = 0;
+    for (const point of points) {
+        sum += distance(point, origin);
+    }
+    return sum;
+}
+
 function distance(v1: number[], v2: number[]): number {
     let norm = 0.;
     for (let i = 0; i < v1.length; i++) {
-        norm = Math.pow(v1[i] - v2[i], 2);
+        norm += Math.pow(v1[i] - v2[i], 2);
     }
     return Math.pow(norm, 0.5);
 }
