@@ -1,0 +1,13 @@
+prob22-rot0-sp5:
+	npm run meta -- --problemId 22 --batchName shift-test-rot0-sp5 --command '../../kawatea/a.out' --rotate 0 --split 5
+
+prob22-rot0-sp6:
+	npm run meta -- --problemId 22 --batchName shift-test-rot0-sp6 --command '../../kawatea/a.out' --rotate 0 --split 6
+
+prob22-rot2-sp5:
+	npm run meta -- --problemId 22 --batchName shift-test-rot2-sp5 --command '../../kawatea/a.out' --rotate 2 --split 5
+
+prob22-rot2-sp6:
+	npm run meta -- --problemId 22 --batchName shift-test-rot2-sp6 --command '../../kawatea/a.out' --rotate 2 --split 6
+
+all: prob22-rot0-sp5 prob22-rot0-sp6 prob22-rot2-sp5 prob22-rot2-sp6
