@@ -96,7 +96,7 @@ class ProcessRunner {
 
         // Write out input in the kyopro format
         proc.stdin.on('error', (e) => {
-            console.warn('io error during kyopro format generation', e);
+            console.warn(`${this.problemId}: io error during kyopro format generation`, e);
         });
 
         function writeImage(image: Image) {

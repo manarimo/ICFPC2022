@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
@@ -44,21 +44,23 @@ pub fn optimize_color_free_lunch(
         let color = state.picture.0[places[0].y][places[0].x];
 
         for place in places {
-            assert_eq!(
-                state.picture.0[place.y][place.x], color,
-                "{} {}",
-                place.y, place.x
-            );
+            if state.picture.0[place.y][place.x] != color {
+                return Err(anyhow!("invalid {} {}", place.y, place.x));
+            }
         }
     }
 
     let mut result = vec![None; moves.len()];
-    let all = move_to_places.len();
-    for (i, (move_id, points)) in move_to_places.into_iter().enumerate() {
-        let color = state.picture.0[points[0].y][points[0].x];
-        let new_color = optimize(&target, color, &points);
+    let colors = move_to_places
+        .into_par_iter()
+        .map(|(move_id, points)| {
+            let color = state.picture.0[points[0].y][points[0].x];
+            let new_color = optimize(&target, color, &points);
+            (move_id, new_color)
+        })
+        .collect::<Vec<_>>();
+    for (move_id, new_color) in colors {
         result[move_id] = Some(new_color);
-        eprintln!("{} of {}", i + 1, all);
     }
 
     Ok(moves
@@ -133,7 +135,7 @@ fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
         let mut coef = 0.;
         for point in points {
             let color_vec = f64v(&target.0[point.y][point.x].0);
-            let dist = distance(&color_vec, &current); 
+            let dist = distance(&color_vec, &current);
             if dist == 0. {
                 break;
             }
@@ -157,12 +159,16 @@ fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
         }
     }
 
-    let color = RGBA([round(current[0]), round(current[1]), round(current[2]), round(current[3])]);
+    let color = RGBA([
+        round(current[0]),
+        round(current[1]),
+        round(current[2]),
+        round(current[3]),
+    ]);
 
     let init_similarity = point_raw_similarity(target, &initial_color, points);
     let similarity = point_raw_similarity(target, &color, points);
     if init_similarity > similarity {
-        eprintln!("{} -> {}", init_similarity, similarity);
         color
     } else {
         initial_color
