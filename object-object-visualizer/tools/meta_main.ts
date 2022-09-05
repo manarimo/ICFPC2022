@@ -178,11 +178,6 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
         pipeline = wrap(pipeline, new Shifter(options.split, axis));
     }
 
-    // Add shifter plugin
-    if (options.msplit !== undefined) {
-        pipeline = wrap(pipeline, new ManualShifter(options.msplit));
-    }
-
     // Add freelunch plugin
     pipeline = wrap(pipeline, new FreelunchPlugin());
 
@@ -197,6 +192,11 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
             throw new Error(`Unrecognized rotator preset: ${options.rotator}`);
         }
         pipeline = wrap(pipeline, new Rotator(preset));
+    }
+
+    // Add shifter plugin
+    if (options.msplit !== undefined) {
+        pipeline = wrap(pipeline, new ManualShifter(options.msplit));
     }
 
     // Add merger plugin
