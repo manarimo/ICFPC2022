@@ -51,11 +51,16 @@ export class MergerInner {
 
         // 10 -> 5, 16 -> 6, 20 -> 7
         const kmap = [];
-        kmap[10] = 5;
-        kmap[16] = 6;
-        kmap[20] = 7;
+        kmap[10] = 4;
+        kmap[16] = 4;
+        kmap[20] = 5;
+        const mmap = [];
+        mmap[10] = 6;
+        mmap[16] = 8;
+        mmap[20] = 10;
 
         const k = kmap[this.X];
+        const m = mmap[this.X];
         if (k === undefined) {
             throw new Error(`not supported`);
         }
@@ -84,17 +89,16 @@ export class MergerInner {
 
         // cut horizontally
         const horStickIds: string[] = [];
-        for (let y = 1; y < this.Y; y++) {
+        for (let y = 0; y < m; y++) {
             let horizontalId;
-            [horizontalId, rectId] = this.ycut(rectId, (this.initialState.height / this.Y) * y);
+            [horizontalId, rectId] = this.ycut(rectId, (this.initialState.height / this.Y) * (y + 1));
             cost += Math.round((canvasSize / blockSize / (this.Y - y + 1) / k) * 7);
             horStickIds.push(horizontalId);
         }
-        horStickIds.push(rectId);
 
         // merge horizontal sticks
         const lineIds: string[] = [];
-        for (let y = 0; y < this.Y; y++) {
+        for (let y = 0; y < m; y++) {
             let lineId = horStickIds[y];
             for (let x = k; x < this.X; x++) {
                 lineId = this.merge(lineId, this.blockIds[x][y]);
@@ -105,7 +109,7 @@ export class MergerInner {
 
         // merge all
         let finalId = lineIds[0];
-        for (let y = 1; y < this.Y; y++) {
+        for (let y = 1; y < m; y++) {
             finalId = this.merge(finalId, lineIds[y]);
             cost += Math.round(canvasSize / blockSize / this.X / y);
         }
@@ -114,7 +118,52 @@ export class MergerInner {
             comment: `merger cost: ${cost}`,
         });
 
+        // cut second
+        const vblocks = [];
+        let cut2block = finalId;
+        for (let x = this.X - 1; x >= k; x--) {
+            let b;
+            [finalId, b] = this.xcut(finalId, (this.initialState.width / this.X) * x);
+            vblocks[x] = b;
+            // cost += Math.round(canvasSize / blockSize / m / (this.X - x + k) * 7);
+        }
+
+        finalId = this.merge(finalId, rectId);
+        // cost
+
+        const hblocks = [];
+        for (let x = this.X - 1; x >= k; x--) {
+            let mergeBlock = vblocks[x];
+            for (let y = m; y < this.Y; y++) {
+                mergeBlock = this.merge(mergeBlock, this.blockIds[x][y]);
+            }
+            hblocks[x] = mergeBlock;
+        }
+
+        for (let x = k; x < this.X; x++) {
+            finalId = this.merge(finalId, hblocks[x]);
+        }
+
         return [[...this.moveHistory], finalId];
+    };
+
+    readonly xcut = (blockId: string, x: number) => {
+        const tail = this.history[this.history.length - 1];
+        const move: Move = {
+            blockId,
+            orientation: 'x',
+            lineNumber: x,
+            kind: 'lcut-move' as const,
+        };
+        const result = applySingleMove(move, tail);
+        if (result.kind === 'error') {
+            throw new Error(`failed to merge`);
+        } else {
+            this.history.push(result.state);
+            this.moveHistory.push(move);
+        }
+
+        return [blockId + '.0', blockId + '.1'];
     };
 
     readonly ycut = (blockId: string, y: number) => {

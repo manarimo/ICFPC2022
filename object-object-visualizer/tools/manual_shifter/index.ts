@@ -1,5 +1,5 @@
 import { Input, Output, Processor } from '../metaprocessor';
-import { Image, runSolution } from '../util';
+import { Image, moveToString, runSolution } from '../util';
 import { Move } from '../../src/parser';
 
 function swap(arr: Uint8Array, i: number, j: number) {
@@ -12,6 +12,8 @@ export class ManualShifter implements Processor {
     readonly splits: ['x' | 'y', number, number][] = [];
     readonly swaps: ['x' | 'y', number, number, number, number][] = [];
     globalCounter: number = 0;
+    rev_y: boolean = true;
+    rev_x: boolean = false;
 
     constructor(splits: string) {
         const nums = splits.split(',');
@@ -23,8 +25,11 @@ export class ManualShifter implements Processor {
             if (ori !== 'x' && ori !== 'y') {
                 throw new Error(`manual shifter: invalid orientation ${ori}`);
             }
-            this.splits.push([ori, parseInt(nums[i * 3 + 1]), parseInt(nums[i * 3 + 2])]);
+            let begin = parseInt(nums[i * 3 + 1]);
+            let end = parseInt(nums[i * 3 + 2]);
+            this.splits.push([ori, begin, end]);
         }
+
         this.validate();
     }
 
@@ -41,12 +46,16 @@ export class ManualShifter implements Processor {
         this.globalCounter = finalState.globalCounter;
         const moves: Move[] = [...comments, ...output.moves, ...this.shiftMoves(input)];
 
-        /*
         console.log('P3 400 400 255');
         for (let y = 0; y < 400; y++) {
             for (let x = 0; x < 400; x++) {
                 console.log(newImage.r[x + y * newImage.width], newImage.g[x + y * newImage.width], newImage.b[x + y * newImage.width]);
             }
+        }
+
+        /*
+        for (const move of moves) {
+            console.log(moveToString(move));
         }
         */
 
@@ -59,14 +68,14 @@ export class ManualShifter implements Processor {
         for (const split of this.splits) {
             const [ori, begin, end] = split;
             if ((ori === 'x' ? x_acc : y_acc) + (end - begin) > begin) {
-                throw new Error(`manual_shifter: invalid shift ${ori} ${begin} ${end}`);
+                //throw new Error(`manual_shifter: invalid shift ${ori} ${begin} ${end}`);
             }
+            this.swaps.push([ori, ori === 'x' ? x_acc : y_acc, ori === 'x' ? x_acc + (end - begin) : y_acc + (end - begin), begin, end]);
             if (ori === 'x') {
                 x_acc += end - begin;
             } else {
                 y_acc += end - begin;
             }
-            this.swaps.push([ori, ori === 'x' ? x_acc : y_acc, ori === 'x' ? x_acc + (end - begin) : y_acc + (end - begin), begin, end]);
         }
     }
 
@@ -92,9 +101,14 @@ export class ManualShifter implements Processor {
         let y_acc = 0;
         for (const split of this.splits) {
             let [ori, begin, end] = split;
-            if (ori === 'y') {
+            if (ori === 'y' && !this.rev_y) {
                 let tmp = image.height - begin;
                 begin = image.height - end;
+                end = tmp;
+            }
+            if (ori === 'x' && this.rev_x) {
+                let tmp = image.width - begin;
+                begin = image.width - end;
                 end = tmp;
             }
             const range = end - begin;
@@ -102,8 +116,8 @@ export class ManualShifter implements Processor {
                 for (let imgY = 0; imgY < (ori === 'y' ? range : image.height); ++imgY) {
                     let newX = ori === 'x' ? imgX + begin : imgX;
                     let newY = ori === 'y' ? imgY + begin : imgY;
-                    let oldX = ori === 'x' ? imgX + x_acc : imgX;
-                    let oldY = ori === 'y' ? imgY + (image.height - y_acc - range) : imgY;
+                    let oldX = ori === 'x' ? imgX + (this.rev_x ? image.width - x_acc - range : x_acc) : imgX;
+                    let oldY = ori === 'y' ? imgY + (!this.rev_y ? image.height - y_acc - range : y_acc) : imgY;
                     const newPx = newX + newY * image.width;
                     const imgPx = oldX + oldY * image.width;
                     let tmp;
@@ -135,11 +149,11 @@ export class ManualShifter implements Processor {
     }
 
     private shiftMoves(input: Input): Move[] {
-        let currentBlock = `${this.globalCounter}`;
-        const blockIds = [];
         const moves: Move[] = [];
-        const swapBlockIds = [];
         for (let i = this.swaps.length - 1; i >= 0; i--) {
+            const blockIds = [];
+            const swapBlockIds = [];
+            let currentBlock = `${this.globalCounter}`;
             const [ori, begin1, end1, begin2, end2] = this.swaps[i];
             if (begin1 !== 0) {
                 moves.push(this.lcutMove(currentBlock, ori, begin1));
