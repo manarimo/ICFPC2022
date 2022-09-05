@@ -1,1 +1,1 @@
-score: 25202 (cost: 4205)
+score: 26164 (cost: 4505)
