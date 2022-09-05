@@ -22,16 +22,16 @@ export class Shifter implements Processor {
     private shiftImageX(image: Image): Image {
         const shiftPx = Math.floor(image.width / this.split);
         const nImg: Image = {
-            r: new Uint8Array(image.width * image.height),
-            g: new Uint8Array(image.width * image.height),
-            b: new Uint8Array(image.width * image.height),
-            a: new Uint8Array(image.width * image.height),
+            r: new Uint8Array(image.r),
+            g: new Uint8Array(image.g),
+            b: new Uint8Array(image.b),
+            a: new Uint8Array(image.a),
             width: image.width,
             height: image.height,
         };
 
         const maxX = shiftPx * this.split;
-        for (let imgX = 0; imgX < image.width; imgX++) {
+        for (let imgX = 0; imgX < maxX; imgX++) {
             for (let imgY = 0; imgY < image.height; ++imgY) {
                 const newX = (imgX - shiftPx + maxX) % maxX;
                 const newPx = newX + imgY * image.width;
@@ -49,20 +49,20 @@ export class Shifter implements Processor {
     private shiftImageY(image: Image): Image {
         const shiftPx = Math.floor(image.height / this.split);
         const nImg: Image = {
-            r: new Uint8Array(image.width * image.height),
-            g: new Uint8Array(image.width * image.height),
-            b: new Uint8Array(image.width * image.height),
-            a: new Uint8Array(image.width * image.height),
+            r: new Uint8Array(image.r),
+            g: new Uint8Array(image.g),
+            b: new Uint8Array(image.b),
+            a: new Uint8Array(image.a),
             width: image.width,
             height: image.height,
         };
 
         const maxY = shiftPx * this.split;
         for (let imgX = 0; imgX < image.width; imgX++) {
-            for (let imgY = 0; imgY < image.height; ++imgY) {
-                const newY = (imgY - shiftPx + maxY) % maxY;
+            for (let imgY = image.height - 1; imgY >= image.height - maxY; imgY--) {
+                const newY = (imgY - (image.height - maxY) + shiftPx + maxY) % maxY + (image.height - maxY);
                 const newPx = imgX + newY * image.width;
-                const imgPx = imgX + newY * image.width;
+                const imgPx = imgX + imgY * image.width;
                 nImg.r[newPx] = image.r[imgPx];
                 nImg.g[newPx] = image.g[imgPx];
                 nImg.b[newPx] = image.b[imgPx];
@@ -95,7 +95,7 @@ export class Shifter implements Processor {
 
         // Shift columns to right (i.e. against Y-axis)
         for (let i = this.split - 1; i > 0; i--) {
-            moves.push({ kind: 'swap-move', blockId1: blockIds[i], blockId2: blockIds[(i - 1 + this.split) % this.split] });
+            moves.push({ kind: 'swap-move', blockId1: blockIds[this.split - 1], blockId2: blockIds[(i - 1 + this.split) % this.split] });
         }
 
         return moves;
