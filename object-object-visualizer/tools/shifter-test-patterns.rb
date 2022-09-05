@@ -7,6 +7,7 @@ pattern = [
   Pattern.new(9, [0], [3, 4]),
   Pattern.new(12, [0, 2], [4, 5]),
   Pattern.new(15, [0, 2], [4]),
+  Pattern.new(18, [0, 1, 2], [3, 4, 5]),
   Pattern.new(20, [1, 2, 3], [3, 4, 5]),
   Pattern.new(24, [0, 1, 2, 3], [4, 5])
 ]

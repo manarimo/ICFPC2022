@@ -1,0 +1,28 @@
+prob18-rot0-sp3:
+	npm run meta -- --problemId 18 --batchName shift-test-rot0-sp3 --command '../../kawatea/a.out' --rotate 0 --split 3
+
+prob18-rot0-sp4:
+	npm run meta -- --problemId 18 --batchName shift-test-rot0-sp4 --command '../../kawatea/a.out' --rotate 0 --split 4
+
+prob18-rot0-sp5:
+	npm run meta -- --problemId 18 --batchName shift-test-rot0-sp5 --command '../../kawatea/a.out' --rotate 0 --split 5
+
+prob18-rot1-sp3:
+	npm run meta -- --problemId 18 --batchName shift-test-rot1-sp3 --command '../../kawatea/a.out' --rotate 1 --split 3
+
+prob18-rot1-sp4:
+	npm run meta -- --problemId 18 --batchName shift-test-rot1-sp4 --command '../../kawatea/a.out' --rotate 1 --split 4
+
+prob18-rot1-sp5:
+	npm run meta -- --problemId 18 --batchName shift-test-rot1-sp5 --command '../../kawatea/a.out' --rotate 1 --split 5
+
+prob18-rot2-sp3:
+	npm run meta -- --problemId 18 --batchName shift-test-rot2-sp3 --command '../../kawatea/a.out' --rotate 2 --split 3
+
+prob18-rot2-sp4:
+	npm run meta -- --problemId 18 --batchName shift-test-rot2-sp4 --command '../../kawatea/a.out' --rotate 2 --split 4
+
+prob18-rot2-sp5:
+	npm run meta -- --problemId 18 --batchName shift-test-rot2-sp5 --command '../../kawatea/a.out' --rotate 2 --split 5
+
+all: prob18-rot0-sp3 prob18-rot0-sp4 prob18-rot0-sp5 prob18-rot1-sp3 prob18-rot1-sp4 prob18-rot1-sp5 prob18-rot2-sp3 prob18-rot2-sp4 prob18-rot2-sp5
