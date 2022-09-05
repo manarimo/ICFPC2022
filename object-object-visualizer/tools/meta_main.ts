@@ -13,6 +13,7 @@ import { RotationSpec, Rotator } from './rotator';
 import { TurnPicker } from './plugin/turn_picker';
 import { Merger } from './merger';
 import { Shifter } from './shifter';
+import { ManualShifter } from './manual_shifter';
 import { FreelunchPlugin } from './plugin/freelunch';
 
 interface Options {
@@ -26,6 +27,7 @@ interface Options {
     // Shifter plugin
     split?: number;
     splitAxis?: 'X' | 'Y';
+    msplit?: string;
 
     // Rotator plugin
     rotate?: number;
@@ -176,6 +178,11 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
         pipeline = wrap(pipeline, new Shifter(options.split, axis));
     }
 
+    // Add shifter plugin
+    if (options.msplit !== undefined) {
+        pipeline = wrap(pipeline, new ManualShifter(options.msplit));
+    }
+
     // Add freelunch plugin
     pipeline = wrap(pipeline, new FreelunchPlugin());
 
@@ -234,6 +241,7 @@ const options: Options = commandLineArgs([
     { name: 'turnPicker', type: Boolean },
     { name: 'split', type: Number },
     { name: 'splitAxis', type: String },
+    { name: 'msplit', type: String },
     { name: 'rotate', type: Number },
     { name: 'flip', type: Boolean },
     { name: 'rotator', type: String },

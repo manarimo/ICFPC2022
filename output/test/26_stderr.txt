@@ -1,0 +1,26 @@
+cut_x: 0 12 23 35 47 60 77 94 114 134 148 161 178 191 202 213 227 240 253 269 286 299 319 335 349 360 374 388 400 
+cut_y: 0 17 33 48 59 80 96 111 122 135 148 168 181 194 210 230 243 259 276 289 307 318 338 349 369 385 400 
+manipulation cost: 2382
+similarity cost: 17023
+total cost: 19405
+manipulation cost: 2709
+similarity cost: 17060
+total cost: 19769
+manipulation cost: 2266
+similarity cost: 17238
+total cost: 19504
+manipulation cost: 2344
+similarity cost: 16982
+total cost: 19326
+manipulation cost: 1970
+similarity cost: 17112
+total cost: 19082
+manipulation cost: 2121
+similarity cost: 16982
+total cost: 19103
+manipulation cost: 1979
+similarity cost: 16940
+total cost: 18919
+manipulation cost: 2213
+similarity cost: 16932
+total cost: 19145
