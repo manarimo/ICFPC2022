@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 
 use crate::{
     ops::{lcut::Orientation, Move},
@@ -120,7 +120,7 @@ impl FastState {
                     self.cost += round(5 * H * W, block.usize());
                     colors.push((i, block.clone()));
                 }
-                Move::Swap(_) => todo!(),
+                Move::Swap(_) => return Err(anyhow!("swap is not supported")),
                 Move::Comment(_) => (),
                 Move::Merge(mv) => {
                     let block1 = self.blocks.remove(&mv.label1.0).context("")?;

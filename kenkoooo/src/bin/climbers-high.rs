@@ -93,7 +93,12 @@ fn climbing(initial_state: &FastState, moves: Vec<Move>, target: &Picture) -> Ve
         .collect::<Vec<_>>();
 
     let start = Instant::now();
-    let mut cur_score = calc_score(&initial_state, &moves, &target).unwrap();
+    let mut cur_score = match calc_score(&initial_state, &moves, &target) {
+        Some(s) => s,
+        None => {
+            return moves;
+        }
+    };
     let mut cur_moves = moves;
     let mut rng = StdRng::seed_from_u64(1);
     while start.elapsed().as_secs_f64() < TIME_SEC {
