@@ -25,6 +25,7 @@ interface Options {
 
     // Shifter plugin
     split?: number;
+    splitAxis?: 'X' | 'Y';
 
     // Rotator plugin
     rotate?: number;
@@ -171,7 +172,8 @@ function buildPipeline(options: Options, processRunner: ProcessRunner): (input: 
 
     // Add shifter plugin
     if (options.split !== undefined) {
-        pipeline = wrap(pipeline, new Shifter(options.split));
+        const axis = options.splitAxis ?? 'X';
+        pipeline = wrap(pipeline, new Shifter(options.split, axis));
     }
 
     // Add freelunch plugin
@@ -231,6 +233,7 @@ const options: Options = commandLineArgs([
     { name: 'command', type: String },
     { name: 'turnPicker', type: Boolean },
     { name: 'split', type: Number },
+    { name: 'splitAxis', type: String },
     { name: 'rotate', type: Number },
     { name: 'flip', type: Boolean },
     { name: 'rotator', type: String },
