@@ -97,6 +97,9 @@ export async function loadInitialBlocks(initialBlocksFile: string): Promise<Init
 }
 
 export async function loadPalette(paletteFile: string): Promise<string> {
+    if (!fs.existsSync(paletteFile)) {
+        return '';
+    }
     const buf = await fsPromises.readFile(paletteFile);
     return buf.toString();
 }
