@@ -262,7 +262,7 @@ export class Rotator implements Processor {
             }
         }
 
-        const output = await next(new Input(nextImage, input.initialBlocks, nextInitialImage));
+        const output = await next(new Input(nextImage, input.initialBlocks, nextInitialImage, input.palette));
 
         let newMoves = [...output.moves];
 

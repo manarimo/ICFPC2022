@@ -39,6 +39,10 @@ export class SolutionSpec {
     initialImagePath(prefix: string = '../..'): string {
         return `${prefix}/problem/original_initial/${this.problemId}.initial.png`;
     }
+
+    palettePath(prefix: string = '../..'): string {
+        return `${prefix}/problem/original/${this.problemId}.palette.txt`;
+    }
 }
 
 export class Solution {
@@ -90,6 +94,14 @@ export async function loadInitialBlocks(initialBlocksFile: string): Promise<Init
     }
     const initialBlockBuffer = await fsPromises.readFile(initialBlocksFile);
     return JSON.parse(initialBlockBuffer.toString()).blocks as InitialBlock[];
+}
+
+export async function loadPalette(paletteFile: string): Promise<string> {
+    if (!fs.existsSync(paletteFile)) {
+        return '';
+    }
+    const buf = await fsPromises.readFile(paletteFile);
+    return buf.toString();
 }
 
 export function createImageFromBlocks(blocks: InitialBlock[]): Image {

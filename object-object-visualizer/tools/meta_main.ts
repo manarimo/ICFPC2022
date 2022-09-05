@@ -1,5 +1,5 @@
 import commandLineArgs from 'command-line-args';
-import { loadInitialBlocks, loadProblem, moveToString, Image, createImageFromBlocks } from './util';
+import {loadInitialBlocks, loadProblem, moveToString, Image, createImageFromBlocks, loadPalette} from './util';
 import * as fsPromises from 'fs/promises';
 import { FileHandle } from 'fs/promises';
 import * as fs from 'fs';
@@ -139,6 +139,9 @@ class ProcessRunner {
         }
         writeImage(initialImage);
 
+        proc.stdin.write(input.palette);
+        proc.stdin.write('\n');
+
         proc.stdin.end();
     }
 }
@@ -191,7 +194,10 @@ async function main(options: Options) {
     const initialBlocks = await loadInitialBlocks(`../../problem/original/${options.problemId}.initial.json`);
     const initialImagePath = `../../problem/original_initial/${options.problemId}.initial.png`;
     const initialProblemImage = fs.existsSync(initialImagePath) ? await loadProblem(initialImagePath) : null;
-    const input = new Input(problemImage, initialBlocks, initialProblemImage);
+    const palettePath = `../../problem/original/${options.problemId}.palette.txt`;
+    const palette = await loadPalette(palettePath);
+
+    const input = new Input(problemImage, initialBlocks, initialProblemImage, palette);
 
     // Run process
     const output = await pipeline(input);
