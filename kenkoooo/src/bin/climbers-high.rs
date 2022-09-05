@@ -62,11 +62,13 @@ fn optimize_single_solution(
     const LIMIT: usize = 10;
     while same_count < LIMIT {
         let new_moves = optimize_color_free_lunch(&target, &state, &moves)?;
-        moves = climbing(&initial_state, new_moves, &target);
-        let next_point = evaluate(&moves, &state, &target)?;
+        let new_moves = climbing(&initial_state, new_moves, &target);
+        let next_point = evaluate(&new_moves, &state, &target)?;
         if cur_point > next_point {
+            eprintln!("{problem_id}: {cur_point} -> {next_point}");
             same_count = 0;
             cur_point = next_point;
+            moves = new_moves;
 
             let output = format!("{output}/{problem_id}.isl");
             let mut file = File::create(&output)?;
@@ -75,8 +77,10 @@ fn optimize_single_solution(
             }
         } else {
             same_count += 1;
+            eprintln!("{problem_id}: same={same_count}");
         }
     }
+    eprintln!("finished: {problem_id}");
     Ok(moves)
 }
 
