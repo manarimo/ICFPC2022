@@ -59,7 +59,12 @@ export class Shifter implements Processor {
             blockIds.push(`${currentBlock}.0`);
             currentBlock = `${currentBlock}.1`;
         }
-        blockIds.push(currentBlock);
+        if (shiftPx * this.split != input.image.width) {
+            moves.push({kind: 'lcut-move', blockId: currentBlock, orientation: 'x', lineNumber: shiftPx * this.split});
+            blockIds.push(`${currentBlock}.0`);
+        } else {
+            blockIds.push(currentBlock);
+        }
 
         // Shift columns to right (i.e. against Y-axis)
         for (let i = this.split - 1; i > 0; i--) {
