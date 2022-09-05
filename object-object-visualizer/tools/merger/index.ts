@@ -3,6 +3,7 @@ import { Move } from '../../src/parser';
 import { Input, Output, Processor } from '../metaprocessor';
 
 export class Merger implements Processor {
+    // This assumption is wrong when the default picture is provided
     readonly filterOut0255 = (moves: Move[]) => {
         const newMoves: Move[] = [];
         for (let i = 0; i < moves.length; i++) {
@@ -10,10 +11,10 @@ export class Merger implements Processor {
             if (currentMove.kind === 'color-move') {
                 if (
                     currentMove.blockId === '0' &&
-                    currentMove.color.r === 0 &&
-                    currentMove.color.g === 0 &&
-                    currentMove.color.b === 0 &&
-                    currentMove.color.a === 0
+                    currentMove.color.r === 255 &&
+                    currentMove.color.g === 255 &&
+                    currentMove.color.b === 255 &&
+                    currentMove.color.a === 255
                 ) {
                     continue;
                 }
@@ -112,8 +113,7 @@ export class Merger implements Processor {
             }
         };
 
-        const no0255 = this.filterOut0255(output.moves);
-        const overriddenMoves = [...moves, ...no0255.map(overrideMove)];
+        const overriddenMoves = [...moves, ...output.moves.map(overrideMove)];
         return new Output(this.filterOutDuplicatedColorForSameBlock(overriddenMoves));
     };
 }

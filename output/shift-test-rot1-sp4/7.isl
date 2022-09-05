@@ -1,6 +1,7 @@
 # (C) 2022 team manarimo. All rights reserved
 # rotator: 13913 pts ({"rotate":1,"flip":false})
 # rotator: best {"rotate":1,"flip":false}
+# freelunch: 13913 -> 13913
 # shifter: split in 4 ways
 color [0] [0, 0, 0, 255]
 cut [0] [x] [332]
@@ -215,7 +216,7 @@ merge [79.1] [79.0]
 merge [76] [80]
 cut [81] [219, 170]
 merge [81.1] [81.0]
-color [81.2] [81, 80, 82, 255]
+color [81.2] [82, 82, 82, 255]
 merge [81.2] [81.3]
 cut [83] [x] [263]
 color [83.1] [254, 254, 254, 255]

@@ -1,10 +1,11 @@
 # (C) 2022 team manarimo. All rights reserved
 # rotator: 13680 pts ({"rotate":1,"flip":false})
 # rotator: best {"rotate":1,"flip":false}
+# freelunch: 13680 -> 13680
 # shifter: split in 5 ways
 color [0] [0, 0, 0, 255]
 cut [0] [x] [318]
-color [0.0] [233, 0, 31, 255]
+color [0.0] [232, 0, 31, 255]
 merge [0.0] [0.1]
 cut [1] [x] [305]
 color [1.0] [1, 0, 0, 255]
@@ -226,7 +227,7 @@ merge [83.1] [83.0]
 merge [80] [84]
 cut [85] [219, 190]
 merge [85.1] [85.0]
-color [85.2] [81, 80, 82, 255]
+color [85.2] [82, 82, 82, 255]
 merge [85.2] [85.3]
 cut [87] [x] [263]
 color [87.1] [252, 252, 252, 255]
