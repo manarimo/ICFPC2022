@@ -1,8 +1,8 @@
-# (C) 2022 team manarimo. All rights reserved
-# rotator: 22177 pts ({"rotate":2,"flip":false})
-# rotator: best {"rotate":2,"flip":false}
-# freelunch: 22771 -> 22177
-# shifter (X): split in 3 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # rotator: 22177 pts ({"rotate":2,"flip":false})
+# # rotator: best {"rotate":2,"flip":false}
+# # freelunch: 22771 -> 22177
+# # shifter (X): split in 3 ways
 cut [0] [y] [369]
 color [0.0] [19, 23, 26, 255]
 merge [0.0] [0.1]
@@ -492,4 +492,4 @@ cut [200] [x] [267]
 cut [200.0] [x] [134]
 cut [200.0.0] [x] [1]
 swap [200.0.0.1] [200.0.1]
-swap [200.0.1] [200.1]
+swap [200.0.0.1] [200.1]

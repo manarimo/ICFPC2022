@@ -1,5 +1,5 @@
-# (C) 2022 team manarimo. All rights reserved
-# shifter: split in 5 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # shifter: split in 5 ways
 cut [0] [y] [320]
 color [0.0] [188, 166, 204, 255]
 merge [0.0] [0.1]
@@ -282,6 +282,6 @@ cut [118.1] [x] [160]
 cut [118.1.1] [x] [240]
 cut [118.1.1.1] [x] [320]
 swap [118.1.1.1.1] [118.1.1.1.0]
-swap [118.1.1.1.0] [118.1.1.0]
-swap [118.1.1.0] [118.1.0]
-swap [118.1.0] [118.0]
+swap [118.1.1.1.1] [118.1.1.0]
+swap [118.1.1.1.1] [118.1.0]
+swap [118.1.1.1.1] [118.0]

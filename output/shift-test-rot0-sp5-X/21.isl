@@ -1,6 +1,6 @@
-# (C) 2022 team manarimo. All rights reserved
-# freelunch: 16748 -> 14998
-# shifter (X): split in 5 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # freelunch: 16748 -> 14998
+# # shifter (X): split in 5 ways
 color [0] [224, 227, 221, 255]
 cut [0] [y] [368]
 color [0.0] [213, 216, 208, 255]
@@ -329,6 +329,6 @@ cut [148.1] [X] [160]
 cut [148.1.1] [X] [240]
 cut [148.1.1.1] [X] [320]
 swap [148.1.1.1.1] [148.1.1.1.0]
-swap [148.1.1.1.0] [148.1.1.0]
-swap [148.1.1.0] [148.1.0]
-swap [148.1.0] [148.0]
+swap [148.1.1.1.1] [148.1.1.0]
+swap [148.1.1.1.1] [148.1.0]
+swap [148.1.1.1.1] [148.0]

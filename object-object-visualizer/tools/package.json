@@ -10,7 +10,8 @@
         "turn-picker": "ts-node turn_picker.ts",
         "merger": "ts-node merger/index.ts",
         "send-best": "ts-node send_best.ts",
-        "meta": "ts-node meta_main.ts"
+        "meta": "ts-node meta_main.ts",
+        "shifter-fixer": "ts-node shifter_fixer.ts"
     },
     "author": "",
     "license": "ISC",

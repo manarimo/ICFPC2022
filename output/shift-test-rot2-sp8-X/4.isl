@@ -1,8 +1,8 @@
-# (C) 2022 team manarimo. All rights reserved
-# rotator: 7056 pts ({"rotate":2,"flip":false})
-# rotator: best {"rotate":2,"flip":false}
-# freelunch: 7056 -> 7056
-# shifter (X): split in 8 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # rotator: 7056 pts ({"rotate":2,"flip":false})
+# # rotator: best {"rotate":2,"flip":false}
+# # freelunch: 7056 -> 7056
+# # shifter (X): split in 8 ways
 cut [0] [x] [378]
 cut [0.0] [y] [88]
 color [0.0.1] [0, 0, 0, 255]
@@ -456,9 +456,9 @@ cut [191.0.0.0.0] [x] [150]
 cut [191.0.0.0.0.0] [x] [100]
 cut [191.0.0.0.0.0.0] [x] [50]
 swap [191.0.0.0.0.0.0.0] [191.0.0.0.0.0.0.1]
-swap [191.0.0.0.0.0.0.1] [191.0.0.0.0.0.1]
-swap [191.0.0.0.0.0.1] [191.0.0.0.0.1]
-swap [191.0.0.0.0.1] [191.0.0.0.1]
-swap [191.0.0.0.1] [191.0.0.1]
-swap [191.0.0.1] [191.0.1]
-swap [191.0.1] [191.1]
+swap [191.0.0.0.0.0.0.0] [191.0.0.0.0.0.1]
+swap [191.0.0.0.0.0.0.0] [191.0.0.0.0.1]
+swap [191.0.0.0.0.0.0.0] [191.0.0.0.1]
+swap [191.0.0.0.0.0.0.0] [191.0.0.1]
+swap [191.0.0.0.0.0.0.0] [191.0.1]
+swap [191.0.0.0.0.0.0.0] [191.1]

@@ -1,6 +1,6 @@
-# (C) 2022 team manarimo. All rights reserved
-# freelunch: 69625 -> 31252
-# shifter (Y): split in 3 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # freelunch: 69625 -> 31252
+# # shifter (Y): split in 3 ways
 color [0] [124, 36, 23, 255]
 cut [0] [y] [1]
 color [0.1] [102, 22, 7, 255]
@@ -426,4 +426,4 @@ cut [175] [Y] [133]
 cut [175.1] [Y] [266]
 cut [175.1.1] [Y] [399]
 swap [175.1.1.0] [175.1.0]
-swap [175.1.0] [175.0]
+swap [175.1.1.0] [175.0]

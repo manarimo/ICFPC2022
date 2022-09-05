@@ -1,8 +1,8 @@
-# (C) 2022 team manarimo. All rights reserved
-# rotator: 37306 pts ({"rotate":2,"flip":false})
-# rotator: best {"rotate":2,"flip":false}
-# freelunch: 76818 -> 37306
-# shifter (Y): split in 6 ways
+# # (C) 2022 team manarimo. All rights reserved
+# # rotator: 37306 pts ({"rotate":2,"flip":false})
+# # rotator: best {"rotate":2,"flip":false}
+# # freelunch: 76818 -> 37306
+# # shifter (Y): split in 6 ways
 color [0] [201, 201, 196, 255]
 cut [0] [y] [396]
 color [0.0] [211, 209, 203, 255]
@@ -254,7 +254,7 @@ cut [117.0.0.0] [y] [136]
 cut [117.0.0.0.0] [y] [70]
 cut [117.0.0.0.0.0] [y] [4]
 swap [117.0.0.0.0.0.1] [117.0.0.0.0.1]
-swap [117.0.0.0.0.1] [117.0.0.0.1]
-swap [117.0.0.0.1] [117.0.0.1]
-swap [117.0.0.1] [117.0.1]
-swap [117.0.1] [117.1]
+swap [117.0.0.0.0.0.1] [117.0.0.0.1]
+swap [117.0.0.0.0.0.1] [117.0.0.1]
+swap [117.0.0.0.0.0.1] [117.0.1]
+swap [117.0.0.0.0.0.1] [117.1]
