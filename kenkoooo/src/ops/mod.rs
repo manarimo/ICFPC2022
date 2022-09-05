@@ -1,9 +1,9 @@
 pub mod color;
+pub mod comment;
 pub mod lcut;
 pub mod merge;
 pub mod pcut;
 pub mod swap;
-pub mod comment;
 
 use std::fmt::Display;
 
@@ -11,7 +11,9 @@ use anyhow::Result;
 
 use crate::types::State;
 
-use self::{color::Color, lcut::LineCut, merge::Merge, pcut::PointCut, swap::Swap, comment::Comment};
+use self::{
+    color::Color, comment::Comment, lcut::LineCut, merge::Merge, pcut::PointCut, swap::Swap,
+};
 
 #[derive(Clone)]
 pub enum Move {
@@ -54,7 +56,7 @@ impl State {
             Move::LineCut(x) => self.apply_lcut(x),
             Move::PointCut(x) => self.apply_pcut(x),
             Move::Color(x) => Ok(self.apply_color(x)),
-            Move::Swap(x) => Ok(self.apply_swap(x)),
+            Move::Swap(x) => self.apply_swap(x),
             Move::Merge(x) => self.apply_merge(x),
             Move::Comment(_) => Ok(self.clone()),
         }

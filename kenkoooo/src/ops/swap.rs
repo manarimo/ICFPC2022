@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use anyhow::{anyhow, Result};
+
 use crate::types::{Label, State};
 
 #[derive(Clone)]
@@ -15,12 +17,14 @@ impl Display for Swap {
 }
 
 impl State {
-    pub(super) fn apply_swap(&self, m: &Swap) -> Self {
+    pub(super) fn apply_swap(&self, m: &Swap) -> Result<Self> {
         let mut new_state = self.clone();
         let block1 = new_state.pop_block(&m.label1).unwrap();
         let block2 = new_state.pop_block(&m.label2).unwrap();
 
-        assert_eq!(block1.rect(), block2.rect());
+        if block1.rect() != block2.rect() {
+            return Err(anyhow!("invalid swap"));
+        }
 
         let dx = block1.x2 - block1.x1;
         let dy = block1.y2 - block1.y1;
@@ -38,6 +42,6 @@ impl State {
         new_state.push_block(m.label2.clone(), block1);
 
         new_state.add_cost(3, &block1);
-        new_state
+        Ok(new_state)
     }
 }
