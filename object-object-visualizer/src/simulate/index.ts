@@ -229,7 +229,7 @@ const applySwapMove = (move: SwapMove, state: State) => {
 
   const dx = dx1;
   const dy = dy1;
-  const nextState = copyRGBA(state);
+  const nextState = copyBlocks(copyRGBA(state));
   for (let px = 0; px < dx; px++) {
     for (let py = 0; py < dy; py++) {
       setColorInPlace(
@@ -246,6 +246,9 @@ const applySwapMove = (move: SwapMove, state: State) => {
       );
     }
   }
+
+  nextState.blocks.set(move.blockId1, block2);
+  nextState.blocks.set(move.blockId2, block1);
 
   nextState.cost += calculateCost(move, size(block1), state);
   return {
