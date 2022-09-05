@@ -49,11 +49,11 @@ export class MergerInner {
             throw new Error(`not supported`);
         }
 
-        // 10 -> 4, 16 -> 5, 20 -> 6
+        // 10 -> 5, 16 -> 6, 20 -> 7
         const kmap = [];
-        kmap[10] = 4;
-        kmap[16] = 5;
-        kmap[20] = 6;
+        kmap[10] = 5;
+        kmap[16] = 6;
+        kmap[20] = 7;
 
         const k = kmap[this.X];
         if (k === undefined) {
