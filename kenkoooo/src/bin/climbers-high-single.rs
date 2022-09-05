@@ -15,19 +15,25 @@ use serde::Deserialize;
 
 fn main() -> Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
-    let output = &args[1];
+    let output = &args[3];
 
     let file = File::open("../output/ranking.json")?;
     let ranking: HashMap<String, Vec<Solutions>> = serde_json::from_reader(file)?;
 
     let mut starting_points = vec![];
-    for (problem_id, solutions) in ranking {
-        let (target, initial_state) = read_input(&problem_id)?;
-        if let Some(s) = solutions.into_iter().min_by_key(|s| s.score) {
-            let moves = read_solution(format!("../output/{}/{}.isl", s.batch_name, problem_id))?;
-            starting_points.push((s.score, target, initial_state, moves, problem_id));
-        }
-    }
+    // for (problem_id, solutions) in ranking {
+    //     let (target, initial_state) = read_input(&problem_id)?;
+    //     if let Some(s) = solutions.into_iter().min_by_key(|s| s.score) {
+    //         let moves = read_solution(format!("../output/{}/{}.isl", s.batch_name, problem_id))?;
+    //         starting_points.push((s.score, target, initial_state, moves, problem_id));
+    //     }
+    // }
+
+    let problem_id = &args[2];
+    let solver_name = &args[1];
+    let moves = read_solution(format!("../output/{}/{}.isl", solver_name, problem_id ))?;
+    let (target, initial_state) = read_input(&problem_id)?;
+    starting_points.push((1<<30, target, initial_state, moves, problem_id));
 
     starting_points.sort_by_key(|s| -s.0);
     starting_points

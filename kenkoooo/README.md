@@ -4,6 +4,10 @@
 cargo run --release --bin climbers-high -- <出力先のディレクトリ (../output/hoge みたいなやつ)>
 ```
 
+```sh
+cargo run --release --bin climbers-high-single -- <problem id>  <solver_name> <directory>
+```
+
 # 塗ってある色を調整するやつ
 
 以下のコマンドで標準出力に色を調整した isl が出る
