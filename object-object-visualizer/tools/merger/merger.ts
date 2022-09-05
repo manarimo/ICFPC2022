@@ -60,12 +60,17 @@ export class MergerInner {
             throw new Error(`not supported`);
         }
 
+        let cost = 0;
+        const canvasSize = this.initialState.height * this.initialState.width;
+        const blockSize = (this.initialState.height * this.initialState.width) / this.X / this.Y;
+
         // create stick to k
         const varStickIds: string[] = [];
         for (let x = 0; x < k; ++x) {
             let lineId = this.blockIds[x][0];
             for (let y = 1; y < this.Y; y++) {
                 lineId = this.merge(lineId, this.blockIds[x][y]);
+                cost += Math.round(canvasSize / blockSize / y);
             }
             varStickIds.push(lineId);
         }
@@ -74,6 +79,7 @@ export class MergerInner {
         let rectId = varStickIds[0];
         for (let x = 1; x < k; x++) {
             rectId = this.merge(rectId, varStickIds[x]);
+            cost += Math.round(canvasSize / blockSize / this.Y / x);
         }
 
         // cut horizontally
@@ -81,6 +87,7 @@ export class MergerInner {
         for (let y = 1; y < this.Y; y++) {
             let horizontalId;
             [horizontalId, rectId] = this.ycut(rectId, (this.initialState.height / this.Y) * y);
+            cost += Math.round((canvasSize / blockSize / (this.Y - y + 1) / k) * 7);
             horStickIds.push(horizontalId);
         }
         horStickIds.push(rectId);
@@ -91,6 +98,7 @@ export class MergerInner {
             let lineId = horStickIds[y];
             for (let x = k; x < this.X; x++) {
                 lineId = this.merge(lineId, this.blockIds[x][y]);
+                cost += Math.round(canvasSize / blockSize / x);
             }
             lineIds.push(lineId);
         }
@@ -99,7 +107,12 @@ export class MergerInner {
         let finalId = lineIds[0];
         for (let y = 1; y < this.Y; y++) {
             finalId = this.merge(finalId, lineIds[y]);
+            cost += Math.round(canvasSize / blockSize / this.X / y);
         }
+        this.moveHistory.unshift({
+            kind: 'comment-move',
+            comment: `merger cost: ${cost}`,
+        });
 
         return [[...this.moveHistory], finalId];
     };
