@@ -63,6 +63,12 @@ export class FreelunchPlugin implements Processor {
         for (let x = 0; x < input.image.width; x++) {
             for (let y = 0; y < input.image.height; y++) {
                 const moveIndex = lastTouchIndexes[x][y];
+
+                // This pixel is untouched. Nothing we can do with.
+                if (moveIndex == -1) {
+                    continue;
+                }
+
                 if (!coloringPoints.has(moveIndex)) {
                     coloringPoints.set(moveIndex, []);
                 }
