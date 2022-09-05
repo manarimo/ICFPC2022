@@ -1,6 +1,6 @@
-import {Input, Output, Processor} from '../metaprocessor';
-import {Image, runSolution} from '../util';
-import {Move} from '../../src/parser';
+import { Input, Output, Processor } from '../metaprocessor';
+import { Image, runSolution } from '../util';
+import { Move } from '../../src/parser';
 
 export class Shifter implements Processor {
     constructor(readonly split: number, readonly axis: 'X' | 'Y') {}
@@ -14,7 +14,7 @@ export class Shifter implements Processor {
         const moves: Move[] = [
             { kind: 'comment-move', comment: `shifter (${this.axis}): split in ${this.split} ways` },
             ...output.moves,
-            ...this.shiftMoves(finalState.globalCounter, input, this.axis)
+            ...this.shiftMoves(finalState.globalCounter, input, this.axis),
         ];
         return new Output(moves);
     }
@@ -87,7 +87,7 @@ export class Shifter implements Processor {
             currentBlock = `${currentBlock}.1`;
         }
         if (shiftPx * this.split != input.image.width) {
-            moves.push({kind: 'lcut-move', blockId: currentBlock, orientation, lineNumber: shiftPx * this.split});
+            moves.push({ kind: 'lcut-move', blockId: currentBlock, orientation, lineNumber: shiftPx * this.split });
             blockIds.push(`${currentBlock}.0`);
         } else {
             blockIds.push(currentBlock);
