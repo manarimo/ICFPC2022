@@ -32,7 +32,13 @@ fn main() -> Result<()> {
                 solution.batch_name, problem_id
             ))?;
 
-            let new_moves = optimize_color_free_lunch(&target, &initial_state, &moves)?;
+            let new_moves = match optimize_color_free_lunch(&target, &initial_state, &moves) {
+                Ok(new_moves) => new_moves,
+                Err(e) => {
+                    eprintln!("{:?}", e);
+                    continue;
+                }
+            };
             let after = evaluate(&new_moves, &initial_state, &target)?;
             if min > after {
                 eprintln!("{} -> {}", min, after);
