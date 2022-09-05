@@ -7,6 +7,7 @@ use crate::{
         merge::Merge,
         pcut::PointCut,
         swap::Swap,
+        comment::Comment,
         Move,
     },
     types::{Label, RGBA},
@@ -31,7 +32,7 @@ fn parse_code(code: &str) -> Vec<Move> {
 pub fn parse_single_code(line: &str) -> Option<Move> {
     let line = line.trim().replace(" ", "").to_lowercase();
     if line.starts_with("#") {
-        return None;
+        return Some(Move::Comment(Comment {comment: line}));
     }
     if line.is_empty() {
         return None;

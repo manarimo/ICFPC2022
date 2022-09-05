@@ -121,6 +121,7 @@ impl FastState {
                     colors.push((i, block.clone()));
                 }
                 Move::Swap(_) => todo!(),
+                Move::Comment(_) => (),
                 Move::Merge(mv) => {
                     let block1 = self.blocks.remove(&mv.label1.0).context("")?;
                     let block2 = self.blocks.remove(&mv.label2.0).context("")?;

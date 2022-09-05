@@ -3,6 +3,7 @@ pub mod lcut;
 pub mod merge;
 pub mod pcut;
 pub mod swap;
+pub mod comment;
 
 use std::fmt::Display;
 
@@ -10,7 +11,7 @@ use anyhow::Result;
 
 use crate::types::State;
 
-use self::{color::Color, lcut::LineCut, merge::Merge, pcut::PointCut, swap::Swap};
+use self::{color::Color, lcut::LineCut, merge::Merge, pcut::PointCut, swap::Swap, comment::Comment};
 
 #[derive(Clone)]
 pub enum Move {
@@ -19,6 +20,7 @@ pub enum Move {
     Color(Color),
     Swap(Swap),
     Merge(Merge),
+    Comment(Comment),
 }
 
 impl Display for Move {
@@ -39,6 +41,9 @@ impl Display for Move {
             Move::Merge(m) => {
                 write!(f, "{}", m)
             }
+            Move::Comment(m) => {
+                write!(f, "{}", m)
+            }
         }
     }
 }
@@ -51,6 +56,7 @@ impl State {
             Move::Color(x) => Ok(self.apply_color(x)),
             Move::Swap(x) => Ok(self.apply_swap(x)),
             Move::Merge(x) => self.apply_merge(x),
+            Move::Comment(_) => Ok(self.clone()),
         }
     }
 }
