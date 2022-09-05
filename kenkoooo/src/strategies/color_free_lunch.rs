@@ -21,6 +21,27 @@ pub fn optimize_color_free_lunch(
                     index_map[y][x] = Some(i);
                 }
             }
+        } else if let Move::Swap(mv) = mv {
+            let maybe_block1 = state.blocks.get(&mv.label1);
+            match maybe_block1 {
+                None => return Err(anyhow!("{} block does not exist", mv.label1)),
+                Some(block1) => {
+                    let maybe_block2 = state.blocks.get(&mv.label2);
+                    match maybe_block2 {
+                        None => return Err(anyhow!("{} block does not exist", mv.label2)),
+                        Some(block2) => {
+                            let mut n_index_map = index_map.clone();
+                            for y in 0..(block1.y2 - block1.y1) {
+                                for x in 0..(block1.x2 - block1.x1) {
+                                    n_index_map[block1.y1 + y][block1.x1 + x] = index_map[block2.y1 + y][block2.x1 + x];
+                                    n_index_map[block2.y1 + y][block2.x1 + x] = index_map[block1.y1 + y][block1.x1 + x];
+                                }
+                            }
+                            index_map = n_index_map;
+                        }
+                    }
+                }
+            }
         }
         state = state.apply(mv)?;
     }
