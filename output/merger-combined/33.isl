@@ -1,4 +1,4 @@
-# merger-solver: based on kenkoooo-climbing-x/15
+# merger-solver: based on keitak-climbing-high-last-20-mins/15
 # merger cost: 6779
 merge [0] [1]
 merge [256] [2]

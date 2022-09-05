@@ -1,4 +1,4 @@
-# merger-solver: based on kenkoooo-climbing-x/18
+# merger-solver: based on keitak-climbing-high-last-20-mins/18
 # merger cost: 1902
 merge [0] [1]
 merge [100] [2]
@@ -412,7 +412,7 @@ color [315.1] [90, 75, 37, 255]
 merge [315.1] [315.2]
 merge [316] [317]
 cut [318] [x] [300]
-color [318.1] [118, 102, 60, 255]
+color [318.1] [118, 103, 60, 255]
 merge [318.0] [318.1]
 cut [319] [300, 357]
 merge [319.0] [319.3]

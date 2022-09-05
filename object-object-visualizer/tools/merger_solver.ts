@@ -14,7 +14,7 @@ const MERGER_TO_PLAIN = {
     "32":"9",
     "33":"15",
     "34":"7",
-    "35":"16",
+    "35":"25",
 };
 
 const PLAIN_TO_MERGER: Record<string, string> = {}

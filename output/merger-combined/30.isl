@@ -1,4 +1,4 @@
-# merger-solver: based on keitak-free-lunch-strict/11
+# merger-solver: based on keitak-climbers-high/11
 # merger cost: 13404
 merge [0] [1]
 merge [400] [2]
@@ -449,7 +449,7 @@ merge [819] [698]
 merge [820] [688]
 merge [821] [678]
 merge [822] [668]
-# #color-optimized-true22020->21947.base:../output/kenkoooo-climbers-high-3/11.isl
+# #color-optimized-true 22020 -> 21947. Base: kenkoooo-climbers-high-3
 # #(c)2022teammanarimo.allrightsreserved
 # #rotator:23914pts({"rotate":0,"flip":false})
 # #rotator:23531pts({"rotate":1,"flip":false})
