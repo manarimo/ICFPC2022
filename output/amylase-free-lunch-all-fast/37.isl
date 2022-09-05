@@ -1,8 +1,8 @@
 #(c)2022teammanarimo.allrightsreserved
-#rotator:19811pts({"rotate":0,"flip":false})
-#rotator:19756pts({"rotate":1,"flip":false})
-#rotator:20326pts({"rotate":2,"flip":false})
-#rotator:19546pts({"rotate":3,"flip":false})
+#rotator:19268pts({"rotate":0,"flip":false})
+#rotator:19269pts({"rotate":1,"flip":false})
+#rotator:19803pts({"rotate":2,"flip":false})
+#rotator:18998pts({"rotate":3,"flip":false})
 #rotator:best{"rotate":3,"flip":false}
 color[0][56,55,34,255]
 cut[0][y][398]
