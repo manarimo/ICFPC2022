@@ -3,8 +3,9 @@
 以下のコマンドで標準出力に色を調整した isl が出る
 
 ```sh
-cargo run --release --bin color-free-lunch -- <problem id> <出力 isl>
+cargo run --release --bin color-free-lunch -- <problem id> <出力 isl> <strict 0|1>
 ```
+strict: strictly backtrack all is colors. 0 by default.
 
 # 切るところを摂動させるやつ
 ```sh

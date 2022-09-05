@@ -30,7 +30,7 @@ fn main() -> Result<()> {
         let (_, new_moves) = solutions
             .par_iter()
             .map(|moves| {
-                let new_moves = optimize_color_free_lunch(&target, &initial_state, &moves)?;
+                let new_moves = optimize_color_free_lunch(&target, &initial_state, &moves, true)?;
                 let point = evaluate(&new_moves, &initial_state, &target)?;
                 Ok((point, new_moves))
             })
