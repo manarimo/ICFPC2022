@@ -50,16 +50,7 @@ fn optimize_single_solution(
 ) -> Result<Vec<Move>> {
     eprintln!("optimizing {problem_id}");
     let mut cur_point = evaluate(&moves, &state, &target)?;
-    let initial_state = FastState {
-        global_counter: state.global_counter + 1,
-        cost: 0,
-        blocks: state
-            .blocks
-            .clone()
-            .into_iter()
-            .map(|(label, block)| (label.0, block))
-            .collect(),
-    };
+    let initial_state = state;
     let mut same_count = 0;
     const LIMIT: usize = 5;
     while same_count < LIMIT {
@@ -86,16 +77,16 @@ fn optimize_single_solution(
     Ok(moves)
 }
 
-fn climbing(initial_state: &FastState, moves: Vec<Move>, target: &Picture) -> Vec<Move> {
+fn climbing(initial_state: &State, moves: Vec<Move>, target: &Picture) -> Vec<Move> {
     const TIME_SEC: f64 = 30.;
     let candidate_move_ids = (0..moves.len())
         .filter(|&i| matches!(&moves[i], Move::LineCut(_) | Move::PointCut(_)))
         .collect::<Vec<_>>();
 
     let start = Instant::now();
-    let mut cur_score = match calc_score(&initial_state, &moves, &target) {
-        Some(s) => s,
-        None => {
+    let mut cur_score = match evaluate( &moves, &initial_state, &target) {
+        Ok(s) => s,
+        _ => {
             return moves;
         }
     };
@@ -138,7 +129,7 @@ fn climbing(initial_state: &FastState, moves: Vec<Move>, target: &Picture) -> Ve
         }
 
         //todo
-        let next_score = calc_score(initial_state, &cur_moves, target).unwrap_or(1e20);
+        let next_score = evaluate(&cur_moves, initial_state, target).ok().unwrap_or(1<<30);
         if cur_score > next_score {
             cur_score = next_score;
         } else {
