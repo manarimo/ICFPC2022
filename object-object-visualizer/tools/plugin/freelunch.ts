@@ -7,7 +7,7 @@ import { calculateScore } from '../util';
 export class FreelunchPlugin implements Processor {
     async run(input: Input, next: (input: Input) => Promise<Output>): Promise<Output> {
         const output = await next(input);
-        const lastTouchIndexes = new Array(input.image.width);
+        let lastTouchIndexes = new Array(input.image.width);
         for (let x = 0; x < input.image.width; x++) {
             lastTouchIndexes[x] = new Array(input.image.height).fill(-1);
         }
