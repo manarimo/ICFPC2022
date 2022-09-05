@@ -19,12 +19,12 @@ const MERGER_TO_PLAIN = {
 
 const PLAIN_TO_MERGER: Record<string, string> = {}
 for (const entry of Object.entries(MERGER_TO_PLAIN)) {
-    PLAIN_TO_MERGER[entry[0]] = entry[1];
+    PLAIN_TO_MERGER[entry[1]] = entry[0];
 }
 
 async function main() {
     const merger = new Merger();
-    await fsPromises.mkdir(`../../output/merger-combine`, { recursive: true });
+    await fsPromises.mkdir(`../../output/merger-combined`, { recursive: true });
 
     for await (const solution of topNSolutions(1)) {
         const mergerProblemId = PLAIN_TO_MERGER[solution.problemId];
@@ -47,7 +47,7 @@ async function main() {
 
         moves.unshift({ kind: 'comment-move', comment: `merger-solver: based on ${solution.batchName}/${solution.problemId}` });
         const code = output.moves.map(moveToString).join("\n");
-        await fsPromises.writeFile(`../../output/merger-combind/${mergerProblemId}.isl`, code);
+        await fsPromises.writeFile(`../../output/merger-combined/${mergerProblemId}.isl`, code);
     }
 }
 
