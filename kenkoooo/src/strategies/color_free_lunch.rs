@@ -169,7 +169,6 @@ fn optimize(target: &Picture, initial_color: RGBA, points: &[Point]) -> RGBA {
     let init_similarity = point_raw_similarity(target, &initial_color, points);
     let similarity = point_raw_similarity(target, &color, points);
     if init_similarity > similarity {
-        eprintln!("{} -> {}", init_similarity, similarity);
         color
     } else {
         initial_color

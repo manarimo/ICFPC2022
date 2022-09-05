@@ -34,8 +34,9 @@ fn main() -> Result<()> {
                 let point = evaluate(&new_moves, &initial_state, &target)?;
                 Ok((point, new_moves))
             })
-            .collect::<Result<Vec<_>>>()?
+            .collect::<Vec<Result<_>>>()
             .into_iter()
+            .filter_map(|a| a.ok())
             .min_by_key(|(point, _)| *point)
             .unwrap();
 
