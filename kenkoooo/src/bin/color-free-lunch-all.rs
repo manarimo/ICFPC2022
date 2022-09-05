@@ -8,6 +8,7 @@ use kenkoooo::{
     strategies::color_free_lunch::optimize_color_free_lunch,
     types::{Picture, State},
 };
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde::Deserialize;
 
 fn main() -> Result<()> {
@@ -18,40 +19,30 @@ fn main() -> Result<()> {
     let ranking: HashMap<String, Vec<Solutions>> = serde_json::from_reader(file)?;
 
     for (problem_id, solutions) in ranking {
-        let mut min = solutions[0].score;
+        let min = solutions[0].score;
         let (target, initial_state) = read_input(&problem_id)?;
+        let solutions = solutions
+            .into_iter()
+            .filter(|s| s.score - min < min / 10)
+            .map(|s| read_solution(format!("../output/{}/{}.isl", s.batch_name, problem_id)))
+            .collect::<Result<Vec<_>>>()?;
 
-        for solution in solutions {
-            if solution.score - min > min / 10 {
-                break;
-            }
+        let (_, new_moves) = solutions
+            .par_iter()
+            .map(|moves| {
+                let new_moves = optimize_color_free_lunch(&target, &initial_state, &moves)?;
+                let point = evaluate(&new_moves, &initial_state, &target)?;
+                Ok((point, new_moves))
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .min_by_key(|(point, _)| *point)
+            .unwrap();
 
-            eprintln!("challenging {}/{} ...", solution.batch_name, problem_id);
-            let moves = read_solution(format!(
-                "../output/{}/{}.isl",
-                solution.batch_name, problem_id
-            ))?;
-
-            let new_moves = match optimize_color_free_lunch(&target, &initial_state, &moves) {
-                Ok(new_moves) => new_moves,
-                Err(e) => {
-                    eprintln!("{:?}", e);
-                    continue;
-                }
-            };
-            let after = evaluate(&new_moves, &initial_state, &target)?;
-            if min > after {
-                eprintln!("{} -> {}", min, after);
-                let output = format!("{output}/{problem_id}.isl");
-                let mut file = File::create(&output)?;
-                for mv in new_moves {
-                    writeln!(&mut file, "{}", mv)?;
-                }
-                min = after;
-                eprintln!("saved {}", output);
-            } else {
-                eprintln!("sad!");
-            }
+        let output = format!("{output}/{problem_id}.isl");
+        let mut file = File::create(&output)?;
+        for mv in new_moves {
+            writeln!(&mut file, "{}", mv)?;
         }
     }
 
