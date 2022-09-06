@@ -1,5 +1,4 @@
 # ICFPC2022 Team manarimo
-================================
 
 ![](output/keitak-climbing-high-last-20-mins/ex1-manarimo.png)
 
