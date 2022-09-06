@@ -1,6 +1,10 @@
 export async function manarimoFetch<T>(path: string): Promise<T> {
+  let realPath = path;
+  if (path.startsWith('api/')) {
+    realPath = path.substring(4);
+  }
   const response = await fetch(
-    `https://gxtbs67iyup735zlzm54b6574i0pmpwl.lambda-url.us-east-1.on.aws/${path}`
+    `http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/output/${realPath}.json`
   );
   return response.json();
 }
