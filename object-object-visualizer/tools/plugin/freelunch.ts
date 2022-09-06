@@ -106,9 +106,9 @@ export class FreelunchPlugin implements Processor {
                         const candidate: [number, number[]] = [distanceSum(colorVectors, candidateVector), candidateVector];
                         if (candidate < best) {
                             best = candidate;
-                        }    
+                        }
                     }
-                }    
+                }
             }
             const optimalColorVector = best[1];
             if (distanceSum(colorVectors, initialColorVector) > distanceSum(colorVectors, optimalColorVector)) {

@@ -1,6 +1,6 @@
 import * as fsPromises from 'fs/promises';
-import {allSolutions, loadMoves, moveToString} from "./util";
-import {SwapMove} from "../src/parser";
+import { allSolutions, loadMoves, moveToString } from './util';
+import { SwapMove } from '../src/parser';
 
 async function main() {
     for await (const solution of allSolutions()) {
@@ -26,7 +26,7 @@ async function main() {
             (moves[i] as SwapMove).blockId1 = baseId;
         }
 
-        await fsPromises.writeFile(path, moves.map(moveToString).join("\n"));
+        await fsPromises.writeFile(path, moves.map(moveToString).join('\n'));
     }
 }
 

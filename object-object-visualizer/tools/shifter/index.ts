@@ -60,7 +60,7 @@ export class Shifter implements Processor {
         const maxY = shiftPx * this.split;
         for (let imgX = 0; imgX < image.width; imgX++) {
             for (let imgY = image.height - 1; imgY >= image.height - maxY; imgY--) {
-                const newY = (imgY - (image.height - maxY) + shiftPx + maxY) % maxY + (image.height - maxY);
+                const newY = ((imgY - (image.height - maxY) + shiftPx + maxY) % maxY) + (image.height - maxY);
                 const newPx = imgX + newY * image.width;
                 const imgPx = imgX + imgY * image.width;
                 nImg.r[newPx] = image.r[imgPx];
