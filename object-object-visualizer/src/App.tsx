@@ -5,7 +5,6 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { ProblemViewer } from "./problem-viewer";
 import { useParams } from "react-router-dom";
 import useSWR, { BareFetcher } from "swr";
-import { manarimoFetch } from "./fetch";
 import { useInitialImage, useProblemData } from "./hooks/useProblemData";
 import { useInitial } from "./hooks/useInitial";
 import {
@@ -25,8 +24,13 @@ function fetcher(
   problemId?: string
 ): BareFetcher<Solution> {
   if (batchName !== undefined && problemId !== undefined) {
-    return () =>
-      manarimoFetch(`api/solution?batch=${batchName}&problemId=${problemId}`);
+    return async () => {
+      const response = await fetch(
+        `http://icfpc2022-manarimo.s3-website-us-east-1.amazonaws.com/output/${batchName}/${problemId}.isl`
+      );
+      const text = await response.text();
+      return { code: text };
+    };
   } else {
     return () => {
       throw new Error("Simulating network failure");
